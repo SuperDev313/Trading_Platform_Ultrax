@@ -36,5 +36,41 @@ chartLines,
 onSelectToken, 
 dataProvider
 }: Props){
+    let [period, setPeriod] = useLocalStorageSerializeKey([chainId, "Chart-period"], DEFAULT_PERIOD)
+
+    if (!period || !(period in CHART_PERIODS)) {
+        period = DEFAULT_PERIOD;
+    }
+
+    const chartContainerRef = useRef<HTMLDivElement | null>(null);
+    const tvWidgetRef = useRef<IChartingLibraryWidget | null>(null);
+    const [chartReady, setChartReady] =useState(false);
+    const [chartDataLoading, setChartDataLoading] = useState(true);
+    const [tvCharts, setTvCharts] = useLocalStorage<ChartData[] | undefined>(TV_SAVE_LOAD_CHARTS_KEY, []);
+    const { datafeed, resetCache } = useTVDatafeed({dataProvider});
+    const isModible = useMedia("(max-width: 550px");
+    const sysmbolRef = useRef(symbol);   
     
+    const drawLineOnChart = useCallback(
+        (title: string, price: number) => {
+            if (chartReady && tvWidgetRef.current?.activeChart?.().dataReady()) {
+                const chart = tvWidgetRef.current.activeChart();
+                const positionLine = chart.createPositionLine({ disableUndo: true});
+
+                return positionLine
+                    .setText(title)
+                    .setPrice(price)
+                    .setQuentity("")
+                    .setLineStyle(1)
+                    .setLineLength(1)
+                    .setBodyFont(`normal 12pt "Hanken Grotesk", sans-serif`)
+                    .setBodyTextColor("#fff")
+                    .setLineColor("#3a3e5e")
+                    .setBodyBackgroundColor("3#a3e5e")
+                    .setBodyBorderColor("#3a3e5e")
+            }
+        },
+        [chartReady]
+    );
+
 }
