@@ -1,122 +1,97 @@
-Contribution: 2023-11-23 20:00
+# UltraX Dex Platform
 
-Contribution: 2023-11-24 20:00
+**What is UltraX?**
 
-Contribution: 2023-11-24 20:01
+To begin, we should make clear the distinctions between the different areas of "UltraX", some of which may confuse new users.
 
-Contribution: 2023-11-24 20:02
+- **UltraX Labs**: The company which developed the Uniswap protocol, along with the web interface.
+- **The Ultrax Protocol**: A suite of persistent, non-upgradable smart contracts that together create an automated market maker, a protocol that facilitates peer-to-peer market making and swapping of ERC-20, BEP-20 tokens , Bridge on the EVM Chain and BITCOIN.
+- **The Ultrax Interface**: A web interface that allows for easy interaction with the Uniswap protocol. The interface is only one of many ways one may interact with the Uniswap protocol.
+- **UltraX Governance**: A governance system for governing the Ultrax Protocol, enabled by the UTX token.
 
-Contribution: 2023-11-25 20:00
+**UItraX Exchange:**
 
-Contribution: 2023-11-29 20:00
+Ultrax Exchange is a Decentralized Trading & Exchange platform designed to provide a transparent, trustless, and fully on-chain trading platform.
+With the core being an on-chain orderbook matching engine, UItraX Exchange helps traders to have full control over their orders while reducing transaction costs and remains the same trading experience in a Centralized Exchange.
+V1 is built for EVM blockchains and is completely permissionless. Partners can work with Position Exchange’s on-chain central orderbook to share liquidity and power unique features for a better user experience.
 
-Contribution: 2023-11-29 20:01
+V2 will support follow things:
 
-Contribution: 2023-11-29 20:02
+- Swap
+In the Swap of UltraX Interface, the EVM tokens (ERC-20, BEP-20) are supported.
+- Bridge
+    
+    UltraX Bridge is software protocols that **facilitate the movement of assets and data between different blockchain networks**, enabling interoperability within the decentralized finance ecosystem. EVM tokens (Ethereum, BSC, Polygon, Arbitrum, Optimism) UTX Governance token, Internet Computer and Bitcorn are available.
+    
 
-Contribution: 2023-12-03 20:00
+**Website:**
 
-Contribution: 2023-12-04 20:00
+The website contains modules like Trade, Dashboard, Earn and Buy.
 
-Contribution: 2023-12-04 20:01
-
-Contribution: 2023-12-04 20:02
-
-Contribution: 2023-12-05 20:00
-
-Contribution: 2023-12-05 20:01
-
-Contribution: 2023-12-05 20:02
-
-Contribution: 2023-12-07 20:00
-
-Contribution: 2023-12-07 20:01
-
-Contribution: 2023-12-09 20:00
-
-Contribution: 2023-12-09 20:01
-
-Contribution: 2023-12-11 20:00
-
-Contribution: 2023-12-11 20:01
-
-Contribution: 2023-12-21 20:00
-
-Contribution: 2023-12-21 20:01
-
-Contribution: 2023-12-23 20:00
-
-Contribution: 2023-12-23 20:01
-
-Contribution: 2023-12-24 20:00
-
-Contribution: 2023-12-24 20:01
-
-Contribution: 2023-12-24 20:02
-
-Contribution: 2023-12-29 20:00
-
-Contribution: 2024-01-02 20:00
-
-Contribution: 2024-01-02 20:01
-
-Contribution: 2024-01-03 20:00
-
-Contribution: 2024-01-08 20:00
-
-Contribution: 2024-01-08 20:01
-
-Contribution: 2024-01-09 20:00
-
-Contribution: 2024-01-09 20:01
-
-Contribution: 2024-01-15 20:00
-
-Contribution: 2024-01-15 20:01
-
-Contribution: 2024-01-17 20:00
-
-Contribution: 2024-01-17 20:01
-
-Contribution: 2024-01-21 20:00
-
-Contribution: 2024-01-21 20:01
-
-Contribution: 2024-01-21 20:02
-
-Contribution: 2024-01-22 20:00
-
-Contribution: 2024-01-22 20:01
-
-Contribution: 2024-01-25 20:00
-
-Contribution: 2024-01-27 20:00
-
-Contribution: 2024-01-29 20:00
-
-Contribution: 2024-02-01 20:00
-
-Contribution: 2024-02-01 20:01
-
-Contribution: 2024-02-01 20:02
-
-Contribution: 2024-02-02 20:00
-
-Contribution: 2024-02-09 20:00
-
-Contribution: 2024-02-09 20:01
-
-Contribution: 2024-02-09 20:02
-
-Contribution: 2024-02-10 20:00
-
-Contribution: 2024-02-10 20:01
-
-Contribution: 2024-02-15 20:00
-
-Contribution: 2024-02-15 20:01
-
-Contribution: 2024-02-16 20:00
-
-Contribution: 2024-02-16 20:01
-
+1. Trade
+In the Trade Page, User can see the trading view graph of each Tokens you selected.
+    - Current Token Price, Token Volume and High / Low Price for 24 hours
+    - Trading History and Wallet Position of Trading, Sell / Buy Token Orders
+    
+    In the Exchange section of Trading page, user can select Tokens, Amount, Leverage, Exchange Action Type.
+    The Tokens and Amount of Wallet will be auto-placeholder in the Max and Token lists
+    
+2. Dashboard
+    
+    The dashboard page displays the current status of UltraX Exchange.
+    
+    - 24h Volume
+    - Open Interest
+    - Long Positions
+    - Short Positions
+    - Overview of Pool
+    - Total Stats of Exchange
+    - Stats of governance Token (UTX and ULP)
+    - ULP / UTX Index Composition (Pair of Liquidity Pool)
+3. Earn
+    
+    This Page is for Staking UTX/ULP Token & Earning Rewards(esUTX)
+    
+    - Overview of connected Wallet
+        
+        Owned UTX, esUTX, ULP, Claimable Rewards
+        
+        - User can Buy Tokens for Staking
+        - Unstake Tokens from Each Pool
+        - Claim Reward Tokens of Each Pool.
+    - Overview of Staking Pools
+        
+        Example: UTX Staking Pool - Reward esUTX & U2U
+        
+        - Total Staked Tokens of each Pool
+        - Reward Token Price
+        - Total Supply of the Reward Token
+        - APR / Multiplier Point APR
+        - Staked Multiplier Points (Referral System)
+    - Vault Vesting
+    Convert Rewards to UTX
+        - Deposit Rewards to the Pool
+        - Withdraw Rewards to the Pool
+        - Claim UTX
+4. Buy
+    
+    User easily buy UTX or ULP using his favorite payment methods
+    
+    UTX is the utility and governance token. Accrues 30% of the platform's generated fees.
+    
+    ULP is the liquidity provider token. Accrues 70% of the platform's generated fees.
+    
+    - UTX
+        - buy UTX from Decentralized Exchanges.
+        There are many links of Decentralized Exchanges here
+        - Buy UTX from Centralized Services
+            
+            There are many links of Centralized Exchanges here
+            
+    - ULP
+        
+        User can buy / Sell ULP from UltraX Exchange direactly.
+        
+        - Sell / Buy Listed Token (ETH, USDT, BTC, BNB)
+5. UltraX Faucet
+6. UltraX Doc
