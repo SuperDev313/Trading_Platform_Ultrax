@@ -73,4 +73,25 @@ dataProvider
         [chartReady]
     );
 
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'hidden') {
+                localStorage.setItem(TV_CHART_RELOAD_TIMESTAMP_KEY, Date.now().toString());
+            } else {
+                const tvReloadTimestamp = Number(localStorage.getItem(TV_CHART_RELOAD_TIMESTAMP_KEY));
+                if (tvReloadTimestamp && Date.now() - tvReloadTimestamp > TV_CHART_RELOAD_INTERVAL) {
+                    if (resetCache) {
+                        resetCache();
+                        tvWidgetRef.current?.activeChart().resetData();
+                    }
+                }
+            }
+       }
+
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+
+        return () => {
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+        };
+    }, [resetCache]);
 }
