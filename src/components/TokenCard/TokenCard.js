@@ -35,4 +35,16 @@ export default function TokenCard({ showRedirectModal, redirectPopupTimestamp })
   
     const tokensForBalanceAndSupplyQuery = [stakedUlpTrackerAddress, usdgAddress];
   
+    const { data: balancesAndSupplies } = useSWR(
+        [
+          `UlpSwap:getTokenBalancesWithSupplies:${active}`,
+          chainId,
+          readerAddress,
+          "getTokenBalancesWithSupplies",
+          account || PLACEHOLDER_ACCOUNT,
+        ],
+        {
+          fetcher: contractFetcher(library, ReaderV2, [tokensForBalanceAndSupplyQuery]),
+        }
+      );
 }
