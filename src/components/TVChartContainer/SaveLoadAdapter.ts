@@ -53,4 +53,17 @@ export class SaveLoadAdapter {
 
         return Promise.resolve(chartData.id);
       }
-}
+
+      getChartContent(id: string) {
+        if (!this.charts) return Promise.reject();
+        for (let i = 0; i < this.charts.length; i++) {
+            if (this.charts[i].id === id) {
+                const { content, symbol } = this.charts[i];
+                const tokenInfo = getTokenBySymbol(this.chainId, symbol);
+                this.onSelectToken(tokenInfo);
+                return Promise.resolve(content);
+            }
+        }
+        return Promise.reject();
+      }
+} 
