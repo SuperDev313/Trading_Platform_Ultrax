@@ -211,6 +211,158 @@ export default function TokenCard({ showRedirectModal, redirectPopupTimestamp })
             </div>
             </div>
             </div>
+
+            <div
+        className="Home-token-card-option"
+        style={{
+          borderRadius: "6px",
+          boxShadow: "4px 4px 0px 0px #090D13",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+            }}
+          >
+            <img src={utxLogo} alt="logo utx" />
+
+            <div
+              style={{
+                marginLeft: "1.6rem",
+              }}
+              className="fz-base fw-400 text-primary"
+            >
+              <div className="fz-md fw-600 text-primary">ULP</div>
+              Price: ${formatAmount(ulpPrice, USD_DECIMALS, 3, true)}
+            </div>
+          </div>
+          <div
+            style={{
+              border: "1px solid var(--bg-tertiary)",
+              borderRadius: "4px",
+              padding: "8px 12px",
+              alignItems: "center",
+              cursor: "pointer",
+              height: "fit-content",
+            }}
+            className="fz-sm fw-500 text-primary"
+          >
+            Learn More
+            <img style={{ marginBottom: "-3px", marginLeft: "4px" }} src={externalLink} alt="learn more" />
+          </div>
+        </div>
+        <div
+          className="divider"
+          style={{
+            margin: "16px 0",
+          }}
+        ></div>
+        <div className="Home-token-card-option-info">
+          <div
+            className="BuyUTXULP-description fz-base  fw-400"
+            style={{
+              color: "var(--text-read)",
+            }}
+          >
+            <Trans>ULP is the liquidity provider token. Accrues 70% of the platform's generated fees.</Trans>
+          </div>
+
+          <div
+            style={{
+              border: "1px solid var(--bg-divider)",
+              padding: "4px 12px",
+              borderRadius: "4px",
+              display: "flex",
+              alignItems: "center",
+              margin: "16px 0",
+            }}
+          >
+            <div>
+              <span className="fz-sm fw-400 text-secondary">U2U Chain APR:</span>{" "}
+              <span className="fz-sm fw-400 text-warning">
+                <APRLabel chainId={U2U_TESTNET} label="glpAprTotal" key="ARBITRUM" />
+              </span>
+            </div>
+            {/* <div
+              style={{
+                height: "18px",
+                width: "1px",
+                margin: "0px 24px",
+                backgroundColor: "var(--bg-divider)",
+              }}
+            /> */}
+          </div>
+          <div className="Home-token-card-option-action">
+            <div className="buy">
+              <BuyLink to="/buy-ulp" className="fz-base text-primary fw-400" network={U2U_TESTNET}>
+                <Button
+                  className="fz-base text-primary fw-400"
+                  variant="secondary"
+                  textAlign="left"
+                  imgInfo={{ src: utxLogo, alt: "u2u chain" }}
+                  newTab
+                >
+                  BUY on U2U Chain
+                </Button>
+              </BuyLink>
+              {/* <BuyLink to="/buy-utx" network={FTM_TESTNET}>
+                <Button
+                  className="fz-base text-primary fw-400"
+                  variant="secondary"
+                  textAlign="left"
+                  imgInfo={{ src: okxLogo, alt: "okx chain" }}
+                  newTab
+                >
+                  BUY on OKX Chain
+                </Button>
+              </BuyLink> */}
+            </div>
+            {/* <ExternalLink href="https://utxio.gitbook.io/utx/tokenomics" className="default-btn read-more">
+              <Trans>Read more</Trans>
+            </ExternalLink> */}
+          </div>
+        </div>
+       </div>
+       {/* <div className="Home-token-card-option">
+        <div className="Home-token-card-option-icon">
+          <img src={glpIcon} width="40" alt="GLP Icon" /> GLP
+        </div>
+        <div className="Home-token-card-option-info">
+          <div className="Home-token-card-option-title">
+            <Trans>GLP is the liquidity provider token. Accrues 70% of the platform's generated fees.</Trans>
+          </div>
+          <div className="Home-token-card-option-apr">
+            <Trans>Arbitrum APR:</Trans> <APRLabel chainId={ARBITRUM} label="glpAprTotal" key="ARBITRUM" />,{" "}
+            <Trans>Avalanche APR:</Trans> <APRLabel chainId={AVALANCHE} label="glpAprTotal" key="AVALANCHE" />
+          </div>
+          <div className="Home-token-card-option-action">
+            <div className="buy">
+              <BuyLink to="/buy-ulp" className="default-btn" network={ARBITRUM}>
+                <Trans>Buy on Arbitrum</Trans>
+              </BuyLink>
+              <BuyLink to="/buy-ulp" className="default-btn" network={AVALANCHE}>
+                <Trans>Buy on Avalanche</Trans>
+              </BuyLink>
+            </div>
+            <a
+              href="https://utxio.gitbook.io/utx/ulp"
+              target="_blank"
+              rel="noreferrer"
+              className="default-btn read-more"
+            >
+              <Trans>Read more</Trans>
+            </a>
+            </div>
+            </div>
+        </div> */}
+
         </div>
       )
 }
