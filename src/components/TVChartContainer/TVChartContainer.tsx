@@ -95,7 +95,6 @@ dataProvider
         };
     }, [resetCache]);
 
-
     useEffect(() => {
         function updateLines() {
             const lines: (IPositionLineAdapter | undefined)[] = [];
@@ -168,6 +167,15 @@ dataProvider
           });
         });
 
+        return () => {
+            if (tvWidgetRef.current) {
+                tvWidgetRef.current.remove();
+                tvWidgetRef.currne = null;
+                setChartReady(false);
+                setChartDataLoading(true)
+            }
+        };
+    }, [chainId])
 
     return (
         <div className="ExchangeChart-error">
