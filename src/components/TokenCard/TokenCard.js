@@ -78,6 +78,26 @@ export default function TokenCard({ showRedirectModal, redirectPopupTimestamp })
         [chainId, active]
       )
     
+      const BuyLink = ({ className, to, children, network }) => {
+        if (isHome && showRedirectModal) {
+            return (
+                <HeaderLink
+                    to={to}
+                    className={className}
+                    redirectPopupTimestamp={redirectPopupTimestamp}
+                    showRedirectModal={showRedirectModal}
+                >
+                    {children}
+                </HeaderLink>
+            )
+        }
+        return (
+            <Link to={to} className={className} onClick={ () => changeNetwork(network)}>
+            {children}
+            </Link>
+        );
+      }
+
       return (
         <div className="Home-token-card-options">
         </div>
