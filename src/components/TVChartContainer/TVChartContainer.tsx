@@ -96,6 +96,22 @@ dataProvider
     }, [resetCache]);
 
 
+    useEffect(() => {
+        function updateLines() {
+            const lines: (IPositionLineAdapter | undefined)[] = [];
+            if (savedShouldShowPositionLines) {
+                chartLines.forEach((order) => {
+                    lines.push(drawLineOnChart(order.title, order.price))
+                });
+            }
+
+            return () => {
+                lines.forEach((line) => line?.remove())
+            }
+        }
+    }, [chartLines, savedShouldShowPositionLines, drawLineOnChart])
+
+    
     return (
         <div className="ExchangeChart-error">
             {chartDataLoading && <Loader />}
