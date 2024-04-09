@@ -77,3 +77,32 @@ const enabledFeatures = [
   "items_favoriting",
   "hide_left_toolbar_by_default",
 ];
+
+export const defaultChartProps = {
+    theme: "Dark",
+    locale: "en",
+    library_path: "/charting_library",
+    clientId: "tradingView.com",
+    userId: "public_user_id",
+    fullscreen: false,
+    autosize: true,
+    header_widget_dom_node: false,
+    overrides: chartOverrides,
+    enabled_features: enabledFeatures, 
+    disabled_features: disabledFeatures,
+    custom_css_url: "/tradingview-chart.css",
+    loading_screen: { backgroundColor: "#151E2C", foregroundColor: "#2962ff"},
+    favorites: {
+        intervals: ["5", "15", "60", "240", "1D"],
+    },
+    custom_formatters: {
+        timeFormatter: {
+            format: (date) => formatTVTime(date),
+        },
+        dateFormatter: {
+            format: (date) => formatTVDate(date),
+        },
+    },
+};
+
+export const availableNetworksForChart = [ARBITRUM, FTM_TESTNET, U2U_TESTNET];
