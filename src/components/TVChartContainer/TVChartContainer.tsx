@@ -3,7 +3,7 @@ import { TV_CHART_RELOAD_TIMESTAMP_KEY, TV_SAVE_LOAD_CHARTS_KEY } from "config/l
 import { useLocalStorage, useMedia } from "react-use";
 import { defaultChartProps, DEFAULT_PERIOD, disabledFeaturesOnMobile } from "./constants";
 import useTVDatafeed from "domain/tradingview/useTVDatafeed";
-import { ChartData, IChartingLibraryWidget, IPositionLineAdapter } from "../../charting_library";
+import { ChartData, IChartingLibraryWidget, IPositionLineAdapter, VisibilityType } from "../../charting_library";
 import { getObjectKeyFromValue } from "domain/tradingview/utils";
 import { SaveLoadAdapter } from "./SaveLoadAdapter";
 import { SUPPORTED_RESOLUTIONS, TV_CHART_RELOAD_INTERVAL } from "config/tradingview";
@@ -94,4 +94,17 @@ dataProvider
             document.removeEventListener("visibilitychange", handleVisibilityChange);
         };
     }, [resetCache]);
+
+
+    return (
+        <div className="ExchangeChart-error">
+            {chartDataLoading && <Loader />}
+            <div
+                style= {{VisibilityType: !chartDataLoading ? "visible": "hidden"}}
+                ref={{chartContainerRef}}
+                className="TVChartContainer ExchangeChart-bottom-content"
+            >
+            </div>
+        </div>
+    )
 }
