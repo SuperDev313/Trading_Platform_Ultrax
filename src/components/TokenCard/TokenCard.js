@@ -100,6 +100,117 @@ export default function TokenCard({ showRedirectModal, redirectPopupTimestamp })
 
       return (
         <div className="Home-token-card-options">
+            <div
+        className="Home-token-card-option"
+        style={{
+          borderRadius: "6px",
+          boxShadow: "4px 4px 0px 0px #090D13",
+        }}
+      >
+            <div
+            style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+            }}
+            >
+            <div
+                style={{
+                display: "flex",
+                }}
+            >
+                <img src={utxLogo} alt="logo utx" />
+
+                <div
+                style={{
+                    marginLeft: "1.6rem",
+                }}
+                className="fz-base fw-400 text-primary"
+                >
+                <div className="fz-md fw-600 text-primary">UTX</div>
+                Price: ${formatAmount(utxPrice, USD_DECIMALS, 2, true)}
+                </div>
+            </div>
+            <div
+                style={{
+                border: "1px solid var(--bg-tertiary)",
+                borderRadius: "4px",
+                padding: "8px 12px",
+                alignItems: "center",
+                cursor: "pointer",
+                height: "fit-content",
+                }}
+                className="fz-sm fw-500 text-primary"
+            >
+                Learn More
+                <img style={{ marginBottom: "-3px", marginLeft: "4px" }} src={externalLink} alt="learn more" />
+            </div>
+            </div>
+            <div
+            className="divider"
+            style={{
+                margin: "16px 0",
+            }}
+            ></div>
+            <div className="Home-token-card-option-info">
+            <div
+                className="BuyUTXULP-description fz-base  fw-400"
+                style={{
+                color: "var(--text-read)",
+                }}
+            >
+                <Trans>UTX is the utility and governance token. Accrues 30% of the platform's generated fees.</Trans>
+            </div>
+
+            <div
+                style={{
+                border: "1px solid var(--bg-divider)",
+                padding: "4px 12px",
+                borderRadius: "4px",
+                display: "flex",
+                alignItems: "center",
+                margin: "16px 0",
+                }}
+            >
+                <div>
+                <span className="fz-sm fw-400 text-secondary">U2U Chain APR:</span>{" "}
+                <span className="fz-sm fw-400 text-warning">
+                    <APRLabel chainId={U2U_TESTNET} label="gmxAprTotal" />
+                </span>
+                </div>
+                <div
+                style={{
+                    height: "18px",
+                    width: "1px",
+                    margin: "0px 24px",
+                    backgroundColor: "var(--bg-divider)",
+                }}
+                />
+                {/* <div>
+                <span className="fz-sm fw-400 text-secondary">OKX Chain APR:</span>{" "}
+                <span className="fz-sm fw-400 text-warning">4.69%</span>
+                </div> */}
+            </div>
+            <div className="Home-token-card-option-action">
+                <div className="buy">
+                <BuyLink to="/buy-utx" className="fz-base text-primary fw-400" network={U2U_TESTNET}>
+                    <Button
+                    className="fz-base text-primary fw-400"
+                    variant="secondary"
+                    textAlign="left"
+                    imgInfo={{ src: utxLogo, alt: "u2u chain" }}
+                    newTab
+                    >
+                    BUY on U2U Chain
+                    </Button>
+                </BuyLink>
+                </div>
+                {/* <ExternalLink href="https://utxio.gitbook.io/utx/tokenomics" className="default-btn read-more">
+                <Trans>Read more</Trans>
+                </ExternalLink> */}
+            </div>
+            </div>
+            </div>
         </div>
       )
 }
