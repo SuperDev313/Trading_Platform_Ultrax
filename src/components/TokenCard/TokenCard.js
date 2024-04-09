@@ -47,4 +47,39 @@ export default function TokenCard({ showRedirectModal, redirectPopupTimestamp })
           fetcher: contractFetcher(library, ReaderV2, [tokensForBalanceAndSupplyQuery]),
         }
       );
+
+      const ulpSupply = balancesAndSupplies ? balancesAndSupplies[i] : bigNumberify(0);
+      const { data: aums } = useSWR([`UlpSwap:getAums:${active}`, chainId, ulpManagerAddress, "getAums"], {
+        fetcher: contractFetcher(library, UlpManager),
+      });
+      let aum;
+      if (aums && aums.length > 0) {
+        aum = aums[0];
+      }
+
+      const ulpPrice =
+      aum && aum.gt(0) && ulpSupply.gt(0)
+        ? aum.mul(expandDecimals(1, ULP_DECIMALS)).div(ulpSupply)
+        : expandDecimals(1, USD_DECIMALS);
+
+      const changeNetwork = useCallback(
+        (network) => {
+            if (network === chainId) {
+                return;
+            } 
+            if (!active) {
+                setTimeout(() => {
+                    return switchNetwork(network, active);
+                }, 500);
+            } else {
+                return switchNetwork(network, active);
+            }
+        }, 
+        [chainId, active]
+      )
+    
+      return (
+        <div className="Home-token-card-options">
+        </div>
+      )
 }
