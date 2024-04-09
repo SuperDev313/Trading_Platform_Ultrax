@@ -19,4 +19,8 @@ export class SaveLoadAdapter {
         this.chainId = chainId;
         this.onSelectToken = onSelectToken;
       }
+
+      getAllCharts() {
+        return Promise.resolve(this.charts);
+      }
 }
