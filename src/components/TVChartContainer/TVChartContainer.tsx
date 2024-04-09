@@ -111,16 +111,73 @@ dataProvider
         }
     }, [chartLines, savedShouldShowPositionLines, drawLineOnChart])
 
+    useEffect(() => {
+        if (chartReady && tvWidgetRef.current && symbol !== tvWidgetRef.current?.current.activeChart?.().symbol()) {
+            if(isChartAvailabeForToken(chainId, symbol)) {
+                tvWidgetRef.current.setSymbol(symbol, tvWidgetRef.current.activeChart().resolution(), ()=> {});
+            }
+        }
+    }, [symbol,chartReady, period, chainId])
+
+    useEffect(() => {
+        const widgetOptions = {
+          debug: false,
+          symbol: symbolRef.current, // Using ref to avoid unnecessary re-renders on symbol change and still have access to the latest symbol
+          datafeed: datafeed,
+          theme: defaultChartProps.theme,
+          container: chartContainerRef.current,
+          library_path: defaultChartProps.library_path,
+          locale: defaultChartProps.locale,
+          loading_screen: defaultChartProps.loading_screen,
+          enabled_features: defaultChartProps.enabled_features,
+          disabled_features: isMobile
+            ? defaultChartProps.disabled_features.concat(disabledFeaturesOnMobile)
+            : defaultChartProps.disabled_features,
+          client_id: defaultChartProps.clientId,
+          user_id: defaultChartProps.userId,
+          fullscreen: defaultChartProps.fullscreen,
+          autosize: defaultChartProps.autosize,
+          custom_css_url: defaultChartProps.custom_css_url,
+          overrides: defaultChartProps.overrides,
+          interval: getObjectKeyFromValue(period, SUPPORTED_RESOLUTIONS),
+          favorites: defaultChartProps.favorites,
+          custom_formatters: defaultChartProps.custom_formatters,
+          save_load_adapter: new SaveLoadAdapter(chainId, tvCharts, setTvCharts, onSelectToken),
+        };
+
+        tvWidgetRef.current = new window.TradingView.widget(widgetOptions);
+        tvWidgetRef.current!.onChartReady(function () {
+          setChartReady(true);
+          tvWidgetRef.current!.applyOverrides({
+            "paneProperties.background": "#151E2C",
+            "paneProperties.backgroundType": "solid",
+          });
+        
+          tvWidgetRef.current
+            ?.activeChart()
+            .onIntervalChanged()
+            .subscribe(null, (interval) => {
+              if (SUPPORTED_RESOLUTIONS[interval]) {
+                const period = SUPPORTED_RESOLUTIONS[interval];
+                setPeriod(period);
+              }
+            });
     
+          tvWidgetRef.current?.activeChart().dataReady(() => {
+            setChartDataLoading(false);
+          });
+        });
+
+
     return (
         <div className="ExchangeChart-error">
-            {chartDataLoading && <Loader />}
-            <div
-                style= {{VisibilityType: !chartDataLoading ? "visible": "hidden"}}
-                ref={{chartContainerRef}}
-                className="TVChartContainer ExchangeChart-bottom-content"
-            >
-            </div>
+          {chartDataLoading && <Loader />}
+          <div
+            style= {{VisibilityType: !chartDataLoading ? "visible": "hidden"}}
+            ref={{chartContainerRef}}
+            className="TVChartContainer ExchangeChart-bottom-content"
+          >
+          </div>
         </div>
     )
 }
