@@ -16,3 +16,19 @@ const chartStyleOverrides = ["candleStyle", "hollowCandleStyle", "haStyle"].redu
     acc[`mainSeriesProperties.${cv}.borderDownColor`] = RED;
     return acc;
   }, {});
+
+  const chartOverrides = {
+    "paneProperties.background": "#151E2C",
+    "paneProperties.backgroundGradientStartColor": "#151E2C",
+    "paneProperties.backgroundGradientEndColor": "#151E2C",
+    "paneProperties.backgroundType": "solid",
+    "paneProperties.vertGridProperties.color": "rgba(35, 38, 59, 1)",
+    "paneProperties.vertGridProperties.style": 2,
+    "paneProperties.horzGridProperties.color": "rgba(35, 38, 59, 1)",
+    "paneProperties.horzGridProperties.style": 2,
+    "mainSeriesProperties.priceLineColor": "#3a3e5e",
+    "scalesProperties.textColor": "#fff",
+    "scalesProperties.lineColor": "#151E2C",
+    ...chartStyleOverrides,
+  };
+  
