@@ -213,24 +213,24 @@ export default function TokenCard({ showRedirectModal, redirectPopupTimestamp })
             </div>
 
             <div
-        className="Home-token-card-option"
-        style={{
-          borderRadius: "6px",
-          boxShadow: "4px 4px 0px 0px #090D13",
-        }}
-      >
-        <div
-          style={{
+             className="Home-token-card-option"
+            style={{
+            borderRadius: "6px",
+            boxShadow: "4px 4px 0px 0px #090D13",
+            }}
+            >
+           <div
+           style={{
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-          }}
-        >
+           }}
+           >
           <div
             style={{
               display: "flex",
             }}
-          >
+        >
             <img src={utxLogo} alt="logo utx" />
 
             <div
