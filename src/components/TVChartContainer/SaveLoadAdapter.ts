@@ -36,4 +36,21 @@ export class SaveLoadAdapter {
 
         return Promise.reject();
       }
+
+      saveChart(chartData) {
+        if (!chartData.id) {
+            chartData.id = Math.random().toString();
+        } else {
+            this.removeChart(chartData.id)
+        }
+
+        chartData.timestamp = new Date().valueOf();
+        
+        if (this.charts) {
+            this.charts.push(chartData);
+            this.setTvCharts(this.charts);
+        }
+
+        return Promise.resolve(chartData.id);
+      }
 }
