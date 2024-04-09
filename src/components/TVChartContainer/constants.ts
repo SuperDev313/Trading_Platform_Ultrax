@@ -32,24 +32,6 @@ const chartStyleOverrides = ["candleStyle", "hollowCandleStyle", "haStyle"].redu
     ...chartStyleOverrides,
   };
 
-  const disabledFeatures = [
-    "volume_force_overlay",
-    "show_logo_on_all_charts",
-    "caption_buttons_text_if_possible",
-    "create_volume_indicator_by_default",
-    "header_compare",
-    "compare_symbol",
-    "display_market_status",
-    "header_interval_dialog_button",
-    "show_interval_dialog_on_key_press",
-    "header_symbol_search",
-    "popup_hints",
-    "header_in_fullscreen_mode",
-    "use_localstorage_for_settings",
-    "right_bar_stays_on_scroll",
-    "symbol_info",
-  ];
-
   export const disableFeaturesOnMobile = ["header_saveload", "header_fullscreen_button"];
 
   const disabledFeatures = [
