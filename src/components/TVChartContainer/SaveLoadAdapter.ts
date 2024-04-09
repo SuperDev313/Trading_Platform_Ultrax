@@ -23,4 +23,17 @@ export class SaveLoadAdapter {
       getAllCharts() {
         return Promise.resolve(this.charts);
       }
+
+      removeChart(id: string) {
+        if (!this.charts) return Promise.reject();
+        for (let i = 0; i < this.charts.length; i++) {
+            if (this.charts[i].id === id) {
+                this.charts.splice(i, 1);
+                this.setTvCharts(this.charts);
+                return Promise.resolve();
+            }
+        }
+
+        return Promise.reject();
+      }
 }
