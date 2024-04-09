@@ -57,6 +57,11 @@ export default function TokenCard({ showRedirectModal, redirectPopupTimestamp })
         aum = aums[0];
       }
 
+      const ulpPrice =
+      aum && aum.gt(0) && ulpSupply.gt(0)
+        ? aum.mul(expandDecimals(1, ULP_DECIMALS)).div(ulpSupply)
+        : expandDecimals(1, USD_DECIMALS);
+
       return (
         <div className="Home-token-card-options">
         </div>
