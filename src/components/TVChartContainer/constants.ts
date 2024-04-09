@@ -31,4 +31,6 @@ const chartStyleOverrides = ["candleStyle", "hollowCandleStyle", "haStyle"].redu
     "scalesProperties.lineColor": "#151E2C",
     ...chartStyleOverrides,
   };
-  
+
+  export const disableFeaturesOnMobile = ["header_saveload", "header_fullscreen_button"];
+
