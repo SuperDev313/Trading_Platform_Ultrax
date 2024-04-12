@@ -134,7 +134,7 @@ export default function BeginAccountTransfer(props) {
             return false;
         }
         return true;
-    }
+      }
       
     const getPrimaryText = () => {
         const error = getError();
@@ -153,7 +153,39 @@ export default function BeginAccountTransfer(props) {
     
         return t`Begin Transfer`;
       };
-      
+
+    const onClickPrimary = () => {
+        if (needApproval) {
+            approveTokens({
+                setIsApproving,
+                library, 
+                tokenAddress: utxAddress,
+                spender: stakedUtxTrackerAddress,
+                chainId,
+            })
+            return;
+        }
+    }
+
+    setIsTransferring(true);
+    const contract = new ethers.Contract(rewardRouterAddress, RewardRouter.abi, library.getSigner());
+
+    callContract(chainId, contract, "signalTransfer", [parsedReceiver], {
+      sentMsg: t`Transfer submitted!`,
+      failMsg: t`Transfer failed.`,
+      setPendingTxns,
+    })
+      .then(async (res) => {
+        setIsTransferSubmittedModalVisible(true);
+      })
+      .finally(() => {
+        setIsTransferring(false);
+      });
+    };
+
+    const completeTransferLink = `/complete_account_transfer/${account}/${parsedReceiver}`;
+     const pendingTransferLink = `/complete_account_transfer/${account}/${pendingReceiver}`;
+
     return (
         <div className ="BeginAccountTransfer Page page-layout">
             <Modal 
