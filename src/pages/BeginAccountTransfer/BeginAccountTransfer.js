@@ -80,6 +80,19 @@ export default function BeginAccountTransfer(props) {
         }
       );
 
+      const needApproval = utxAllowance && utxStaked && utxStaked.gt(utxAllowance);
+
+      const hasVestedUtx = utxVesterBalance && utxVesterBalance.gt(0);
+      const hasVestedUlp = ulpVesterBalance && ulpVesterBalance.gt(0);
+      const hasStakedUtx =
+        (cumulativeUtxRewards && cumulativeUtxRewards.gt(0)) ||
+        (transferredCumulativeUtxRewards && transferredCumulativeUtxRewards.gt(0));
+      const hasStakedUlp =
+        (cumulativeUlpRewards && cumulativeUlpRewards.gt(0)) ||
+        (transferredCumulativeUlpRewards && transferredCumulativeUlpRewards.gt(0));
+      const hasPendingReceiver = pendingReceiver && pendingReceiver !== ethers.constants.AddressZero;
+    
+
     return (
         <div className ="BeginAccountTransfer Page page-layout">
             <Modal 
