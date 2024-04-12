@@ -28,6 +28,7 @@ export default function BeginAccountTransfer(props) {
     const rewardRouterAddress = getContract(chainId, "RewardRouter")
     let parseReceiver = ethers.contants.AddressZero;
 
+    // Fetching data using SWR
     const { data: utxVesterBalance } = useSWR(active && [ active, chainId, utxVesterAddress, "balanceOf", account], {
         fetcher: contractFetcher(library, Token),
     })
@@ -43,7 +44,42 @@ export default function BeginAccountTransfer(props) {
           fetcher: contractFetcher(library, RewardTracker),
         }
       );
-      
+
+      const { data: transferredCumulativeUtxRewards } = useSWR(
+        [active, chainId, utxVesterAddress, "transferredCumulativeRewards", parsedReceiver],
+        {
+          fetcher: contractFetcher(library, Vester),
+        }
+      );
+    
+      const { data: transferredCumulativeUlpRewards } = useSWR(
+        [active, chainId, ulpVesterAddress, "transferredCumulativeRewards", parsedReceiver],
+        {
+          fetcher: contractFetcher(library, Vester),
+        }
+      );
+    
+      const { data: pendingReceiver } = useSWR(
+        active && [active, chainId, rewardRouterAddress, "pendingReceivers", account],
+        {
+          fetcher: contractFetcher(library, RewardRouter),
+        }
+      );
+    
+      const { data: utxAllowance } = useSWR(
+        active && [active, chainId, utxAddress, "allowance", account, stakedUtxTrackerAddress],
+        {
+          fetcher: contractFetcher(library, Token),
+        }
+      );
+    
+      const { data: utxStaked } = useSWR(
+        active && [active, chainId, stakedUtxTrackerAddress, "depositBalances", account, utxAddress],
+        {
+          fetcher: contractFetcher(library, RewardTracker),
+        }
+      );
+
     return (
         <div className ="BeginAccountTransfer Page page-layout">
             <Modal 
