@@ -134,7 +134,7 @@ export default function BeginAccountTransfer(props) {
             return false;
         }
         return true;
-    }
+      }
       
     const getPrimaryText = () => {
         const error = getError();
@@ -153,7 +153,20 @@ export default function BeginAccountTransfer(props) {
     
         return t`Begin Transfer`;
       };
-      
+
+    const onClickPrimary = () => {
+        if (needApproval) {
+            approveTokens({
+                setIsApproving,
+                library, 
+                tokenAddress: utxAddress,
+                spender: stakedUtxTrackerAddress,
+                chainId,
+            })
+            return;
+        }
+    }
+    
     return (
         <div className ="BeginAccountTransfer Page page-layout">
             <Modal 
