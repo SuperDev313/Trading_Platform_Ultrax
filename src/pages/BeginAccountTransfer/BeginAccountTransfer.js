@@ -92,7 +92,68 @@ export default function BeginAccountTransfer(props) {
         (transferredCumulativeUlpRewards && transferredCumulativeUlpRewards.gt(0));
       const hasPendingReceiver = pendingReceiver && pendingReceiver !== ethers.constants.AddressZero;
     
-
+      const getError = () => {
+        if (!account) {
+            return t`Wallet is not connected`;
+        }
+        if (hasVestedUtx) {
+            return t`Vested UTX not withdrawn`;
+          }
+          if (hasVestedUlp) {
+            return t`Vested ULP not withdrawn`;
+          }
+          if (!receiver || receiver.length === 0) {
+            return t`Transfer Account`;
+          }
+          if (!ethers.utils.isAddress(receiver)) {
+            return t`Invalid Receiver Address`;
+          }
+          if (hasStakedUtx || hasStakedUlp) {
+            return t`Invalid Receiver`;
+          }
+          if ((parsedReceiver || "").toString().toLowerCase() === (account || "").toString().toLowerCase()) {
+            return t`Self-transfer not supported`;
+          }
+      
+          if (
+            (parsedReceiver || "").length > 0 &&
+            (parsedReceiver || "").toString().toLowerCase() === (pendingReceiver || "").toString().toLowerCase()
+          ) {
+            return t`Transfer already initiated`;
+          }
+      }
+      const isPrimaryEnabled = () => {
+        const error = getError();
+        if (error) {
+            return false;
+        }
+        if (isApproving) {
+            return false;
+        }
+        if (isTransferring) {
+            return false;
+        }
+        return true;
+    }
+      
+    const getPrimaryText = () => {
+        const error = getError();
+        if (error) {
+          return error;
+        }
+        if (needApproval) {
+          return t`Approve UTX`;
+        }
+        if (isApproving) {
+          return t`Approving...`;
+        }
+        if (isTransferring) {
+          return t`Transferring`;
+        }
+    
+        return t`Begin Transfer`;
+      };
+      
     return (
         <div className ="BeginAccountTransfer Page page-layout">
             <Modal 
