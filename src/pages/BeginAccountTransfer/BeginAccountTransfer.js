@@ -184,7 +184,7 @@ export default function BeginAccountTransfer(props) {
     };
 
     const completeTransferLink = `/complete_account_transfer/${account}/${parsedReceiver}`;
-     const pendingTransferLink = `/complete_account_transfer/${account}/${pendingReceiver}`;
+    const pendingTransferLink = `/complete_account_transfer/${account}/${pendingReceiver}`;
 
     return (
         <div className ="BeginAccountTransfer Page page-layout">
@@ -200,6 +200,59 @@ export default function BeginAccountTransfer(props) {
                     <Trans>Continue</Trans>
                 </Link>
             </Modal>
+            <div className="Page-content">
+                <div className="input-form">
+                <div className="input-row">
+                    <label className="input-label">
+                    <Trans>Receiver Address</Trans>
+                    </label>
+                    <div>
+                    <input
+                        type="text"
+                        value={receiver}
+                        onChange={(e) => setReceiver(e.target.value)}
+                        className="text-input"
+                    />
+                    </div>
+                </div>
+                <div className="BeginAccountTransfer-validations">
+                    <ValidationRow isValid={!hasVestedUtx}>
+                    <Trans>Sender has withdrawn all tokens from UTX Vesting Vault</Trans>
+                    </ValidationRow>
+                    <ValidationRow isValid={!hasVestedUlp}>
+                    <Trans>Sender has withdrawn all tokens from ULP Vesting Vault</Trans>
+                    </ValidationRow>
+                    <ValidationRow isValid={!hasStakedUtx}>
+                    <Trans>Receiver has not staked UTX tokens before</Trans>
+                    </ValidationRow>
+                    <ValidationRow isValid={!hasStakedUlp}>
+                    <Trans>Receiver has not staked ULP tokens before</Trans>
+                    </ValidationRow>
+                </div>
+                <div className="input-row">
+                    <Button
+                    variant="primary-action"
+                    className="w-full"
+                    disabled={!isPrimaryEnabled()}
+                    onClick={() => onClickPrimary()}
+                    style={{
+                        display: "flex",
+                        width: "256px",
+                        padding: "14px 28px",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: "10px",
+                        borderRadius: "4px",
+                        background: "var(--bg-accent)",
+                        fontSize: "16px",
+                        minWidth: "300px",
+                    }}
+                    >
+                    {getPrimaryText()}
+                    </Button>
+                </div>
+                </div>
+            </div>
         </div>
     )
 } 
