@@ -200,6 +200,34 @@ export default function BeginAccountTransfer(props) {
                     <Trans>Continue</Trans>
                 </Link>
             </Modal>
+            <div className="Page-title-section">
+                <div className="Page-title">
+                <Trans>Transfer Account</Trans>
+                </div>
+                <div className="Page-description">
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <div>
+                    Please note that this transfer method is intended for full account transfers only. The following rules
+                    apply:
+                    </div>
+                    <div>- This will transfer all your UTX, esUTX, ULP and Multiplier Points to your new account.</div>
+
+                    <div>- Transfers are only supported if the receiving account has not staked UTX or ULP tokens before.</div>
+                    <div>
+                    - Transfers are one-way, you will not be able to transfer staked tokens back to the sending account.
+                    </div>
+                </div>
+                </div>
+                {
+                    hasPendingReceiver && (
+                        <div className="Page-description">
+                            <Trans>
+                                You have <Link to={pendingTransferLink}pending transfer></Link>to {pendingReceiver}.
+                            </Trans>
+                        </div>
+                    )
+                }
+            </div>
             <div className="Page-content">
                 <div className="input-form">
                 <div className="input-row">
