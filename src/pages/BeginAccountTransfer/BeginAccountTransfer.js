@@ -181,7 +181,7 @@ export default function BeginAccountTransfer(props) {
       .finally(() => {
         setIsTransferring(false);
       });
-    };
+
 
     const completeTransferLink = `/complete_account_transfer/${account}/${parsedReceiver}`;
     const pendingTransferLink = `/complete_account_transfer/${account}/${pendingReceiver}`;
