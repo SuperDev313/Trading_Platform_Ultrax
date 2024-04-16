@@ -1,14 +1,16 @@
-import Modal from "components/Modal/Modal";
-import React from "react";
+import React, { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ethers } from "ethers";
 import { useWeb3React } from "@web3-react/core";
 import { useCopyToClipboard } from "react-use";
+
 import { getContract } from "config/contracts";
+
 import Modal from "components/Modal/Modal";
 import Footer from "components/Footer/Footer";
 
 import RewardRouter from "abis/RewardRouter.json";
+
 import "./CompleteAccountTransfer.css";
 
 import { Trans, t } from "@lingui/macro";
@@ -21,7 +23,7 @@ export default function CompleteAccountTransfer(props) {
   const [, copyToClipboard] = useCopyToClipboard();
   const { sender, receiver } = useParams();
   const { setPendingTxns } = props;
-  const { libraryferSubmittedModalVisible } = useWeb3React();
+  const { library, account } = useWeb3React();
   const [isTransferSubmittedModalVisible, setIsTransferSubmittedModalVisible] = useState(false);
 
   const { chainId } = useChainId();
@@ -59,20 +61,24 @@ export default function CompleteAccountTransfer(props) {
     return t`Complete Transfer`;
   };
 
-  const contract = new ethers.Contract(rewardRouterAddress, RewardRouter.abi, library.getSigner());
+  const onClickPrimary = () => {
+    setIsConfirming(true);
 
-  callContract(chainId, contract, "acceptTransfer", [sender], {
-    sentMsg: t`Transfer submitted`,
-    failMsg: t`Transfer failed`,
-    setPendingTxns,
-  })
-    .then(async (res) => {
-      setIsTransferSubmittedModalVisible(true);
+    const contract = new ethers.Contract(rewardRouterAddress, RewardRouter.abi, library.getSigner());
+
+    callContract(chainId, contract, "acceptTransfer", [sender], {
+      sentMsg: t`Transfer submitted!`,
+      failMsg: t`Transfer failed.`,
+      setPendingTxns,
     })
-    .finally(() => {
-      setIsConfirming(false);
-    });
-    
+      .then(async (res) => {
+        setIsTransferSubmittedModalVisible(true);
+      })
+      .finally(() => {
+        setIsConfirming(false);
+      });
+  };
+
   return (
     <div className="CompleteAccountTransfer Page page-layout">
       <Modal
@@ -80,7 +86,7 @@ export default function CompleteAccountTransfer(props) {
         setIsVisible={setIsTransferSubmittedModalVisible}
         label="Transfer Completed"
       >
-        <Trans>Your transfer has been completed. </Trans>
+        <Trans>Your transfer has been completed.</Trans>
         <br />
         <br />
         <Link className="App-cta" to="/earn">
@@ -114,7 +120,7 @@ export default function CompleteAccountTransfer(props) {
         )}
         {isCorrectAccount && (
           <div className="Page-description">
-            <Trans>You have a pending transfer from</Trans>
+            <Trans>You have a pending transfer from {sender}.</Trans>
             <br />
           </div>
         )}
