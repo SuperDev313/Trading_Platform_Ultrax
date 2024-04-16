@@ -39,7 +39,16 @@ export default function CompleteAccountTransfer(props) {
       return t`Incorrect Account`;
     }
   };
-
+  const isPrimaryEnabled = () => {
+    const error = getError();
+    if (error) {
+      return false;
+    }
+    if (isConfirming) {
+      return false;
+    }
+    return true;
+  };
   return (
     <div className="CompleteAccountTransfer Page page-layout">
       <Modal
