@@ -39,6 +39,7 @@ export default function CompleteAccountTransfer(props) {
       return t`Incorrect Account`;
     }
   };
+
   const isPrimaryEnabled = () => {
     const error = getError();
     if (error) {
@@ -49,6 +50,15 @@ export default function CompleteAccountTransfer(props) {
     }
     return true;
   };
+
+  const getPrimaryText = () => {
+    const error = getError();
+    if (error) {
+      return error;
+    }
+    return t`Complete Transfer`;
+  };
+
   return (
     <div className="CompleteAccountTransfer Page page-layout">
       <Modal
