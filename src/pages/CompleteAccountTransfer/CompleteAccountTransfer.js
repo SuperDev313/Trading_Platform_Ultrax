@@ -1,7 +1,45 @@
 import Modal from "components/Modal/Modal";
 import React from "react";
+import { Link, useParams } from "react-router-dom";
+import { ethers } from "ethers";
+import { useWeb3React } from "@web3-react/core";
+import { useCopyToClipboard } from "react-use";
+import { getContract } from "config/contracts";
+import Modal from "components/Modal/Modal";
+import Footer from "components/Footer/Footer";
+
+import RewardRouter from "abis/RewardRouter.json";
+import "./CompleteAccountTransfer.css";
+
+import { Trans, t } from "@lingui/macro";
+import { callContract } from "lib/contracts";
+import { helperToast } from "lib/helperToast";
+import { useChainId } from "lib/chains";
+import Button from "components/Button/Button";
 
 export default function CompleteAccountTransfer(props) {
+  const [, copyToClipboard] = useCopyToClipboard();
+  const { sender, receiver } = useParams();
+  const { setPendingTxns } = props;
+  const { libraryferSubmittedModalVisible } = useWeb3React();
+  const [isTransferSubmittedModalVisible, setIsTransferSubmittedModalVisible] = useState(false);
+
+  const { chainId } = useChainId();
+
+  const [isConfirming, setIsConfirming] = useState(false);
+  const isCorrectAccount = (account || "").toString().toLowerCase() === (receiver || "").toString().toLowerCase();
+
+  const rewardRouterAddress = getContract(chainId, "RewardRouter");
+
+  const getError = () => {
+    if (!account) {
+      return t`Wallet is not connected`;
+    }
+    if (!isCorrectAccount) {
+      return t`Incorrect Account`;
+    }
+  };
+
   return (
     <div className="CompleteAccountTransfer Page page-layout">
       <Modal
