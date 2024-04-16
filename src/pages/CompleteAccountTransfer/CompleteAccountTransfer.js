@@ -59,6 +59,20 @@ export default function CompleteAccountTransfer(props) {
     return t`Complete Transfer`;
   };
 
+  const contract = new ethers.Contract(rewardRouterAddress, RewardRouter.abi, library.getSigner());
+
+  callContract(chainId, contract, "acceptTransfer", [sender], {
+    sentMsg: t`Transfer submitted`,
+    failMsg: t`Transfer failed`,
+    setPendingTxns,
+  })
+    .then(async (res) => {
+      setIsTransferSubmittedModalVisible(true);
+    })
+    .finally(() => {
+      setIsConfirming(false);
+    });
+    
   return (
     <div className="CompleteAccountTransfer Page page-layout">
       <Modal
