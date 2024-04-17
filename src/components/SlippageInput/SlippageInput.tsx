@@ -17,6 +17,41 @@ type Props = {
 };
 
 export default function SlippageInput({ setAllowedSlippage, defaultSlippage }: Props) {
+  const defaultSlippageText = getSlippageText(defaultSlippage);
+  const [slippageText, setSlippageText] = useState<string>(defaultSlippageText);
+  const [isPanelVisible, setIsPanelVisible] = useState<boolean>(false);
+
+  function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const { value } = event.target;
+    if (value === "") {
+      setSlippageText(value);
+      setAllowedSlippage(defaultSlippage);
+      return;
+    }
+  }
+
+  if (parseValue >= MAX_SLIPPAGE) {
+    setAllowedSlippage(MAX_SLIPPAGE);
+    setSlippageText(String(MAX_SLIPPAGE / 100));
+    return;
+  }
+  if (validDecimalRegex.test(value)) {
+    setAllowedSlippage(parseValue);
+    setSlippageText(value);
+  }
+
+  const parseValue = Math.round(Number.parseFloat(value) * 100);
+  if (Number.isNaN(parseValue)) {
+    return;
+  }
+
+  function getSlippageError() {
+    const parseValue = Math.round(Number.parseFloat(slippageText) * 100);
+    if (parseValue >= HIGH_SLIPPAGE) {
+      return "Slippage is too high";
+    }
+  }
+
   return (
     <div className="Slippage-input-wrapper">
       <div className={cx("Slippage-input", { "input-erro": !!getSlippageError() })}>
@@ -32,6 +67,22 @@ export default function SlippageInput({ setAllowedSlippage, defaultSlippage }: P
           <span>%</span>
         </label>
       </div>
+      {isPanelVisible && (
+        <ul className="Slippage-list">
+          {SLIPPAGE_SUGGESTION_LISTS.map((slippage) => {
+            <li
+              key={slippage}
+              onMouseDown={() => {
+                setSlippageText(String(slippage));
+                setAllowedSlippage(slippage * 100);
+                setIsPanelVisible(false);
+              }}
+            >
+              {slippage}%
+            </li>;
+          })}
+        </ul>
+      )}
     </div>
   );
 }
