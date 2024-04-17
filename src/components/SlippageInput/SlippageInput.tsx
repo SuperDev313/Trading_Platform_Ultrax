@@ -19,7 +19,19 @@ type Props = {
 export default function SlippageInput({ setAllowedSlippage, defaultSlippage }: Props) {
   return (
     <div className="Slippage-input-wrapper">
-      <div></div>
+      <div className={cx("Slippage-input", { "input-erro": !!getSlippageError() })}>
+        <input
+          id="slippage-input"
+          onFocus={() => setisPanelVisible(true)}
+          onBlur={() => setIsPanelVisible(false)}
+          value={!!slippageText ? slippageText : ""}
+          placeholder={slippageText || defaultSlippageText}
+          onChange={handleChange}
+        />
+        <label htmlFor="slippage-input">
+          <span>%</span>
+        </label>
+      </div>
     </div>
   );
 }
