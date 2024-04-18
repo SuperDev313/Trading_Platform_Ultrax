@@ -1,10 +1,11 @@
+import "./SlippageInput.scss";
 import { useState } from "react";
 import cx from "classnames";
 import { formatAmount } from "lib/numbers";
 
 const MAX_SLIPPAGE = 99 * 100;
 const HIGH_SLIPPAGE = 2 * 100;
-const SLIPPAGE_SUGGESTION_LISTS = [0, 3, 0.5, 1, 1.5];
+const SLIPPAGE_SUGGESTION_LISTS = [0.3, 0.5, 1, 1.5];
 const validDecimalRegex = /^\d+(\.\d{0,2})?$/; // 0.00 ~ 99.99
 
 function getSlippageText(value: number) {
@@ -28,36 +29,37 @@ export default function SlippageInput({ setAllowedSlippage, defaultSlippage }: P
       setAllowedSlippage(defaultSlippage);
       return;
     }
-  }
 
-  if (parseValue >= MAX_SLIPPAGE) {
-    setAllowedSlippage(MAX_SLIPPAGE);
-    setSlippageText(String(MAX_SLIPPAGE / 100));
-    return;
-  }
-  if (validDecimalRegex.test(value)) {
-    setAllowedSlippage(parseValue);
-    setSlippageText(value);
-  }
+    const parsedValue = Math.round(Number.parseFloat(value) * 100);
+    if (Number.isNaN(parsedValue)) {
+      return;
+    }
 
-  const parseValue = Math.round(Number.parseFloat(value) * 100);
-  if (Number.isNaN(parseValue)) {
-    return;
+    if (parsedValue >= MAX_SLIPPAGE) {
+      setAllowedSlippage(MAX_SLIPPAGE);
+      setSlippageText(String(MAX_SLIPPAGE / 100));
+      return;
+    }
+
+    if (validDecimalRegex.test(value)) {
+      setAllowedSlippage(parsedValue);
+      setSlippageText(value);
+    }
   }
 
   function getSlippageError() {
-    const parseValue = Math.round(Number.parseFloat(slippageText) * 100);
-    if (parseValue >= HIGH_SLIPPAGE) {
+    const parsedValue = Math.round(Number.parseFloat(slippageText) * 100);
+    if (parsedValue >= HIGH_SLIPPAGE) {
       return "Slippage is too high";
     }
   }
 
   return (
     <div className="Slippage-input-wrapper">
-      <div className={cx("Slippage-input", { "input-erro": !!getSlippageError() })}>
+      <div className={cx("Slippage-input", { "input-error": !!getSlippageError() })}>
         <input
           id="slippage-input"
-          onFocus={() => setisPanelVisible(true)}
+          onFocus={() => setIsPanelVisible(true)}
           onBlur={() => setIsPanelVisible(false)}
           value={!!slippageText ? slippageText : ""}
           placeholder={slippageText || defaultSlippageText}
@@ -69,7 +71,7 @@ export default function SlippageInput({ setAllowedSlippage, defaultSlippage }: P
       </div>
       {isPanelVisible && (
         <ul className="Slippage-list">
-          {SLIPPAGE_SUGGESTION_LISTS.map((slippage) => {
+          {SLIPPAGE_SUGGESTION_LISTS.map((slippage) => (
             <li
               key={slippage}
               onMouseDown={() => {
@@ -79,8 +81,8 @@ export default function SlippageInput({ setAllowedSlippage, defaultSlippage }: P
               }}
             >
               {slippage}%
-            </li>;
-          })}
+            </li>
+          ))}
         </ul>
       )}
     </div>
