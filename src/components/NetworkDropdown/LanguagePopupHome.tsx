@@ -10,14 +10,18 @@ import { LANGUAGE_LOCALSTORAGE_KEY } from "config/localStorage";
 import LanguageModalContent from "./LanguageModalContent";
 
 export default function LanguagePopupHome() {
-    const currentLanguage = useRef(localStorage.getItem(LANGUAGE_LOCALSTORAGE_KEY) || defaultLocale)
-    const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(false)
+  const currentLanguage = useRef(localStorage.getItem(LANGUAGE_LOCALSTORAGE_KEY) || defaultLocale);
+  const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(false);
 
-    return (
-        <>
-            <div  className="App-header-network App-header-language">
-
-            </div>
-        </>
-    )
+  return (
+    <>
+      <div className="App-header-network App-header-language" onClick={() => setIsLanguageModalOpen(true)}>
+        <div className={cx("network-dropdown", { "homepage-header": isHomeSite() })}>
+          <button className="transparent">
+            <img className="network-dropdown-icon" src={language24Icon} alt="Select Language" />
+          </button>
+        </div>
+      </div>
+    </>
+  );
 }
