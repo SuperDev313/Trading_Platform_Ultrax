@@ -21,6 +21,9 @@ export default function LanguageModalContent({ currentLanguage }) {
         </div>
         <span className="network-dropdown-item-label menu-item-label">{locales[item]}</span>
       </div>
+      <div className="network-dropdown-menu-item-img">
+        {currentLanguage.current === item && <img src={checkedIcon} alt={locales[item]} />}
+      </div>
     </div>
   );
 }
