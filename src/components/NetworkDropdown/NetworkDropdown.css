@@ -85,3 +85,36 @@
     max-width: 29.6rem;
     margin: auto;
   }
+  .network-option {
+    cursor: pointer;
+    background: transparent;
+    border: 1px solid var(--bg-divider);
+    border-radius: 0.4rem;
+    padding: 0.8rem 1.5rem;
+    display: flex;
+    align-items: center;
+    position: relative;
+    justify-content: space-between;
+    margin-bottom: 0.8rem;
+  }
+  .network-option:last-child {
+    margin-bottom: 0;
+  }
+  
+  .network-option img {
+    width: 2.5rem;
+    margin-right: 1.5rem;
+  }
+  
+  .network-option span {
+    font-size: var(--font-base);
+    letter-spacing: 0.29px;
+    color: #fff;
+  }
+  
+  .network-option-img-label {
+    font-size: var(--font-md);
+    line-height: 2rem;
+    letter-spacing: 0.29px;
+    color: #fff;
+  }
