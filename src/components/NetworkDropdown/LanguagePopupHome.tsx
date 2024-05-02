@@ -22,6 +22,7 @@ export default function LanguagePopupHome() {
           </button>
         </div>
       </div>
+
       <ModalWithPortal
         className="language-popup"
         isVisible={isLanguageModalOpen}
@@ -29,7 +30,7 @@ export default function LanguagePopupHome() {
         label={t`Select Language`}
       >
         <LanguageModalContent currentLanguage={currentLanguage} />
-      </ModalWithPortal>{" "}
+      </ModalWithPortal>
     </>
   );
 }
