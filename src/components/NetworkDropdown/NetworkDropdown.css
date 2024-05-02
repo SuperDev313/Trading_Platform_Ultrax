@@ -65,3 +65,23 @@
     margin: 0.8rem 0;
   }
   
+.menu-item-group {
+    display: flex;
+    align-items: center;
+  }
+  
+  .network-dropdown-menu-item {
+    display: flex;
+    align-items: center;
+    padding: 0.8rem;
+    justify-content: space-between;
+  }
+  
+  .last-dropdown-menu {
+    margin-bottom: 0.8rem;
+  }
+  .network-popup .Modal-content {
+    width: 100%;
+    max-width: 29.6rem;
+    margin: auto;
+  }
