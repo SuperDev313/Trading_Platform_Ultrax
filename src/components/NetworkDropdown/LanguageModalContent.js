@@ -1,5 +1,5 @@
 import { LANGUAGE_LOCALSTORAGE_KEY } from "config/localStorage";
-import { dynamicActivate } from "lib/i18n";
+import { dynamicActivate, isTestLanguage } from "lib/i18n";
 
 export default function LanguageModalContent({ currentLanguage }) {
   return (
@@ -15,7 +15,12 @@ export default function LanguageModalContent({ currentLanguage }) {
         dynamicActivate(item);
       }}
     >
-      <div className="menu-item-group"></div>
+      <div className="menu-item-group">
+        <div className="menu-item-icon">
+          {isTestLanguage(item) ? "🫐" : <img className="network-dropdown-icon" src={image} alt={locales[item]} />}
+        </div>
+        <span className="network-dropdown-item-label menu-item-label">{locales[item]}</span>
+      </div>
     </div>
   );
 }
