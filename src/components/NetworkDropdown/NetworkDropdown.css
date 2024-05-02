@@ -65,7 +65,7 @@
     margin: 0.8rem 0;
   }
   
-.menu-item-group {
+  .menu-item-group {
     display: flex;
     align-items: center;
   }
@@ -119,7 +119,7 @@
     color: #fff;
   }
   
-.dropdown-label {
+  .dropdown-label {
     color: #a0a3c4;
     padding: 0.8rem;
     font-size: 1.25rem;
