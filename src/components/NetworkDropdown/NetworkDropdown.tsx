@@ -20,6 +20,24 @@ const NETWORK_MODAL_KEY: string = "NETWORK";
 export default function NetworkDropdown(props) {
   const currentLanguage = useRef(localStorage.getItem(LANGUAGE_LOCALSTORAGE_KEY) || defaultLocale);
   const [activeModal, setActiveModal] = useState<string | null>(null);
+
+  function getModalContent(modalName) {
+    switch (modalName) {
+      case NETWORK_MODAL_KEY:
+        return (
+          <NetworkModalContent
+            setActiveModal={setActiveModal}
+            networkOptions={props.networkOptions}
+            onNetworkSelect={props.onNetworkSelect}
+            selectorLabel={props.selectorLabel}
+            openSettings={props.openSettings}
+          />
+        );
+      default:
+        return;
+    }
+  }
+
   return;
   <>
     {props.small ? (
