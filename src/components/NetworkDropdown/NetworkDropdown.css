@@ -118,3 +118,95 @@
     letter-spacing: 0.29px;
     color: #fff;
   }
+  
+.dropdown-label {
+    color: #a0a3c4;
+    padding: 0.8rem;
+    font-size: 1.25rem;
+  }
+  
+  .language-popup .Modal-body {
+    display: grid;
+    grid-gap: 1rem;
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .language-modal-item {
+    border: 1px solid var(--dark-blue-border);
+    cursor: pointer;
+  }
+  
+  .language-modal-item.active {
+    border: 1px solid #a1a3c4;
+  }
+  
+  .menu-item-icon {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 20px;
+  }
+  
+  .network-dropdown-headings {
+    padding: 0.8rem 0.8rem 0.4rem 0.8rem;
+    opacity: 0.7;
+    font-size: 1.25rem;
+  }
+  
+  .network-dropdown-item-label {
+    margin-left: 0.8rem;
+  }
+  
+  .network-dropdown-list {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  
+  .menu-item:hover .menu-item-label {
+    color: #eee;
+  }
+  
+  .active-dot {
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 50%;
+  }
+  .active-dot.Arbitrum {
+    background-color: #4275a8;
+  }
+  .active-dot.Avalanche {
+    background-color: #e84142;
+  }
+  .network-dropdown-label {
+    font-size: 1.25rem;
+    margin-bottom: 0.8rem;
+    opacity: 0.7;
+  }
+  
+  .more-options {
+    margin-top: 1rem;
+  }
+  
+  @media (max-width: 1033px) {
+    .App-header-network {
+      margin-left: 1.6rem;
+    }
+    .App-header-language {
+      margin-left: 0;
+    }
+  }
+  @media (max-width: 450px) {
+    .App-header-network {
+      margin-left: 0.6rem;
+    }
+    .App-header-language {
+      margin-left: 0;
+    }
+    .network-dropdown > button {
+      padding: 0 0.5rem;
+    }
+    .network-dropdown.homepage-header > button {
+      padding: 0 0.8rem;
+    }
+  }
+  
