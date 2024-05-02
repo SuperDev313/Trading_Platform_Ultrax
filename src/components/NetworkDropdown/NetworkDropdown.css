@@ -1,0 +1,67 @@
+.App-header-network {
+    position: relative;
+    margin: 0 2.4rem;
+    border-radius: 4px;
+    height: 3.6rem;
+    display: inline-flex;
+    align-items: center;
+    color: white;
+  }
+  
+  .App-header-language {
+    margin-left: 0;
+  }
+  
+  .network-dropdown {
+    display: inline-flex;
+  }
+  .network-dropdown-items {
+    min-width: 17rem;
+    padding-bottom: 0.8rem;
+  }
+  .network-dropdown-items:last-child {
+    padding-bottom: 0;
+  }
+  
+  .network-dropdown-divider {
+    margin-bottom: 0.8rem;
+    border-bottom: 1px solid #ffffff29;
+  }
+  .App-header-network:hover {
+    cursor: pointer;
+  }
+  .App-header-network:active {
+    background: var(--dark-blue-active);
+  }
+  .network-dropdown:active {
+    background: var(--dark-blue-active);
+  }
+  
+  .network-dropdown > button.transparent {
+    height: 3.6rem;
+    border-radius: 0.4rem;
+    border: none;
+    pointer-events: none;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 0.8rem;
+    background: transparent;
+  }
+  
+  .network-dropdown-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+  }
+  
+  .language-popup .Modal-content {
+    width: 32rem;
+  }
+  
+  .network-dropdown-seperator {
+    width: 1px;
+    background: var(--dark-blue-border);
+    margin: 0.8rem 0;
+  }
+  
