@@ -223,6 +223,11 @@ function MigrationModal(props) {
             </div>
           )}
         </div>
+        <div className="Exchange-swap-button-container">
+          <button className="App-cta Exchange-swap-button" onClick={onClickPrimary} disabled={!isPrimaryEnabled()}>
+            {getPrimaryText()}
+          </button>
+        </div>
       </Modal>
     </div>
   );
