@@ -156,3 +156,29 @@ function DesktopDropdown({ setActiveModal, selectorLabel, networkOptions, onNetw
     </div>
   );
 }
+
+function NetworkMenuItems({ networkOptions, selectorLabel, onNetworkSelect }) {
+  async function handleNetworkSelect(option) {
+    await onNetworkSelect(option);
+  }
+  return networkOptions.map((network) => {
+    return (
+      <Menu.Item key={network.value}>
+        <div
+          className="network-dropdown-menu-item menu-item"
+          onClick={() => handleNetworkSelect({ value: network.value })}
+        >
+          <div className="menu-item-group">
+            <div className="menu-item-icon">
+              <img className="network-dropdown-icon" src={network.icon} alt={network.label} />
+            </div>
+            <span className="network-dropdown-item-label">{network.label}</span>
+          </div>
+          <div className="network-dropdown-menu-item-img">
+            <div className={cx("active-dot", { [selectorLabel]: selectorLabel === network.label })} />
+          </div>
+        </div>
+      </Menu.Item>
+    );
+  });
+}
