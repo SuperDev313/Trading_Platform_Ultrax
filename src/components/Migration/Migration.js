@@ -112,6 +112,24 @@ function MigrationModal(props) {
         setIsMigrating(false);
       });
   };
+
+  const isPrimaryEnabled = () => {
+    const error = getError();
+    if (error) {
+      return false;
+    }
+    if (isApproving) {
+      return false;
+    }
+    if (isMigrating) {
+      return false;
+    }
+    if (needApproval && isPendingApproval) {
+      return false;
+    }
+    return true;
+  };
+  
 }
 export default function Migration() {
   const [isMigrationModalVisible, setIsMigrationModalVisible] = useState(false);
