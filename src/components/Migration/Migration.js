@@ -67,6 +67,13 @@ export default function Migration() {
     }
   }, [active, library, updateBalances, updateIouBalances, updateMigratedAmounts]);
 
+  const showMigrationModal = (index) => {
+    setIsPendingApproval(false);
+    setMigrationValue("");
+    setMigrationIndex(index);
+    setIsMigrationModalVisible(true);
+  };
+
   return (
     <div className="Migration Page">
       <MigrationModal
