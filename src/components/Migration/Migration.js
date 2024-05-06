@@ -101,6 +101,7 @@ export default function Migration() {
           );
         })}
       </div>
+      <Footer />
     </div>
   );
 }
