@@ -16,6 +16,9 @@ function MigrationModal(props) {
     library,
   } = props;
   const token = tokens[index];
+
+  const [isMigrating, setIsMigrating] = useState(false);
+  const [isApproving, setIsApproving] = useState(false);
 }
 export default function Migration() {
   const [isMigrationModalVisible, setIsMigrationModalVisible] = useState(false);
