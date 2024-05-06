@@ -19,6 +19,13 @@ function MigrationModal(props) {
 
   const [isMigrating, setIsMigrating] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
+
+  const { data: tokenAllowance, mutate: updateTokenAllowance } = useSWR(
+    [active, CHAIN_ID, token.address, "allowance", account, utxMigratorAddress],
+    {
+      fetcher: contractFetcher(library, Token),
+    }
+  );
 }
 export default function Migration() {
   const [isMigrationModalVisible, setIsMigrationModalVisible] = useState(false);
