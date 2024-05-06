@@ -31,6 +31,13 @@ export default function Migration() {
     }
   );
 
+  const { data: migratedAmounts, mutate: updateMigratedAmounts } = useSWR(
+    ["Migration:migratedAmounts", CHAIN_ID, utxMigratorAddress, "getTokenAmounts"],
+    {
+      fetcher: contractFetcher(library, UtxMigrator, [tokenAddresses]),
+    }
+  );
+
   return (
     <div className="Migration Page">
       <MigrationModal
