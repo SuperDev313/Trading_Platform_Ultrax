@@ -323,7 +323,7 @@ export default function Migration() {
       setActivatingConnector(undefined);
     }
   }, [activatingConnector, connector]);
-  
+
   const triedEager = useEagerConnect();
   useInactiveListener(!triedEager || !!activatingConnector);
   const connectWallet = getConnectWalletHandler(activate);
