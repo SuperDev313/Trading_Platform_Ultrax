@@ -54,6 +54,19 @@ export default function Migration() {
     totalMigratedUsd = totalMigratedUtx.mul(utxPrice);
   }
 
+  useEffect(() => {
+    if (active) {
+      library.on("block", () => {
+        updateBalances(undefined, true);
+        updateIouBalances(undefined, true);
+        updateMigratedAmounts(undefined, true);
+      });
+      return () => {
+        library.removeAllListeners("block");
+      };
+    }
+  }, [active, library, updateBalances, updateIouBalances, updateMigratedAmounts]);
+
   return (
     <div className="Migration Page">
       <MigrationModal
