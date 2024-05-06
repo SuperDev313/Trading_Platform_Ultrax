@@ -1,12 +1,41 @@
-import { formatAmount } from "lib/numbers";
+import React, { useEffect, useState } from "react";
+import { useWeb3React } from "@web3-react/core";
+import cx from "classnames";
+import useSWR from "swr";
+import { ethers } from "ethers";
+
+import Footer from "../Footer/Footer";
+import Modal from "../Modal/Modal";
+
+import "./Migration.css";
+
+import { getConnectWalletHandler } from "lib/legacy";
+import { getContract } from "config/contracts";
+
+import Reader from "abis/Reader.json";
+import Token from "abis/Token.json";
+import UtxMigrator from "abis/UtxMigrator.json";
+import { CHAIN_ID, getExplorerUrl } from "config/chains";
+import { contractFetcher } from "lib/contracts";
+import { helperToast } from "lib/helperToast";
 import { useEagerConnect, useInactiveListener } from "lib/wallets";
+import { approveTokens } from "domain/tokens";
+import {
+  bigNumberify,
+  expandDecimals,
+  formatAmount,
+  formatAmountFree,
+  formatArrayAmount,
+  parseValue,
+} from "lib/numbers";
+import ExternalLink from "components/ExternalLink/ExternalLink";
+import { t, Trans } from "@lingui/macro";
 
 const { MaxUint256, AddressZero } = ethers.constants;
 
 const precision = 1000000;
 const decimals = 6;
 const utxPrice = bigNumberify(2 * precision);
-
 const tokens = [
   {
     name: "GMT",
@@ -64,7 +93,6 @@ function MigrationModal(props) {
     library,
   } = props;
   const token = tokens[index];
-
   const [isMigrating, setIsMigrating] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
 
@@ -177,6 +205,7 @@ function MigrationModal(props) {
     }
     return true;
   };
+
   const getPrimaryText = () => {
     const error = getError();
     if (error) {
@@ -280,6 +309,7 @@ function MigrationModal(props) {
     </div>
   );
 }
+
 export default function Migration() {
   const [isMigrationModalVisible, setIsMigrationModalVisible] = useState(false);
   const [isPendingApproval, setIsPendingApproval] = useState(false);
@@ -288,13 +318,12 @@ export default function Migration() {
 
   const { connector, activate, active, account, library } = useWeb3React();
   const [activatingConnector, setActivatingConnector] = useState();
-
   useEffect(() => {
     if (activatingConnector && activatingConnector === connector) {
       setActivatingConnector(undefined);
     }
   }, [activatingConnector, connector]);
-
+  
   const triedEager = useEagerConnect();
   useInactiveListener(!triedEager || !!activatingConnector);
   const connectWallet = getConnectWalletHandler(activate);
@@ -384,11 +413,9 @@ export default function Migration() {
           </div>
         </div>
       </div>
-
       <div className="Migration-note">
         <Trans>Your wallet: {formatAmount(utxBalance, 18, 4, true)}</Trans> UTX
       </div>
-
       <div className="Migration-cards">
         {tokens.map((token, index) => {
           const { cap, price, bonus } = token;
