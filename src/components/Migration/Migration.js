@@ -42,9 +42,64 @@ export default function Migration() {
           </div>
         </div>
       </div>
-      
+
       <div className="Migration-note">
         <Trans>Your wallet: {formatAmount(utxBalance, 18, 4, true)}</Trans> UTX
+      </div>
+
+      <div className="Migration-cards">
+        {tokens.map((token, index) => {
+          const { cap, price, bonus } = token;
+          const hasCap = cap.lt(MaxUint256);
+          return (
+            <div className={cx("border", "App-card", { primary: index === 0 })} key={index}>
+              <div className="Stake-card-title App-card-title">{token.name}</div>
+              <div className="Stake-card-bottom App-card-content">
+                <div className="Stake-info App-card-row">
+                  <div className="label">
+                    <Trans>Wallet</Trans>
+                  </div>
+                  <div>{formatArrayAmount(balances, index * 2, 18, 4, true)}</div>
+                </div>
+                <div className="Stake-info App-card-row">
+                  <div className="label">
+                    <Trans>Migration Price</Trans>
+                  </div>
+                  <div>${formatAmount(price, decimals, 2, true)}</div>
+                </div>
+                <div className="Stake-info App-card-row">
+                  <div className="label">
+                    <Trans>Bonus Tokens</Trans>
+                  </div>
+                  <div>{parseFloat(bonus).toFixed(2)}%</div>
+                </div>
+                <div className="Stake-info App-card-row">
+                  <div className="label">
+                    <Trans>Migrated</Trans>
+                  </div>
+                  {!hasCap && <div>{formatArrayAmount(migratedAmounts, index, 18, 0, true)}</div>}
+                  {hasCap && (
+                    <div>
+                      {formatArrayAmount(migratedAmounts, index, 18, 0, true)} / {formatAmount(cap, 18, 0, true)}
+                    </div>
+                  )}
+                </div>
+                <div className="App-card-options">
+                  {!active && (
+                    <button className="App-button-option App-card-option" onClick={connectWallet}>
+                      <Trans>Connect Wallet</Trans>
+                    </button>
+                  )}
+                  {active && (
+                    <button className="App-button-option App-card-option" onClick={() => showMigrationModal(index)}>
+                      <Trans>Migrate</Trans>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
