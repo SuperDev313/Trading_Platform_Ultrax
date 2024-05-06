@@ -87,6 +87,31 @@ function MigrationModal(props) {
       });
       return;
     }
+
+    setIsMigrating(true);
+    const contract = new ethers.Contract(utxMigratorAddress, UtxMigrator.abi, library.getSigner());
+    contract
+      .migrate(token.address, amount)
+      .then(async (res) => {
+        const txUrl = getExplorerUrl(CHAIN_ID) + "tx/" + res.hash;
+        helperToast.success(
+          <div>
+            <Trans>
+              Migration submitted! <ExternalLink href={txUrl}>View status.</ExternalLink>
+            </Trans>
+          </div>
+        );
+        setIsVisible(false);
+      })
+      .catch((e) => {
+        // eslint-disable-next-line no-console
+        console.error(e);
+        helperToast.error(t`Migration failed`);
+      })
+      .finally(() => {
+        setIsMigrating(false);
+      });
+  };
 }
 export default function Migration() {
   const [isMigrationModalVisible, setIsMigrationModalVisible] = useState(false);
