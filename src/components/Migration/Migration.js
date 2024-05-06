@@ -10,6 +10,12 @@ export default function Migration() {
   const { connector, activate, active, account, library } = useWeb3React();
   const [activatingConnector, setActivatingConnector] = useState();
 
+  useEffect(() => {
+    if (activatingConnector && activatingConnector === connector) {
+      setActivatingConnector(undefined);
+    }
+  }, [activatingConnector, connector]);
+  
   const triedEager = useEagerConnect();
   useInactiveListener(!triedEager || !!activatingConnector);
   const connectWallet = getConnectWalletHandler(activate);
