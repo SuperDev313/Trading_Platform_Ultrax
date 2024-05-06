@@ -23,6 +23,8 @@ export default function NetworkDropdown(props) {
 
   function getModalContent(modalName) {
     switch (modalName) {
+      // case LANGUAGE_MODAL_KEY:
+      //   return <LanguageModalContent currentLanguage={currentLanguage} />;
       case NETWORK_MODAL_KEY:
         return (
           <NetworkModalContent
@@ -40,6 +42,13 @@ export default function NetworkDropdown(props) {
 
   function getModalProps(modalName) {
     switch (modalName) {
+      // case LANGUAGE_MODAL_KEY:
+      //   return {
+      //     className: "language-popup",
+      //     isVisible: activeModal === LANGUAGE_MODAL_KEY,
+      //     setIsVisible: () => setActiveModal(null),
+      //     label: t`Select Language`,
+      //   };
       case NETWORK_MODAL_KEY:
         return {
           className: "network-popup",
@@ -72,7 +81,6 @@ export default function NetworkDropdown(props) {
     </>
   );
 }
-
 function NavIcons({ selectorLabel }) {
   const { chainId } = useChainId();
   const icon = getIcon(chainId, "network");
