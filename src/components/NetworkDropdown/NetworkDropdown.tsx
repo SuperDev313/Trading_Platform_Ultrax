@@ -99,3 +99,60 @@ function NavIcons({ selectorLabel }) {
     </>
   );
 }
+
+function DesktopDropdown({ setActiveModal, selectorLabel, networkOptions, onNetworkSelect, openSettings }) {
+  return (
+    <div
+      className="App-header-network"
+      style={{
+        marginRight: "16px",
+      }}
+    >
+      <Menu>
+        <Menu.Button as="div" className="network-dropdown">
+          <NavIcons selectorLabel={selectorLabel} />
+        </Menu.Button>
+        <Menu.Items as="div" className="menu-items network-dropdown-items">
+          <div className="dropdown-label fz-sm fw-500 text-secondary">
+            <Trans>Networks</Trans>
+          </div>
+          <div className="network-dropdown-list">
+            <NetworkMenuItems
+              networkOptions={networkOptions}
+              selectorLabel={selectorLabel}
+              onNetworkSelect={onNetworkSelect}
+            />
+          </div>
+          {/* <div className="network-dropdown-divider" /> */}
+          {/* <Menu.Item>
+            <div className="network-dropdown-menu-item menu-item" onClick={openSettings}>
+              <div className="menu-item-group">
+                <div className="menu-item-icon">
+                  <img className="network-dropdown-icon" src={settingsIcon} alt="" />
+                </div>
+                <span className="network-dropdown-item-label">
+                  <Trans>Settings</Trans>
+                </span>
+              </div>
+            </div>
+          </Menu.Item>
+          <Menu.Item>
+            <div
+              className="network-dropdown-menu-item menu-item last-dropdown-menu"
+              onClick={() => setActiveModal(LANGUAGE_MODAL_KEY)}
+            >
+              <div className="menu-item-group">
+                <div className="menu-item-icon">
+                  <img className="network-dropdown-icon" src={language24Icon} alt="" />
+                </div>
+                <span className="network-dropdown-item-label">
+                  <Trans>Language</Trans>
+                </span>
+              </div>
+            </div>
+          </Menu.Item> */}
+        </Menu.Items>
+      </Menu>
+    </div>
+  );
+}
