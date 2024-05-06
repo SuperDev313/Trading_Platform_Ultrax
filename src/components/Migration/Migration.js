@@ -7,6 +7,48 @@ const precision = 1000000;
 const decimals = 6;
 const utxPrice = bigNumberify(2 * precision);
 
+const tokens = [
+  {
+    name: "GMT",
+    symbol: "GMT",
+    address: getContract(CHAIN_ID, "GMT"),
+    price: bigNumberify(10.97 * precision),
+    iouToken: getContract(CHAIN_ID, "GMT_UTX_IOU"),
+    cap: MaxUint256,
+    bonus: 0,
+  },
+  {
+    name: "xGMT",
+    symbol: "xGMT",
+    address: getContract(CHAIN_ID, "XGMT"),
+    price: bigNumberify(90.31 * precision),
+    iouToken: getContract(CHAIN_ID, "XGMT_UTX_IOU"),
+    cap: MaxUint256,
+    bonus: 0,
+  },
+  {
+    name: "GMT-USDG",
+    symbol: "LP",
+    address: getContract(CHAIN_ID, "GMT_USDG_PAIR"),
+    price: bigNumberify(parseInt(6.68 * precision)),
+    iouToken: getContract(CHAIN_ID, "GMT_USDG_UTX_IOU"),
+    cap: expandDecimals(483129, 18),
+    bonus: 10,
+  },
+  {
+    name: "xGMT-USDG",
+    symbol: "LP",
+    address: getContract(CHAIN_ID, "XGMT_USDG_PAIR"),
+    price: bigNumberify(parseInt(19.27 * precision)),
+    iouToken: getContract(CHAIN_ID, "XGMT_USDG_UTX_IOU"),
+    cap: expandDecimals(150191, 18),
+    bonus: 10,
+  },
+];
+
+const readerAddress = getContract(CHAIN_ID, "Reader");
+const utxMigratorAddress = getContract(CHAIN_ID, "UtxMigrator");
+
 function MigrationModal(props) {
   const {
     isVisible,
