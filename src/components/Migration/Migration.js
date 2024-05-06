@@ -38,6 +38,22 @@ export default function Migration() {
     }
   );
 
+  let utxBalance;
+  let totalMigratedUtx;
+  let totalMigratedUsd;
+
+  if (iouBalances) {
+    utxBalance = bigNumberify(0);
+    totalMigratedUtx = bigNumberify(0);
+
+    for (let i = 0; i < iouBalances.length / 2; i++) {
+      utxBalance = utxBalance.add(iouBalances[i * 2]);
+      totalMigratedUtx = totalMigratedUtx.add(iouBalances[i * 2 + 1]);
+    }
+
+    totalMigratedUsd = totalMigratedUtx.mul(utxPrice);
+  }
+
   return (
     <div className="Migration Page">
       <MigrationModal
