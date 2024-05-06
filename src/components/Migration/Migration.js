@@ -26,6 +26,52 @@ function MigrationModal(props) {
       fetcher: contractFetcher(library, Token),
     }
   );
+
+  let maxAmount;
+  if (balances) {
+    maxAmount = balances[index * 2];
+  }
+
+  useEffect(() => {
+    if (active) {
+      library.on("block", () => {
+        updateTokenAllowance(undefined, true);
+      });
+      return () => {
+        library.removeAllListeners("block");
+      };
+    }
+  }, [active, library, updateTokenAllowance]);
+
+  let amount = parseValue(value, 18);
+  const needApproval = tokenAllowance && amount && amount.gt(tokenAllowance);
+
+  let baseAmount;
+  let bonusAmount;
+  let totalAmount;
+
+  let baseAmountUsd;
+  let bonusAmountUsd;
+  let totalAmountUsd;
+
+  if (amount) {
+    baseAmount = amount.mul(token.price).div(utxPrice);
+    bonusAmount = baseAmount.mul(token.bonus).div(100);
+    totalAmount = baseAmount.add(bonusAmount);
+
+    baseAmountUsd = baseAmount.mul(utxPrice);
+    bonusAmountUsd = bonusAmount.mul(utxPrice);
+    totalAmountUsd = totalAmount.mul(utxPrice);
+  }
+
+  const getError = () => {
+    if (!amount || amount.eq(0)) {
+      return t`Enter an amount`;
+    }
+    if (maxAmount && amount.gt(maxAmount)) {
+      return t`Max amount exceeded`;
+    }
+  };
 }
 export default function Migration() {
   const [isMigrationModalVisible, setIsMigrationModalVisible] = useState(false);
