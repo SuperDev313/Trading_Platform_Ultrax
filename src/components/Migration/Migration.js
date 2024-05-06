@@ -1,6 +1,12 @@
 import { formatAmount } from "lib/numbers";
 import { useEagerConnect, useInactiveListener } from "lib/wallets";
 
+const { MaxUint256, AddressZero } = ethers.constants;
+
+const precision = 1000000;
+const decimals = 6;
+const utxPrice = bigNumberify(2 * precision);
+
 function MigrationModal(props) {
   const {
     isVisible,
