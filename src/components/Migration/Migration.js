@@ -148,6 +148,35 @@ function MigrationModal(props) {
     }
     return t`Migrate`;
   };
+
+  return (
+    <div className="StakeModal">
+      <Modal isVisible={isVisible} setIsVisible={setIsVisible} label={`Migrate ${token.name}`}>
+        <div className="Exchange-swap-section">
+          <div className="Exchange-swap-section-top">
+            <div className="muted">
+              <div className="Exchange-swap-usd">Migrate</div>
+            </div>
+            <div className="muted align-right clickable" onClick={() => setValue(formatAmountFree(maxAmount, 18, 8))}>
+              <Trans>Max: {formatAmount(maxAmount, 18, 4, true)}</Trans>
+            </div>
+          </div>
+          <div className="Exchange-swap-section-bottom">
+            <div>
+              <input
+                type="number"
+                placeholder="0.0"
+                className="Exchange-swap-input"
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+              />
+            </div>
+            <div className="PositionEditor-token-symbol">{token.symbol}</div>
+          </div>
+        </div>
+      </Modal>
+    </div>
+  );
 }
 export default function Migration() {
   const [isMigrationModalVisible, setIsMigrationModalVisible] = useState(false);
