@@ -72,6 +72,21 @@ function MigrationModal(props) {
       return t`Max amount exceeded`;
     }
   };
+
+  const onClickPrimary = () => {
+    if (needApproval) {
+      approveTokens({
+        setIsApproving,
+        library,
+        tokenAddress: token.address,
+        spender: utxMigratorAddress,
+        chainId: CHAIN_ID,
+        onApproveSubmitted: () => {
+          setIsPendingApproval(true);
+        },
+      });
+      return;
+    }
 }
 export default function Migration() {
   const [isMigrationModalVisible, setIsMigrationModalVisible] = useState(false);
