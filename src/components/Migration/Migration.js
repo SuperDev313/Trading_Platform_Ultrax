@@ -1,3 +1,5 @@
+import { useEagerConnect, useInactiveListener } from "lib/wallets";
+
 export default function Migration() {
   const [isMigrationModalVisible, setIsMigrationModalVisible] = useState(false);
   const [isPendingApproval, setIsPendingApproval] = useState(false);
@@ -6,6 +8,13 @@ export default function Migration() {
 
   const { connector, activate, active, account, library } = useWeb3React();
   const [activatingConnector, setActivatingConnector] = useState();
+
+  const triedEager = useEagerConnect();
+  useInactiveListener(!triedEager || !!activatingConnector);
+  const connectWallet = getConnectWalletHandler(activate);
+
+  const tokenAddresses = tokens.map((token) => token.address);
+  const iouTokenAddresses = tokens.map((token) => token.iouToken);
 
   return <></>;
 }
