@@ -38,6 +38,21 @@ export default function NetworkDropdown(props) {
     }
   }
 
+  function getModalProps(modalName) {
+      switch (modalName) {
+        case NETWORK_MODAL_KEY:
+          return {
+            className: "network-popup",
+            isVisible: activeModal === NETWORK_MODAL_KEY,
+            setIsVisible: () => setActiveModal(null),
+            label: t`Select Network`,
+          };
+        default:
+          return {};
+      }
+    }
+
+  
   return;
   <>
     {props.small ? (
