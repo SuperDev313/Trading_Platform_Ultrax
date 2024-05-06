@@ -174,6 +174,55 @@ function MigrationModal(props) {
             <div className="PositionEditor-token-symbol">{token.symbol}</div>
           </div>
         </div>
+        <div className="MigrationModal-info-box">
+          <div className="App-info-row">
+            <div className="App-info-label">{token.bonus > 0 ? "Base Tokens" : "To Receive"}</div>
+            <div className="align-right">
+              {baseAmount &&
+                `${formatAmount(baseAmount, 18, 4, true)} UTX ($${formatAmount(
+                  baseAmountUsd,
+                  18 + decimals,
+                  2,
+                  true
+                )})`}
+              {!baseAmount && "-"}
+            </div>
+          </div>
+          {token.bonus > 0 && (
+            <div className="App-info-row">
+              <div className="App-info-label">
+                <Trans>Bonus Tokens</Trans>
+              </div>
+              <div className="align-right">
+                {bonusAmount &&
+                  `${formatAmount(bonusAmount, 18, 4, true)} UTX ($${formatAmount(
+                    bonusAmountUsd,
+                    18 + decimals,
+                    2,
+                    true
+                  )})`}
+                {!bonusAmount && "-"}
+              </div>
+            </div>
+          )}
+          {token.bonus > 0 && (
+            <div className="App-info-row">
+              <div className="App-info-label">
+                <Trans>To Receive</Trans>
+              </div>
+              <div className="align-right">
+                {totalAmount &&
+                  `${formatAmount(totalAmount, 18, 4, true)} UTX ($${formatAmount(
+                    totalAmountUsd,
+                    18 + decimals,
+                    2,
+                    true
+                  )})`}
+                {!totalAmount && "-"}
+              </div>
+            </div>
+          )}
+        </div>
       </Modal>
     </div>
   );
