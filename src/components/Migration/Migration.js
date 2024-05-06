@@ -16,5 +16,21 @@ export default function Migration() {
   const tokenAddresses = tokens.map((token) => token.address);
   const iouTokenAddresses = tokens.map((token) => token.iouToken);
 
-  return <></>;
+  return (
+    <div className="Migration Page">
+      <MigrationModal
+        isVisible={isMigrationModalVisible}
+        setIsVisible={setIsMigrationModalVisible}
+        isPendingApproval={isPendingApproval}
+        setIsPendingApproval={setIsPendingApproval}
+        value={migrationValue}
+        setValue={setMigrationValue}
+        index={migrationIndex}
+        balances={balances}
+        active={active}
+        account={account}
+        library={library}
+      />
+    </div>
+  );
 }
