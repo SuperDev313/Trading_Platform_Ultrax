@@ -39,36 +39,63 @@ export default function NetworkDropdown(props) {
   }
 
   function getModalProps(modalName) {
-      switch (modalName) {
-        case NETWORK_MODAL_KEY:
-          return {
-            className: "network-popup",
-            isVisible: activeModal === NETWORK_MODAL_KEY,
-            setIsVisible: () => setActiveModal(null),
-            label: t`Select Network`,
-          };
-        default:
-          return {};
-      }
+    switch (modalName) {
+      case NETWORK_MODAL_KEY:
+        return {
+          className: "network-popup",
+          isVisible: activeModal === NETWORK_MODAL_KEY,
+          setIsVisible: () => setActiveModal(null),
+          label: t`Select Network`,
+        };
+      default:
+        return {};
     }
+  }
 
-  
-  return;
-  <>
-    {props.small ? (
-      <div className="App-header-network" onClick={() => setActiveModal(NETWORK_MODAL_KEY)}>
-        <div className="network-dropdown">
-          <NavIcons selectorLabel={props.selectorLabel} />
+  return (
+    <>
+      {props.small ? (
+        <div className="App-header-network" onClick={() => setActiveModal(NETWORK_MODAL_KEY)}>
+          <div className="network-dropdown">
+            <NavIcons selectorLabel={props.selectorLabel} />
+          </div>
         </div>
-      </div>
-    ) : (
-      <DesktopDropdown
-        currentLanguage={currentLanguage}
-        activeModal={activeModal}
-        setActiveModal={setActiveModal}
-        {...props}
-      />
-    )}
-    <ModalWithPortal {...getModalProps(activeModal)}>{getModalContent(activeModal)}</ModalWithPortal>
-  </>;
+      ) : (
+        <DesktopDropdown
+          currentLanguage={currentLanguage}
+          activeModal={activeModal}
+          setActiveModal={setActiveModal}
+          {...props}
+        />
+      )}
+      <ModalWithPortal {...getModalProps(activeModal)}>{getModalContent(activeModal)}</ModalWithPortal>
+    </>
+  );
+}
+
+function NavIcons({ selectorLabel }) {
+  const { chainId } = useChainId();
+  const icon = getIcon(chainId, "network");
+
+  return (
+    <>
+      <button
+        className="transparent"
+        style={{
+          background: "var(--bg-primary)",
+          borderRadius: "4px",
+        }}
+      >
+        <img
+          style={{
+            marginRight: "8px",
+          }}
+          className="network-dropdown-icon"
+          src={icon}
+          alt={selectorLabel}
+        />
+        <FaChevronDown color="#f0f0f8" />
+      </button>
+    </>
+  );
 }
