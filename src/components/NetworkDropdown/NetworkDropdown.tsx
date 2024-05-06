@@ -33,7 +33,7 @@ export default function NetworkDropdown(props) {
             onNetworkSelect={props.onNetworkSelect}
             selectorLabel={props.selectorLabel}
             openSettings={props.openSettings}
-          />
+          ></NetworkModalContent>
         );
       default:
         return;
