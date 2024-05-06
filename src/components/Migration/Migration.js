@@ -42,6 +42,10 @@ export default function Migration() {
           </div>
         </div>
       </div>
+      
+      <div className="Migration-note">
+        <Trans>Your wallet: {formatAmount(utxBalance, 18, 4, true)}</Trans> UTX
+      </div>
     </div>
   );
 }
