@@ -182,3 +182,67 @@ function NetworkMenuItems({ networkOptions, selectorLabel, onNetworkSelect }) {
     );
   });
 }
+
+function NetworkModalContent({ networkOptions, onNetworkSelect, selectorLabel, setActiveModal, openSettings }) {
+  async function handleNetworkSelect(option) {
+    await onNetworkSelect(option);
+  }
+  return (
+    <div className="network-dropdown-items">
+      <div className="network-dropdown-list">
+        <span
+          className="network-dropdown-label"
+          style={{
+            color: "var(--text-secondary)",
+          }}
+        >
+          <Trans>Networks</Trans>
+        </span>
+
+        {networkOptions.map((network) => {
+          return (
+            <div
+              className="network-option"
+              onClick={() => handleNetworkSelect({ value: network.value })}
+              key={network.value}
+            >
+              <div className="menu-item-group">
+                <img src={network.icon} alt={network.label} />
+                <span>{network.label}</span>
+              </div>
+              <div className={cx("active-dot", { [selectorLabel]: selectorLabel === network.label })} />
+            </div>
+          );
+        })}
+        {/* <span className="network-dropdown-label more-options">
+          <Trans>More Options</Trans>
+        </span> */}
+        {/* <div
+          className="network-option"
+          onClick={() => {
+            setActiveModal(LANGUAGE_MODAL_KEY);
+          }}
+        >
+          <div className="menu-item-group">
+            <img className="network-option-img" src={language24Icon} alt="Select Language" />
+            <span className="network-option-img-label">Language</span>
+          </div>
+        </div>
+        <div
+          className="network-option"
+          onClick={() => {
+            openSettings();
+            setActiveModal(null);
+          }}
+        >
+          <div className="menu-item-group">
+            <img className="network-option-img" src={settingsIcon} alt="" />
+            <span className="network-option-img-label">
+              <Trans>Settings</Trans>
+            </span>
+          </div>
+        </div> */}
+      </div>
+    </div>
+  );
+}
