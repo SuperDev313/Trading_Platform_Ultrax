@@ -24,7 +24,13 @@ export default function Migration() {
     }
   );
 
-  
+  const { data: balances, mutate: updateBalances } = useSWR(
+    ["Migration:balances", CHAIN_ID, readerAddress, "getTokenBalancesWithSupplies", account || AddressZero],
+    {
+      fetcher: contractFetcher(library, Reader, [tokenAddresses]),
+    }
+  );
+
   return (
     <div className="Migration Page">
       <MigrationModal
