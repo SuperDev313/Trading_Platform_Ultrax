@@ -129,7 +129,25 @@ function MigrationModal(props) {
     }
     return true;
   };
-  
+  const getPrimaryText = () => {
+    const error = getError();
+    if (error) {
+      return error;
+    }
+    if (isApproving) {
+      return t`Approving...`;
+    }
+    if (needApproval && isPendingApproval) {
+      return t`Waiting for Approval`;
+    }
+    if (needApproval) {
+      return t`Approve ${token.name}`;
+    }
+    if (isMigrating) {
+      return t`Migrating...`;
+    }
+    return t`Migrate`;
+  };
 }
 export default function Migration() {
   const [isMigrationModalVisible, setIsMigrationModalVisible] = useState(false);
