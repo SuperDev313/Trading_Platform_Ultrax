@@ -17,6 +17,14 @@ export default function Migration() {
   const tokenAddresses = tokens.map((token) => token.address);
   const iouTokenAddresses = tokens.map((token) => token.iouToken);
 
+  const { data: iouBalances, mutate: updateIouBalances } = useSWR(
+    ["Migration:iouBalances", CHAIN_ID, readerAddress, "getTokenBalancesWithSupplies", account || AddressZero],
+    {
+      fetcher: contractFetcher(library, Reader, [iouTokenAddresses]),
+    }
+  );
+
+  
   return (
     <div className="Migration Page">
       <MigrationModal
