@@ -1,3 +1,4 @@
+import { formatAmount } from "lib/numbers";
 import { useEagerConnect, useInactiveListener } from "lib/wallets";
 
 export default function Migration() {
@@ -31,6 +32,16 @@ export default function Migration() {
         account={account}
         library={library}
       />
+      <div>
+        <div className="Stake-title App-hero">
+          <div className="Stake-title-primary App-hero-primary">
+            ${formatAmount(totalMigratedUsd, decimals + 18, 0, true)}
+          </div>
+          <div className="Stake-title-secondary">
+            <Trans>Total Assets Migrated</Trans>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
