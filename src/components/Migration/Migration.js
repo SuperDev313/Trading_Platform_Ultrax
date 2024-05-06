@@ -1,6 +1,22 @@
 import { formatAmount } from "lib/numbers";
 import { useEagerConnect, useInactiveListener } from "lib/wallets";
 
+function MigrationModal(props) {
+  const {
+    isVisible,
+    setIsVisible,
+    isPendingApproval,
+    setIsPendingApproval,
+    value,
+    setValue,
+    index,
+    balances,
+    active,
+    account,
+    library,
+  } = props;
+  const token = tokens[index];
+}
 export default function Migration() {
   const [isMigrationModalVisible, setIsMigrationModalVisible] = useState(false);
   const [isPendingApproval, setIsPendingApproval] = useState(false);
@@ -15,7 +31,7 @@ export default function Migration() {
       setActivatingConnector(undefined);
     }
   }, [activatingConnector, connector]);
-  
+
   const triedEager = useEagerConnect();
   useInactiveListener(!triedEager || !!activatingConnector);
   const connectWallet = getConnectWalletHandler(activate);
