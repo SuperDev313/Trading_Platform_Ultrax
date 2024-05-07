@@ -27,5 +27,21 @@ import { useChainId } from "lib/chains";
 import { formatDateTime } from "lib/dates";
 
 export default function OrdersOverview() {
-  return <div className="Orders-overview"></div>;
+  return (
+    <div className="Orders-overview">
+      <p>
+        <span className="positive">
+          <Trans>Price conditions are met</Trans>
+        </span>
+        <br />
+        <span style={{ color: "orange" }}>
+          <Trans>Close to execution price</Trans>
+        </span>
+        <br />
+        <span className="negative">
+          <Trans>Can't execute because of an error</Trans>
+        </span>
+      </p>
+    </div>
+  );
 }
