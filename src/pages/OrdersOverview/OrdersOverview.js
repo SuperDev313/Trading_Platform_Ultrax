@@ -27,7 +27,5 @@ import { useChainId } from "lib/chains";
 import { formatDateTime } from "lib/dates";
 
 export default function OrdersOverview() {
-    return (
-        <div className="Orders-overview"> </div>
-    )
+  return <div className="Orders-overview"></div>;
 }
