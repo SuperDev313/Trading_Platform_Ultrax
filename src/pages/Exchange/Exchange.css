@@ -381,3 +381,16 @@
     top: 0;
   }
   
+  
+.Exchange-price-tooltip {
+    font-size: var(--font-sm);
+    background: linear-gradient(90deg, rgba(57, 28, 147, 0.9) 0%, rgba(66, 24, 140, 0.9) 100%);
+    padding: 0.9rem;
+    border: 1px solid rgba(30, 9, 94, 0.5);
+    line-height: 2rem;
+  }
+  
+  .Exchange-price-time {
+    font-size: 1.25rem;
+    font-weight: normal;
+  }
