@@ -3,3 +3,177 @@
     margin: auto;
     justify-content: space-between;
   }
+  
+  .Exchange-trigger-order-info,
+  .Exchange-trigger-order-info a {
+    color: rgba(255, 255, 255, 0.7);
+    border: 1px solid #23263b;
+  }
+  
+  .Exchange-list-tab-container {
+    display: grid;
+    grid-template-columns: auto auto;
+    padding-left: 0.8rem;
+    padding-right: 0.8rem;
+    margin-top: 1.5rem;
+    margin-bottom: 1.05rem;
+  }
+  .Exchange-should-show-position-lines {
+    font-size: var(--font-sm);
+  }
+  .Exchange-should-show-position-lines .active {
+    opacity: 1;
+  }
+  
+  .Exchange-empty-positions-list-note {
+    padding-bottom: 0.5rem;
+  }
+  
+  .Exchange-empty-positions-list-note.small {
+    display: none;
+  }
+  
+  .position-loading-icon {
+    display: inline-block;
+    font-size: 1.25rem;
+    margin-left: 0.6rem;
+    color: #3749e6;
+    vertical-align: middle;
+  }
+  
+  .Exchange-settings-row {
+    margin-bottom: 0.8rem;
+  }
+  
+  .Exchange-settings .App-cta {
+    margin-top: 1.5rem;
+  }
+  
+  .Exchange-content {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-gap: 1.5rem;
+    padding: 3.1rem;
+    padding-top: 0rem;
+    margin-top: -1.5rem;
+  }
+  
+  .Exchange-position-list-orders {
+    white-space: nowrap;
+  }
+  
+  .Exchange-lists.large {
+    display: block;
+  }
+  
+  .Exchange-lists.small {
+    display: none;
+  }
+  
+  .Exchange-right {
+    display: grid;
+    grid-template-rows: auto 1fr;
+  }
+  
+  .Exchange-leverage-slider-settings {
+    font-size: var(--font-sm);
+    margin-bottom: 0.8rem;
+  }
+  
+  .Exchange-leverage-slider-settings .Checkbox {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    direction: rtl;
+  }
+  
+  .Exchange-wallet-tokens {
+    position: relative;
+    min-height: 15.5rem;
+    display: none;
+  }
+  
+  .Exchange-wallet-tokens-content {
+    position: absolute;
+    top: 1.5rem;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+  
+  .Exchange-bottom-header-item {
+    display: inline-block;
+    margin-right: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding-left: 0.155rem;
+    opacity: 0.7;
+    cursor: pointer;
+  }
+  
+  .Exchange-bottom-header-item.active {
+    opacity: 1;
+    pointer-events: none;
+  }
+  
+  .Exchange-swap-connect-wallet {
+    text-align: center;
+    cursor: pointer;
+    border: 1px solid rgb(50, 50, 50);
+    border-radius: 3px;
+  }
+  
+  .Exchange-swap-connect-wallet:hover {
+    background: #272e33;
+    border-radius: 0.6rem;
+  }
+  
+  .Exchange-swap-settings.Exchange-swap-txns-status {
+    text-align: right;
+    margin-right: 1.5rem;
+  }
+  
+  .Exchange-swap-account .Exchange-swap-address:hover,
+  .Exchange-swap-account .Exchange-swap-txns-status:hover {
+    opacity: 1;
+  }
+  
+  .Exchange-leverage-slider {
+    margin-top: 1.5rem;
+    margin-bottom: 3.4rem;
+    padding: 0 0.8rem;
+  }
+  
+  .Exchange-swap-leverage-options {
+    text-align: right;
+  }
+  
+  .Exchange-swap-leverage-option {
+    display: inline-block;
+    margin-left: 0.8rem;
+    padding: 0 0.8rem;
+    border-radius: 3px;
+    background: #5b2ab0;
+    color: white;
+    opacity: 0.7;
+    cursor: pointer;
+  }
+  
+  .Exchange-swap-leverage-option.active {
+    background: #842ec9;
+    opacity: 1;
+    pointer-events: none;
+  }
+  
+  .Exchange-swap-leverage-option:hover {
+    opacity: 1;
+  }
+  
+  .Exchange-swap-leverage-unlock-icon {
+    font-size: 0.8rem;
+    vertical-align: middle;
+    margin-top: -0.31rem;
+  }
+  
+  .Exchange-swap-placeholder {
+    height: 11.175rem;
+    position: relative;
+  }
