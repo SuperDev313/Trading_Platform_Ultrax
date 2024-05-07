@@ -682,5 +682,22 @@ export const Exchange = forwardRef((props, ref) => {
     ]
   );
 
+  const approveOrderBook = () => {
+    setIsPluginApproving(true);
+    return approvePlugin(chainId, orderBookAddress, {
+      library,
+      pendingTxns,
+      setPendingTxns,
+      sentMsg: t`Enable orders sent.`,
+      failMsg: t`Enable orders failed.`,
+    })
+      .then(() => {
+        setIsWaitingForPluginApproval(true);
+      })
+      .finally(() => {
+        setIsPluginApproving(false);
+      });
+  };
+  
   return <div className="Exchange page-layout"></div>;
 });
