@@ -584,6 +584,7 @@ export default function TermsAndConditions() {
             </div>
           </div>
         </div>
+        <Footer />
       </div>
     </SEO>
   );
