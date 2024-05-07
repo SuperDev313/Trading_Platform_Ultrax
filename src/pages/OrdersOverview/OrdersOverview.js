@@ -27,6 +27,54 @@ import { useChainId } from "lib/chains";
 import { formatDateTime } from "lib/dates";
 
 export default function OrdersOverview() {
+  const { chainId } = useChainId();
+  const { library, account, active } = useWeb3React();
+
+  const nativeTokenAddress = getContract(chainId, "NATIVE_TOKEN");
+
+  const { infoTokens } = useInfoTokens(library, chainId, active, undefined, undefined);
+
+  const orders = useAllOrders(chainId, library);
+  const stats = useAllOrdersStats(chainId);
+  const ORDER_TYPE_LABELS = {
+    Increase: t`Increase`,
+    Decrease: t`Decrease`,
+    Swap: t`Swap`,
+  };
+
+  const positionsForOrders = usePositionsForOrders(
+    chainId,
+    library,
+    orders.filter((order) => order.type === DECREASE)
+  );
+
+  let openTotal;
+  let executedTotal;
+  let cancelledTotal;
+
+  if (stats) {
+    openTotal = stats.openDecrease + stats.openIncrease + stats.openSwap;
+    executedTotal = stats.executedDecrease + stats.executedIncrease + stats.executedSwap;
+    cancelledTotal = stats.cancelledDecrease + stats.cancelledIncrease + stats.cancelledSwap;
+  }
+
+  const NEAR_TRESHOLD = 98;
+
+  const executeOrder = (evt, order) => {
+    evt.preventDefault();
+
+    const params = [chainId, library, order.account, order.index, account];
+    let method;
+    if (order.type === "Swap") {
+      method = "executeSwapOrder";
+    } else if (order.type === "Increase") {
+      method = "executeIncreaseOrder";
+    } else {
+      method = "executeDecreaseOrder";
+    }
+    return Api[method](...params);
+  };
+
   return (
     <div className="Orders-overview">
       {stats && (
