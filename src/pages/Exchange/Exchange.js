@@ -850,5 +850,21 @@ export const Exchange = forwardRef((props, ref) => {
     setFromTokenAddress(swapOption, token.address);
   };
 
+  const renderChart = () => {
+    return (
+      <ExchangeTVChart
+        fromTokenAddress={fromTokenAddress}
+        toTokenAddress={toTokenAddress}
+        infoTokens={infoTokens}
+        swapOption={swapOption}
+        chainId={chainId}
+        positions={positions}
+        savedShouldShowPositionLines={savedShouldShowPositionLines}
+        orders={orders}
+        setToTokenAddress={setToTokenAddress}
+      />
+    );
+  };
+  
   return <div className="Exchange page-layout"></div>;
 });
