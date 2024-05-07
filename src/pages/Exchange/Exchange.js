@@ -698,6 +698,23 @@ export const Exchange = forwardRef((props, ref) => {
         setIsPluginApproving(false);
       });
   };
-  
+
+  const approvePositionRouter = ({ sentMsg, failMsg }) => {
+    setIsPositionRouterApproving(true);
+    return approvePlugin(chainId, positionRouterAddress, {
+      library,
+      pendingTxns,
+      setPendingTxns,
+      sentMsg,
+      failMsg,
+    })
+      .then(() => {
+        setIsWaitingForPositionRouterApproval(true);
+      })
+      .finally(() => {
+        setIsPositionRouterApproving(false);
+      });
+  };
+
   return <div className="Exchange page-layout"></div>;
 });
