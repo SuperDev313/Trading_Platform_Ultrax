@@ -51,6 +51,32 @@ const getTokenAddress = (token, nativeTokenAddress) => {
   return token.address;
 };
 
+function applyPendingChanges(position, pendingPositions) {
+  if (!pendingPositions) {
+    return;
+  }
+  const { key } = position;
+
+  if (
+    pendingPositions[key] &&
+    pendingPositions[key].updatedAt &&
+    pendingPositions[key].pendingChanges &&
+    pendingPositions[key].updatedAt + PENDING_POSITION_VALID_DURATION > Date.now()
+  ) {
+    const { pendingChanges } = pendingPositions[key];
+    if (pendingChanges.size && position.size.eq(pendingChanges.size)) {
+      return;
+    }
+
+    if (pendingChanges.expectingCollateralChange && !position.collateral.eq(pendingChanges.collateralSnapshot)) {
+      return;
+    }
+
+    position.hasPendingChanges = true;
+    position.pendingChanges = pendingChanges;
+  }
+}
+
 export const Exchange = forwardRef((props, ref) => {
   return <div className="Exchange page-layout"></div>;
 });
