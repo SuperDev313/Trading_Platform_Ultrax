@@ -716,5 +716,38 @@ export const Exchange = forwardRef((props, ref) => {
       });
   };
 
+  const POSITIONS = "Positions";
+  const ORDERS = "Orders";
+  const TRADES = "Trades";
+
+  const LIST_SECTIONS = [POSITIONS, flagOrdersEnabled && ORDERS, TRADES].filter(Boolean);
+  let [listSection, setListSection] = useLocalStorageByChainId(chainId, "List-section-v2", LIST_SECTIONS[0]);
+  const LIST_SECTIONS_LABELS = {
+    [ORDERS]: t`Open Orders (${orders.length})`,
+    [POSITIONS]: t`Positions (${positions.length})`,
+    [TRADES]: t`Trade History`,
+  };
+  if (!LIST_SECTIONS.includes(listSection)) {
+    listSection = LIST_SECTIONS[0];
+  }
+
+  if (!getToken(chainId, toTokenAddress)) {
+    return null;
+  }
+
+  const renderCancelOrderButton = () => {
+    if (cancelOrderIdList.length === 0) return;
+    return (
+      <button
+        className="muted font-base cancel-order-btn"
+        disabled={isCancelMultipleOrderProcessing}
+        type="button"
+        onClick={onMultipleCancelClick}
+      >
+        <Plural value={cancelOrderIdList.length} one="Cancel order" other="Cancel # orders" />
+      </button>
+    );
+  };
+
   return <div className="Exchange page-layout"></div>;
 });
