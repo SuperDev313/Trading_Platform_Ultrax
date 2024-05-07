@@ -206,3 +206,35 @@
     );
     pointer-events: none;
   }
+
+  
+.PositionEditor-info-box {
+    margin-bottom: 1.05rem;
+  }
+  
+  .PositionEditor-keep-leverage-settings .Checkbox {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    direction: rtl;
+    font-size: var(--font-sm);
+    margin-bottom: 0.465rem;
+  }
+  
+  .PositionEditor-accept-profit-warning .Checkbox {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    direction: rtl;
+    font-size: var(--font-sm);
+    margin-bottom: 0.465rem;
+  }
+  
+  .PositionEditor-allow-higher-slippage .Checkbox {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    direction: rtl;
+    font-size: var(--font-sm);
+    margin-bottom: 0.465rem;
+  }
