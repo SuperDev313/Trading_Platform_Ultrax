@@ -287,5 +287,91 @@ export function getPositionQuery(tokens, nativeTokenAddress) {
 }
 
 export const Exchange = forwardRef((props, ref) => {
+  const {
+    savedIsPnlInLeverage,
+    setSavedIsPnlInLeverage,
+    savedShowPnlAfterFees,
+    savedSlippageAmount,
+    pendingTxns,
+    setPendingTxns,
+    savedShouldShowPositionLines,
+    setSavedShouldShowPositionLines,
+    connectWallet,
+    savedShouldDisableValidationForTesting,
+    openSettings,
+  } = props;
+  const [showBanner, setShowBanner] = useLocalStorageSerializeKey("showBanner", true);
+  const [bannerHidden, setBannerHidden] = useLocalStorageSerializeKey("bannerHidden", null);
+
+  const [pendingPositions, setPendingPositions] = useState({});
+  const [updatedPositions, setUpdatedPositions] = useState({});
+
+  useEffect(() => {
+    if (new Date() > new Date("2021-11-30")) {
+      setShowBanner(false);
+    } else {
+      if (bannerHidden && new Date(bannerHidden) > new Date()) {
+        setShowBanner(false);
+      } else {
+        setBannerHidden(null);
+        setShowBanner(true);
+      }
+    }
+  }, [showBanner, bannerHidden, setBannerHidden, setShowBanner]);
+
+  const { active, account, library } = useWeb3React();
+  const { chainId } = useChainId();
+  const currentAccount = account;
+
+  const nativeTokenAddress = getContract(chainId, "NATIVE_TOKEN");
+
+  const vaultAddress = getContract(chainId, "Vault");
+  const positionRouterAddress = getContract(chainId, "PositionRouter");
+  const readerAddress = getContract(chainId, "Reader");
+  const usdgAddress = getContract(chainId, "USDG");
+
+  const whitelistedTokens = getWhitelistedTokens(chainId);
+  const whitelistedTokenAddresses = whitelistedTokens.map((token) => token.address);
+
+  const positionQuery = getPositionQuery(whitelistedTokens, nativeTokenAddress);
+
+  const defaultCollateralSymbol = getConstant(chainId, "defaultCollateralSymbol");
+  const defaultTokenSelection = useMemo(
+    () => ({
+      [SWAP]: {
+        from: DEFAULT_TOKEN,
+        to: getTokenBySymbol(chainId, defaultCollateralSymbol).address,
+      },
+      [LONG]: {
+        from: DEFAULT_TOKEN,
+        to: DEFAULT_TOKEN,
+      },
+      [SHORT]: {
+        from: getTokenBySymbol(chainId, defaultCollateralSymbol).address,
+        to: DEFAULT_TOKEN,
+      },
+    }),
+    [chainId, defaultCollateralSymbol]
+  );
+
+  const [tokenSelection, setTokenSelection] = useLocalStorageByChainId(
+    chainId,
+    "Exchange-token-selection-v2",
+    defaultTokenSelection
+  );
+  const [swapOption, setSwapOption] = useLocalStorageByChainId(chainId, "Swap-option-v2", LONG);
+
+  const fromTokenAddress = tokenSelection[swapOption].from;
+  const toTokenAddress = tokenSelection[swapOption].to;
+
+  const setFromTokenAddress = useCallback(
+    (selectedSwapOption, address) => {
+      const newTokenSelection = JSON.parse(JSON.stringify(tokenSelection));
+      newTokenSelection[selectedSwapOption].from = address;
+      setTokenSelection(newTokenSelection);
+    },
+    [tokenSelection, setTokenSelection]
+  );
+
   return <div className="Exchange page-layout"></div>;
 });
