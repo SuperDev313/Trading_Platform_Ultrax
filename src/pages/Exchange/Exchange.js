@@ -44,6 +44,13 @@ function pushErrorNotification(chainId, message, e) {
   );
 }
 
+const getTokenAddress = (token, nativeTokenAddress) => {
+  if (token.address === AddressZero) {
+    return nativeTokenAddress;
+  }
+  return token.address;
+};
+
 export const Exchange = forwardRef((props, ref) => {
   return <div className="Exchange page-layout"></div>;
 });
