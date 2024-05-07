@@ -29,6 +29,28 @@ import { formatDateTime } from "lib/dates";
 export default function OrdersOverview() {
   return (
     <div className="Orders-overview">
+      {stats && (
+        <p className="Orders-overview-stats">
+          <Trans>
+            Total active: {openTotal}, executed: {executedTotal}, cancelled: {cancelledTotal}
+          </Trans>
+          <br />
+          <Trans>
+            Increase active: {stats.openIncrease}, executed: {stats.executedIncrease}, cancelled:{" "}
+            {stats.cancelledIncrease}
+          </Trans>
+          <br />
+          <Trans>
+            Decrease active: {stats.openDecrease}, executed: {stats.executedDecrease}, cancelled:{" "}
+            {stats.cancelledDecrease}
+          </Trans>
+          <br />
+          <Trans>
+            Swap active: {stats.openSwap}, executed: {stats.executedSwap}, cancelled: {stats.cancelledSwap}
+          </Trans>
+          <br />
+        </p>
+      )}
       <p>
         <span className="positive">
           <Trans>Price conditions are met</Trans>
