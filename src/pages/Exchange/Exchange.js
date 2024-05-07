@@ -373,5 +373,29 @@ export const Exchange = forwardRef((props, ref) => {
     [tokenSelection, setTokenSelection]
   );
 
+  const setToTokenAddress = useCallback(
+    (selectedSwapOption, address) => {
+      const newTokenSelection = JSON.parse(JSON.stringify(tokenSelection));
+      newTokenSelection[selectedSwapOption].to = address;
+      if (selectedSwapOption === LONG || selectedSwapOption === SHORT) {
+        newTokenSelection[LONG].to = address;
+        newTokenSelection[SHORT].to = address;
+      }
+      setTokenSelection(newTokenSelection);
+    },
+    [tokenSelection, setTokenSelection]
+  );
+
+  const setMarket = (selectedSwapOption, toTokenAddress) => {
+    setSwapOption(selectedSwapOption);
+    const newTokenSelection = JSON.parse(JSON.stringify(tokenSelection));
+    newTokenSelection[selectedSwapOption].to = toTokenAddress;
+    if (selectedSwapOption === LONG || selectedSwapOption === SHORT) {
+      newTokenSelection[LONG].to = toTokenAddress;
+      newTokenSelection[SHORT].to = toTokenAddress;
+    }
+    setTokenSelection(newTokenSelection);
+  };
+  
   return <div className="Exchange page-layout"></div>;
 });
