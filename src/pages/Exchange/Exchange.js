@@ -846,5 +846,9 @@ export const Exchange = forwardRef((props, ref) => {
     );
   };
 
+  const onSelectWalletToken = (token) => {
+    setFromTokenAddress(swapOption, token.address);
+  };
+
   return <div className="Exchange page-layout"></div>;
 });
