@@ -245,6 +245,47 @@ export function getPositions(
   return { positions, positionsMap };
 }
 
+export function getPositionQuery(tokens, nativeTokenAddress) {
+  const collateralTokens = [];
+  const indexTokens = [];
+  const isLong = [];
+
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i];
+    if (token.isStable) {
+      continue;
+    }
+    if (token.isWrapped) {
+      continue;
+    }
+    collateralTokens.push(getTokenAddress(token, nativeTokenAddress));
+    indexTokens.push(getTokenAddress(token, nativeTokenAddress));
+    isLong.push(true);
+  }
+
+  for (let i = 0; i < tokens.length; i++) {
+    const stableToken = tokens[i];
+    if (!stableToken.isStable) {
+      continue;
+    }
+
+    for (let j = 0; j < tokens.length; j++) {
+      const token = tokens[j];
+      if (token.isStable) {
+        continue;
+      }
+      if (token.isWrapped) {
+        continue;
+      }
+      collateralTokens.push(stableToken.address);
+      indexTokens.push(getTokenAddress(token, nativeTokenAddress));
+      isLong.push(false);
+    }
+  }
+
+  return { collateralTokens, indexTokens, isLong };
+}
+
 export const Exchange = forwardRef((props, ref) => {
   return <div className="Exchange page-layout"></div>;
 });
