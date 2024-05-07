@@ -749,5 +749,102 @@ export const Exchange = forwardRef((props, ref) => {
     );
   };
 
+  const getListSection = () => {
+    return (
+      <div className="position-manager-container">
+        <div className="Exchange-list-tab-container">
+          <Tab
+            options={LIST_SECTIONS}
+            optionLabels={LIST_SECTIONS_LABELS}
+            option={listSection}
+            onChange={(section) => setListSection(section)}
+            type="inline"
+            className="Exchange-list-tabs"
+          />
+          <div className="align-right Exchange-should-show-position-lines">
+            {renderCancelOrderButton()}
+            <Checkbox
+              isChecked={savedShouldShowPositionLines}
+              setIsChecked={setSavedShouldShowPositionLines}
+              className={cx("muted chart-positions", { active: savedShouldShowPositionLines })}
+            >
+              <span>
+                <Trans>Chart positions</Trans>
+              </span>
+            </Checkbox>
+          </div>
+        </div>
+        {listSection === POSITIONS && (
+          <PositionsList
+            positionsDataIsLoading={positionsDataIsLoading}
+            pendingPositions={pendingPositions}
+            setPendingPositions={setPendingPositions}
+            setListSection={setListSection}
+            setIsWaitingForPluginApproval={setIsWaitingForPluginApproval}
+            setIsWaitingForPositionRouterApproval={setIsWaitingForPositionRouterApproval}
+            approveOrderBook={approveOrderBook}
+            approvePositionRouter={approvePositionRouter}
+            isPluginApproving={isPluginApproving}
+            isPositionRouterApproving={isPositionRouterApproving}
+            isWaitingForPluginApproval={isWaitingForPluginApproval}
+            isWaitingForPositionRouterApproval={isWaitingForPositionRouterApproval}
+            orderBookApproved={orderBookApproved}
+            positionRouterApproved={positionRouterApproved}
+            positions={positions}
+            positionsMap={positionsMap}
+            infoTokens={infoTokens}
+            active={active}
+            account={account}
+            library={library}
+            pendingTxns={pendingTxns}
+            setPendingTxns={setPendingTxns}
+            flagOrdersEnabled={flagOrdersEnabled}
+            savedIsPnlInLeverage={savedIsPnlInLeverage}
+            chainId={chainId}
+            nativeTokenAddress={nativeTokenAddress}
+            setMarket={setMarket}
+            orders={orders}
+            showPnlAfterFees={savedShowPnlAfterFees}
+            minExecutionFee={minExecutionFee}
+            minExecutionFeeUSD={minExecutionFeeUSD}
+            minExecutionFeeErrorMessage={minExecutionFeeErrorMessage}
+            usdgSupply={usdgSupply}
+            totalTokenWeights={totalTokenWeights}
+            openSettings={openSettings}
+          />
+        )}
+        {listSection === ORDERS && (
+          <OrdersList
+            account={account}
+            active={active}
+            library={library}
+            pendingTxns={pendingTxns}
+            setPendingTxns={setPendingTxns}
+            infoTokens={infoTokens}
+            positionsMap={positionsMap}
+            chainId={chainId}
+            orders={orders}
+            totalTokenWeights={totalTokenWeights}
+            usdgSupply={usdgSupply}
+            savedShouldDisableValidationForTesting={savedShouldDisableValidationForTesting}
+            cancelOrderIdList={cancelOrderIdList}
+            setCancelOrderIdList={setCancelOrderIdList}
+          />
+        )}
+        {listSection === TRADES && (
+          <TradeHistory
+            account={account}
+            forSingleAccount={true}
+            infoTokens={infoTokens}
+            getTokenInfo={getTokenInfo}
+            chainId={chainId}
+            nativeTokenAddress={nativeTokenAddress}
+            shouldShowPaginationButtons={true}
+          />
+        )}
+      </div>
+    );
+  };
+
   return <div className="Exchange page-layout"></div>;
 });
