@@ -24,6 +24,26 @@ function pushSuccessNotification(chainId, message, e) {
   );
 }
 
+function pushErrorNotification(chainId, message, e) {
+  const { transactionHash } = e;
+  const id = ethers.utils.id(message + transactionHash);
+  if (notifications[id]) {
+    return;
+  }
+
+  notifications[id] = true;
+
+  const txUrl = getExplorerUrl(chainId) + "tx/" + transactionHash;
+  helperToast.error(
+    <div>
+      {message}{" "}
+      <ExternalLink href={txUrl}>
+        <Trans>View</Trans>
+      </ExternalLink>
+    </div>
+  );
+}
+
 export const Exchange = forwardRef((props, ref) => {
   return <div className="Exchange page-layout"></div>;
 });
