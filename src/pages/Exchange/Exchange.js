@@ -1,22 +1,78 @@
-import ExternalLink from "components/ExternalLink/ExternalLink";
-import { getExplorerUrl } from "config/chains";
+import React, { useEffect, useState, useMemo, useCallback, forwardRef, useImperativeHandle } from "react";
+import { Trans, t, Plural } from "@lingui/macro";
+import { useWeb3React } from "@web3-react/core";
+import useSWR from "swr";
+import { ethers } from "ethers";
+import cx from "classnames";
+import {
+  BASIS_POINTS_DIVISOR,
+  MARGIN_FEE_BASIS_POINTS,
+  SWAP,
+  LONG,
+  SHORT,
+  USD_DECIMALS,
+  getPositionKey,
+  getPositionContractKey,
+  getLeverage,
+  getDeltaStr,
+  useAccountOrders,
+  getPageTitle,
+  getFundingFee,
+  getLeverageStr,
+} from "lib/legacy";
+import { getConstant, getExplorerUrl } from "config/chains";
+import { approvePlugin, useExecutionFee, cancelMultipleOrders } from "domain/legacy";
+
+import { getContract } from "config/contracts";
+
+import Reader from "abis/ReaderV2.json";
+import VaultV2 from "abis/VaultV2.json";
+import Router from "abis/Router.json";
+import Token from "abis/Token.json";
+
+import Checkbox from "components/Checkbox/Checkbox";
+import SwapBox from "components/Exchange/SwapBox";
+import ExchangeTVChart, { getChartToken } from "components/Exchange/ExchangeTVChart";
+import PositionsList from "components/Exchange/PositionsList";
+import OrdersList from "components/Exchange/OrdersList";
+import TradeHistory from "components/Exchange/TradeHistory";
+import ExchangeWalletTokens from "components/Exchange/ExchangeWalletTokens";
+import Tab from "components/Tab/Tab";
+import Footer from "components/Footer/Footer";
+
+import "./Exchange.css";
+import { contractFetcher } from "lib/contracts";
+import { useInfoTokens } from "domain/tokens";
+import { useLocalStorageByChainId, useLocalStorageSerializeKey } from "lib/localStorage";
 import { helperToast } from "lib/helperToast";
-import { getExchangeRate } from "lib/legacy";
+import { getTokenInfo } from "domain/tokens/utils";
+import { bigNumberify, formatAmount } from "lib/numbers";
+import { getToken, getTokenBySymbol, getTokens, getWhitelistedTokens } from "config/tokens";
+import { useChainId } from "lib/chains";
+import ExternalLink from "components/ExternalLink/ExternalLink";
+import UsefulLinks from "components/Exchange/UsefulLinks";
+import { DEFAULT_TOKEN } from "config/tokens";
+
+const { AddressZero } = ethers.constants;
+
+const PENDING_POSITION_VALID_DURATION = 600 * 1000;
+const UPDATED_POSITION_VALID_DURATION = 60 * 1000;
+
+const notifications = {};
 
 function pushSuccessNotification(chainId, message, e) {
   const { transactionHash } = e;
   const id = ethers.utils.id(message + transactionHash);
-  if (notification[id]) {
+  if (notifications[id]) {
     return;
   }
 
-  notification[id] = true;
+  notifications[id] = true;
 
   const txUrl = getExplorerUrl(chainId) + "tx/" + transactionHash;
   helperToast.success(
     <div>
-      {message}
-      {""}
+      {message}{" "}
       <ExternalLink href={txUrl}>
         <Trans>View</Trans>
       </ExternalLink>
@@ -715,7 +771,6 @@ export const Exchange = forwardRef((props, ref) => {
         setIsPositionRouterApproving(false);
       });
   };
-
   const POSITIONS = "Positions";
   const ORDERS = "Orders";
   const TRADES = "Trades";
