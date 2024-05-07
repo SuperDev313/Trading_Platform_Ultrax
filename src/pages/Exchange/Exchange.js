@@ -396,6 +396,291 @@ export const Exchange = forwardRef((props, ref) => {
     }
     setTokenSelection(newTokenSelection);
   };
-  
+
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [isPendingConfirmation, setIsPendingConfirmation] = useState(false);
+
+  const tokens = getTokens(chainId);
+
+  const tokenAddresses = tokens.map((token) => token.address);
+  const { data: tokenBalances } = useSWR(active && [active, chainId, readerAddress, "getTokenBalances", account], {
+    fetcher: contractFetcher(library, Reader, [tokenAddresses]),
+  });
+
+  const { data: positionData, error: positionDataError } = useSWR(
+    active && [active, chainId, readerAddress, "getPositions", vaultAddress, account],
+    {
+      fetcher: contractFetcher(library, Reader, [
+        positionQuery.collateralTokens,
+        positionQuery.indexTokens,
+        positionQuery.isLong,
+      ]),
+    }
+  );
+  const positionsDataIsLoading = active && !positionData && !positionDataError;
+
+  const { data: fundingRateInfo } = useSWR([active, chainId, readerAddress, "getFundingRates"], {
+    fetcher: contractFetcher(library, Reader, [vaultAddress, nativeTokenAddress, whitelistedTokenAddresses]),
+  });
+
+  const { data: totalTokenWeights } = useSWR(
+    [`Exchange:totalTokenWeights:${active}`, chainId, vaultAddress, "totalTokenWeights"],
+    {
+      fetcher: contractFetcher(library, VaultV2),
+    }
+  );
+
+  const { data: usdgSupply } = useSWR([`Exchange:usdgSupply:${active}`, chainId, usdgAddress, "totalSupply"], {
+    fetcher: contractFetcher(library, Token),
+  });
+
+  const orderBookAddress = getContract(chainId, "OrderBook");
+  const routerAddress = getContract(chainId, "Router");
+  const { data: orderBookApproved } = useSWR(
+    active && [active, chainId, routerAddress, "approvedPlugins", account, orderBookAddress],
+    {
+      fetcher: contractFetcher(library, Router),
+    }
+  );
+
+  const { data: positionRouterApproved } = useSWR(
+    active && [active, chainId, routerAddress, "approvedPlugins", account, positionRouterAddress],
+    {
+      fetcher: contractFetcher(library, Router),
+    }
+  );
+
+  const { infoTokens } = useInfoTokens(library, chainId, active, tokenBalances, fundingRateInfo);
+
+  console.log("infoTokenádsdfs :>> ", infoTokens);
+  const { minExecutionFee, minExecutionFeeUSD, minExecutionFeeErrorMessage } = useExecutionFee(
+    library,
+    active,
+    chainId,
+    infoTokens
+  );
+
+  useEffect(() => {
+    const fromToken = getTokenInfo(infoTokens, fromTokenAddress);
+    const toToken = getTokenInfo(infoTokens, toTokenAddress);
+    let selectedToken = getChartToken(swapOption, fromToken, toToken, chainId);
+    let currentTokenPriceStr = formatAmount(selectedToken.maxPrice, USD_DECIMALS, 2, true);
+    let title = getPageTitle(
+      currentTokenPriceStr + ` | ${selectedToken.symbol}${selectedToken.isStable ? "" : "-USD"}`
+    );
+    document.title = title;
+  }, [tokenSelection, swapOption, infoTokens, chainId, fromTokenAddress, toTokenAddress]);
+  const { positions, positionsMap } = getPositions(
+    chainId,
+    positionQuery,
+    positionData,
+    infoTokens,
+    savedIsPnlInLeverage,
+    savedShowPnlAfterFees,
+    account,
+    pendingPositions,
+    updatedPositions
+  );
+
+  useImperativeHandle(ref, () => ({
+    onUpdatePosition(key, size, collateral, averagePrice, entryFundingRate, reserveAmount, realisedPnl) {
+      for (let i = 0; i < positions.length; i++) {
+        const position = positions[i];
+        if (position.contractKey === key) {
+          updatedPositions[position.key] = {
+            size,
+            collateral,
+            averagePrice,
+            entryFundingRate,
+            reserveAmount,
+            realisedPnl,
+            updatedAt: Date.now(),
+          };
+          setUpdatedPositions({ ...updatedPositions });
+          break;
+        }
+      }
+    },
+    onClosePosition(key, size, collateral, averagePrice, entryFundingRate, reserveAmount, realisedPnl, e) {
+      for (let i = 0; i < positions.length; i++) {
+        const position = positions[i];
+        if (position.contractKey === key) {
+          updatedPositions[position.key] = {
+            size: bigNumberify(0),
+            collateral: bigNumberify(0),
+            averagePrice,
+            entryFundingRate,
+            reserveAmount,
+            realisedPnl,
+            updatedAt: Date.now(),
+          };
+          setUpdatedPositions({ ...updatedPositions });
+          break;
+        }
+      }
+    },
+
+    onIncreasePosition(key, account, collateralToken, indexToken, collateralDelta, sizeDelta, isLong, price, fee, e) {
+      if (account !== currentAccount) {
+        return;
+      }
+
+      const indexTokenItem = getToken(chainId, indexToken?.toLowerCase());
+      const tokenSymbol = indexTokenItem.isWrapped ? getConstant(chainId, "nativeTokenSymbol") : indexTokenItem.symbol;
+      const longOrShortText = isLong ? t`Long` : t`Short`;
+      let message;
+      if (sizeDelta.eq(0)) {
+        message = t`Deposited ${formatAmount(
+          collateralDelta,
+          USD_DECIMALS,
+          2,
+          true
+        )} USD into ${tokenSymbol} ${longOrShortText}`;
+      } else {
+        message = t`Increased ${tokenSymbol} ${longOrShortText}, +${formatAmount(
+          sizeDelta,
+          USD_DECIMALS,
+          2,
+          true
+        )} USD.`;
+      }
+
+      pushSuccessNotification(chainId, message, e);
+    },
+
+    onDecreasePosition(key, account, collateralToken, indexToken, collateralDelta, sizeDelta, isLong, price, fee, e) {
+      if (account !== currentAccount) {
+        return;
+      }
+
+      const indexTokenItem = getToken(chainId, indexToken?.toLowerCase());
+      const tokenSymbol = indexTokenItem.isWrapped ? getConstant(chainId, "nativeTokenSymbol") : indexTokenItem.symbol;
+      const longOrShortText = isLong ? t`Long` : t`Short`;
+
+      let message;
+      if (sizeDelta.eq(0)) {
+        message = t`Withdrew ${formatAmount(
+          collateralDelta,
+          USD_DECIMALS,
+          2,
+          true
+        )} USD from ${tokenSymbol} ${longOrShortText}.`;
+      } else {
+        message = t`Decreased ${tokenSymbol} ${longOrShortText}, -${formatAmount(
+          sizeDelta,
+          USD_DECIMALS,
+          2,
+          true
+        )} USD.`;
+      }
+
+      pushSuccessNotification(chainId, message, e);
+    },
+
+    onCancelIncreasePosition(
+      account,
+      path,
+      indexToken,
+      amountIn,
+      minOut,
+      sizeDelta,
+      isLong,
+      acceptablePrice,
+      executionFee,
+      blockGap,
+      timeGap,
+      e
+    ) {
+      if (account !== currentAccount) {
+        return;
+      }
+      const indexTokenItem = getToken(chainId, indexToken?.toLowerCase());
+      const tokenSymbol = indexTokenItem.isWrapped ? getConstant(chainId, "nativeTokenSymbol") : indexTokenItem.symbol;
+      const longOrShortText = isLong ? t`Long` : t`Short`;
+
+      const message = t`Could not increase ${tokenSymbol} ${longOrShortText} within the allowed slippage, you can adjust the allowed slippage in the settings on the top right of the page.`;
+      pushErrorNotification(chainId, message, e);
+
+      const key = getPositionKey(account, path[path.length - 1], indexToken?.toLowerCase(), isLong);
+      pendingPositions[key] = {};
+      setPendingPositions({ ...pendingPositions });
+    },
+
+    onCancelDecreasePosition(
+      account,
+      path,
+      indexToken,
+      collateralDelta,
+      sizeDelta,
+      isLong,
+      receiver,
+      acceptablePrice,
+      minOut,
+      executionFee,
+      blockGap,
+      timeGap,
+      e
+    ) {
+      if (account !== currentAccount) {
+        return;
+      }
+      const indexTokenItem = getToken(chainId, indexToken?.toLowerCase());
+      const tokenSymbol = indexTokenItem.isWrapped ? getConstant(chainId, "nativeTokenSymbol") : indexTokenItem.symbol;
+      const longOrShortText = isLong ? t`Long` : t`Short`;
+
+      const message = t`Could not decrease ${tokenSymbol} ${longOrShortText} within the allowed slippage, you can adjust the allowed slippage in the settings on the top right of the page.`;
+
+      pushErrorNotification(chainId, message, e);
+
+      const key = getPositionKey(account, path[path.length - 1], indexToken?.toLowerCase(), isLong);
+      pendingPositions[key] = {};
+      setPendingPositions({ ...pendingPositions });
+    },
+  }));
+
+  const flagOrdersEnabled = true;
+  const [orders] = useAccountOrders(flagOrdersEnabled);
+  // console.log("exchange_orders", orders);
+
+  const [isWaitingForPluginApproval, setIsWaitingForPluginApproval] = useState(false);
+  const [isWaitingForPositionRouterApproval, setIsWaitingForPositionRouterApproval] = useState(false);
+  const [isPluginApproving, setIsPluginApproving] = useState(false);
+  const [isPositionRouterApproving, setIsPositionRouterApproving] = useState(false);
+  const [isCancelMultipleOrderProcessing, setIsCancelMultipleOrderProcessing] = useState(false);
+  const [cancelOrderIdList, setCancelOrderIdList] = useState([]);
+
+  const onMultipleCancelClick = useCallback(
+    async function () {
+      setIsCancelMultipleOrderProcessing(true);
+      try {
+        const tx = await cancelMultipleOrders(chainId, library, cancelOrderIdList, {
+          successMsg: t`Orders cancelled.`,
+          failMsg: t`Cancel failed.`,
+          sentMsg: t`Cancel submitted.`,
+          pendingTxns,
+          setPendingTxns,
+        });
+        const receipt = await tx.wait();
+        if (receipt.status === 1) {
+          setCancelOrderIdList([]);
+        }
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error(error);
+      } finally {
+        setIsCancelMultipleOrderProcessing(false);
+      }
+    },
+    [
+      chainId,
+      library,
+      pendingTxns,
+      setPendingTxns,
+      setCancelOrderIdList,
+      cancelOrderIdList,
+      setIsCancelMultipleOrderProcessing,
+    ]
+  );
+
   return <div className="Exchange page-layout"></div>;
 });
