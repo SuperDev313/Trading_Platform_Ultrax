@@ -684,3 +684,226 @@
 .Confirmation-box-warning a {
   color: #ff5353;
 }
+
+.Exchange-swap-usd {
+  display: inline-block;
+  font-size: var(--font-sm);
+}
+
+.Exchange-swap-box {
+  width: 41.85rem;
+  display: grid;
+  position: relative;
+}
+
+.Exchange-swap-market-box-title {
+  font-size: var(--font-md);
+  margin-bottom: 1.25rem;
+  font-weight: 600;
+}
+
+.Exchange-swap-box-inner {
+  padding: 1.5rem;
+  box-shadow: 4px 4px 0px 0px #090d13;
+}
+
+.Exchange-swap-market-box {
+  padding: 1.5rem;
+  margin-top: 1.25rem;
+  padding-bottom: 1.5rem;
+  box-shadow: 4px 4px 0px 0px #090d13;
+}
+
+.Exchange-swap-market-box .App-card-divider {
+  margin: 0 -1.5rem 1.5rem;
+}
+
+.Exchange-swap-box .Radio {
+  margin-bottom: 1.05rem;
+}
+
+.Exchange-swap-box .Overlay-content-outer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 15.5rem;
+}
+
+.Exchange-swap-box .Overlay-content {
+  padding: 1.05rem;
+}
+
+.Exchange-swap-box .TokenSelector .Modal,
+.Selector .Modal {
+  align-items: flex-start;
+  justify-content: flex-end;
+}
+
+.Exchange-swap-box .Tab {
+  margin-bottom: 1.05rem;
+}
+
+.Exchange-swap-section {
+  margin-bottom: 12px;
+  border-radius: 4px;
+  padding: 12px 16px 12px 16px;
+  background-color: var(--bg-black);
+}
+
+.Exchange-swap-option-tabs.Tab.block .Tab-option {
+  padding: 1.05rem;
+}
+
+.Exchange-swap-order-type-tabs {
+  margin-top: 12px;
+}
+
+.Exchange-swap-order-type-tabs .muted {
+  color: var(--text-secondary) !important;
+  opacity: 1 !important;
+}
+
+.Exchange-swap-order-type-tabs .active {
+  color: var(--text-primary) !important;
+}
+
+.Exchange-swap-option-tabs.Tab.block .Tab-option-icon {
+  margin-top: -0.155rem;
+  transform: scale(0.75);
+  vertical-align: middle;
+  margin-right: 0.8rem;
+}
+
+.Exchange-swap-section-top {
+  display: grid;
+  grid-template-columns: auto auto;
+  font-size: var(--font-sm);
+  padding-bottom: 1.25rem;
+  line-height: 1;
+}
+.muted.title-edit-position-muted {
+  margin-right: 12px;
+}
+.title-edit-position-muted {
+  color: var(--text-secondary);
+}
+.Exchange-swap-section-bottom {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--bg-secondary);
+}
+
+.Exchange-swap-section:hover .Exchange-swap-section-bottom {
+  border-bottom: 1px solid var(--bg-accent);
+}
+
+.Exchange-swap-input-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.Exchange-swap-max {
+  position: absolute;
+  right: 1.25rem;
+  top: 3px;
+  color: var(--text-primary);
+  border-radius: 4px;
+  z-index: 1;
+  cursor: pointer;
+  font-size: var(--font-sm);
+  background: var(--bg-accent);
+  border: none;
+  opacity: 1;
+  height: 20px;
+  line-height: 20px;
+  font-weight: 500;
+  padding: 0 6px;
+}
+
+.Exchange-swap-max:hover {
+  color: var(--text-primary);
+  background: var(--bg-accent-active);
+}
+
+.Exchange-swap-max:active {
+  background: var(--primary-btn-active);
+}
+
+.Exchange-swap-section-bottom .TokenSelector-box {
+  font-size: 2.1rem;
+}
+
+.Exchange-leverage-box .TokenSelector-caret {
+  font-size: var(--font-base);
+  margin-left: 0.31rem;
+}
+
+input.Exchange-swap-input::placeholder {
+  color: var(--text-muted);
+}
+
+input.Exchange-swap-input {
+  padding: 0;
+  max-width: 100%;
+  font-size: var(--font-lg);
+  width: 100%;
+  padding-right: 2rem;
+}
+input.Exchange-swap-input.small {
+  max-width: 14.725rem;
+}
+
+.Exchange-swap-button-container {
+  padding-top: 0.31rem;
+}
+
+.Exchange-swap-button {
+  display: block;
+  width: 100%;
+}
+
+.Exchange-swap-ball-container {
+  position: relative;
+  z-index: 1;
+}
+
+.Exchange-swap-ball-icon {
+  text-align: center;
+  display: block;
+  transform: rotate(135deg);
+  font-size: 2rem;
+  opacity: 0.8;
+}
+
+.Exchange-swap-ball {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  left: 50%;
+  margin-left: -1.7825rem;
+  top: -2rem;
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+  background: var(--bg-accent);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  color: white;
+  transform: rotate(-45deg);
+}
+
+.Exchange-swap-ball:hover {
+  background: var(--bg-accent-active);
+}
+
+.Exchange-swap-ball:active {
+  background: var(--primary-btn-active);
+}
+
+.Exchange-swap-ball:hover .Exchange-swap-ball-icon {
+  opacity: 1;
+}
