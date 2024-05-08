@@ -79,6 +79,19 @@ export default function ChartTokenSelector(props) {
     onSelectToken(token);
   };
 
+  const indexPricesUrl = getServerUrl(chainId, "/prices");
+  const { data: listPrice } = useSWR("api/price/token", async () => {
+    return await fetch(indexPricesUrl).then((res) => res.json());
+  });
+
+  const getPrice = (symbol) => {
+    let symbolInfo = getTokenBySymbol(chainId, symbol);
+    if (symbolInfo.isNative) {
+      symbolInfo = getWrappedToken(chainId);
+    }
+    return listPrice[symbolInfo.address];
+  };
+
   var value = selectedToken();
 
   const _headerRenderer = ({ columnData, dataKey, disableSort, label, sortBy, sortDirection }) => {
@@ -96,7 +109,7 @@ export default function ChartTokenSelector(props) {
       </div>
     );
   };
-  
+
   return (
     <Menu>
       <Menu.Button as="div" disabled={isSwap}>
