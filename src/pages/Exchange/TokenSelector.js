@@ -44,6 +44,18 @@ export default function TokenSelector(props) {
   const onSearchKeywordChange = (e) => {
     setSearchKeyword(e.target.value);
   };
+  const filteredTokens = visibleTokens.filter((item) => {
+    return (
+      item.name.toLowerCase().indexOf(searchKeyword.toLowerCase()) > -1 ||
+      item.symbol.toLowerCase().indexOf(searchKeyword.toLowerCase()) > -1
+    );
+  });
+
+  const _handleKeyDown = (e) => {
+    if (e.key === "Enter" && filteredTokens.length > 0) {
+      onSelectToken(filteredTokens[0]);
+    }
+  };
 
   return (
     <div className={cx("TokenSelector", { disabled }, props.className, "style-modal-select-tokens")}>
