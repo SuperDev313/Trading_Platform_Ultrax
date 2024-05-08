@@ -17,6 +17,13 @@ export default function UsefulLinks({ className }) {
           </ExternalLink>
         </div>
       </div>
+      <div className="Exchange-info-row">
+        <div className="Exchange-info-label-button">
+          <ExternalLink href={""} className="text-accent fz-sm fw-400">
+            <Trans>Leaderboard</Trans>
+          </ExternalLink>
+        </div>
+      </div>
     </div>
   );
 }
