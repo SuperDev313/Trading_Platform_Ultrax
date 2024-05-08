@@ -30,6 +30,17 @@ export default function TokenSelector(props) {
 
   const visibleTokens = tokens.filter((t) => !t.isTempHidden);
 
+  const onSelectToken = (token) => {
+    setIsModalVisible(false);
+    props.onSelectToken(token);
+  };
+
+  useEffect(() => {
+    if (isModalVisible) {
+      setSearchKeyword("");
+    }
+  }, [isModalVisible]);
+
   const onSearchKeywordChange = (e) => {
     setSearchKeyword(e.target.value);
   };
