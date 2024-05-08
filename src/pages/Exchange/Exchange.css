@@ -907,3 +907,54 @@ input.Exchange-swap-input.small {
 .Exchange-swap-ball:hover .Exchange-swap-ball-icon {
   opacity: 1;
 }
+
+table.Exchange-list-small {
+  width: 100%;
+  background: linear-gradient(45deg, rgba(11, 5, 55, 0.6) 0%, rgba(21, 3, 48, 0.6) 100%);
+}
+
+table.Exchange-list-small th,
+table.Exchange-list-small td {
+  font-weight: normal;
+  text-align: left;
+  padding: 1.05rem;
+}
+
+.Exchange-list-card-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: 0.8rem;
+}
+
+.Exchange-list-title {
+  width: fit-content;
+  white-space: nowrap;
+  display: flex;
+  flex-direction: row !important;
+  align-items: center;
+}
+
+.Exchange-list-info-label {
+  font-size: var(--font-sm);
+  margin-top: 0.31rem;
+}
+.Exchange-list-info-label-long-short {
+  font-style: normal;
+  font-weight: 500;
+  line-height: 20px;
+  padding: 0px 6px;
+  border-radius: 5px;
+  margin-left: 12px;
+  width: fit-content;
+}
+.Exchange-list-muted {
+  font-size: var(--font-sm);
+}
+
+.Exchange-list-card .Exchange-list-side {
+  text-align: right;
+}
+
+.Exchange-list-card .Exchange-list-size-info {
+  margin-bottom: 0.8rem;
+}
