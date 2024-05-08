@@ -394,3 +394,35 @@
     font-size: 1.25rem;
     font-weight: normal;
   }
+
+  
+.Error-modal .Modal-content {
+    width: 31rem;
+  }
+  
+  .PositionEditor .Modal-content {
+    min-width: 400px;
+    max-width: 448px;
+    position: absolute;
+    max-height: 80vh;
+    overflow: hidden;
+    border: none;
+    top: auto;
+    bottom: auto;
+  }
+  
+  .PositionEditor .Modal-content .Modal-body {
+    overscroll-behavior: smooth;
+    max-height: calc(80vh - 8.525rem);
+    overflow-y: auto;
+  }
+  
+  .PositionEditor .Tab {
+    margin-bottom: 1.05rem;
+  }
+  
+  .PositionEditor-token-symbol {
+    font-size: 2.1rem;
+    text-align: right;
+  }
+  
