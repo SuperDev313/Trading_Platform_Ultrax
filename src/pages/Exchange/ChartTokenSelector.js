@@ -75,6 +75,28 @@ export default function ChartTokenSelector(props) {
     return listTokens;
   }, [inputSearch, listTokens]);
 
+  const onSelect = async (token) => {
+    onSelectToken(token);
+  };
+
+  var value = selectedToken();
+
+  const _headerRenderer = ({ columnData, dataKey, disableSort, label, sortBy, sortDirection }) => {
+    return (
+      <div
+        key={dataKey}
+        className="fw-400 text-secondary"
+        style={{
+          fontSize: "1.2rem",
+          textTransform: "capitalize",
+          textAlign: label.toLowerCase() === "symbol" ? "left" : "right",
+        }}
+      >
+        {label}
+      </div>
+    );
+  };
+  
   return (
     <Menu>
       <Menu.Button as="div" disabled={isSwap}>
