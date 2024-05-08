@@ -426,3 +426,43 @@
     text-align: right;
   }
   
+.ExchangeChart-container {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+  }
+  
+  .Exchange-list-modal .Modal-content {
+    width: 36rem;
+  }
+  
+  .Exchange-list {
+    width: 100%;
+  }
+  
+  .Position-list-order:not(:first-child) {
+    white-space: nowrap;
+    margin-top: 8px;
+  }
+  
+  .active-order-tooltip {
+    background: var(--dark-blue-hover);
+    padding: 0.75rem;
+    border-radius: var(--border-radius-sm);
+    white-space: normal;
+  }
+  .active-order-tooltip > .active-oredr-error {
+    margin-top: 0.5rem;
+  }
+  
+  .order-error span {
+    text-decoration-color: var(--error-red);
+    color: var(--error-red);
+  }
+  
+  .order-error .Tooltip-popup {
+    white-space: pre-line;
+  }
+  
