@@ -1,0 +1,9 @@
+.menu-item:hover {
+    background-color: var(--bg-primary) !important ;
+  }
+  
+  .button-select-token-chart {
+    display: flex;
+    align-items: center !important;
+  }
+  
