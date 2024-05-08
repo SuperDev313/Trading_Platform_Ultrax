@@ -30,6 +30,36 @@ export default function ChartTokenSelector(props) {
     setListFavoriteLocal(JSON.parse(localStorage.getItem("favorites-tokens")) || []);
   }, []);
 
+  const isLong = swapOption === LONG;
+  const isShort = swapOption === SHORT;
+  const isSwap = swapOption === SWAP;
+
+  let options = getTokens(chainId);
+  const whitelistedTokens = getWhitelistedTokens(chainId);
+  const indexTokens = whitelistedTokens.filter((token) => !token.isStable && !token.isWrapped);
+  const shortableTokens = indexTokens.filter((token) => token.isShortable);
+
+  if (isLong) {
+    options = indexTokens;
+  }
+  if (isShort) {
+    options = shortableTokens;
+  }
+
+  const hanldeFavoriteToken = (symbol) => {
+    const isAdded = listFavoriteLocal && listFavoriteLocal.length > 0 && listFavoriteLocal.find((e) => e === symbol);
+
+    if (isAdded) {
+      const listRemove = listFavoriteLocal.filter((e) => e !== symbol);
+      setListFavoriteLocal(listRemove);
+      localStorage.setItem("favorites-tokens", JSON.stringify(listRemove));
+    } else {
+      const newListFavorite = [...listFavoriteLocal, symbol];
+      setListFavoriteLocal(newListFavorite);
+      localStorage.setItem("favorites-tokens", JSON.stringify(newListFavorite));
+    }
+  };
+
   return (
     <Menu>
       <Menu.Button as="div" disabled={isSwap}>
