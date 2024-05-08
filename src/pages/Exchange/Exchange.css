@@ -631,4 +631,35 @@
   table.Exchange-list th {
     opacity: 0.7;
   }
+
+  .Exchange-leverage-box {
+    margin-bottom: 1.05rem;
+  }
+  
+  .Exchange-swap-box-info {
+    margin-bottom: 1.05rem;
+  }
+  
+  .Exchange-info-row {
+    display: grid;
+    grid-template-columns: auto auto;
+    font-size: var(--font-sm);
+    margin-bottom: 0.465rem;
+  }
+  
+  .Exchange-info-row.top-line {
+    border-top: 1px solid #23263b;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+  }
+  
+  .Exchange-info-label {
+    color: var(--text-secondary);
+    margin-right: 0.8rem;
+    font-size: var(--font-sm);
+    font-weight: 400;
+  }
+  .Exchange-info-value-warning {
+    color: #ff5353;
+  }
   
