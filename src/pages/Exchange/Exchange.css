@@ -663,3 +663,24 @@
     color: #ff5353;
   }
   
+.Confirmation-box-info,
+.Confirmation-box-info a,
+.Confirmation-box-warning,
+.Confirmation-box-warning a {
+  font-size: var(--font-sm);
+  text-align: center;
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.Confirmation-box-info,
+.Confirmation-box-info a {
+  opacity: 0.7;
+}
+
+.Confirmation-box-warning,
+.Confirmation-box-warning a {
+  color: #ff5353;
+}
