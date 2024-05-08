@@ -15,7 +15,17 @@ import { formatAmount } from "lib/numbers";
 import { USD_DECIMALS } from "lib/legacy";
 
 export default function ChartTokenSelector(props) {
-    
+  const { chainId, selectedToken, onSelectToken, swapOption } = props;
+  const [tabIndex, setTabIndex] = useState(1);
+  const [listFavoriteLocal, setListFavoriteLocal] = useState();
+  const [inputSearch, setInputSearch] = useState("");
+  const listPairUrl = getServerUrl(chainId, "/symbols");
+
+  const { data: listPair } = useSWR("/apo/get-list-pair", async () => {
+    const response = await fetch(listPairUrl);
+    return response.json();
+  });
+
   return (
     <Menu>
       <Menu.Button as="div" disabled={isSwap}>
