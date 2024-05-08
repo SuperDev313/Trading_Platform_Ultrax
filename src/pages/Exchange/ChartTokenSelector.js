@@ -9,7 +9,13 @@ import { AutoSizer, Column, Table } from "react-virtualized";
 import "react-virtualized/styles.css";
 import useSWR from "swr";
 
+import { getServerUrl } from "config/backend";
+import { getTokenBySymbol, getWrappedToken } from "config/tokens";
+import { formatAmount } from "lib/numbers";
+import { USD_DECIMALS } from "lib/legacy";
+
 export default function ChartTokenSelector(props) {
+    
   return (
     <Menu>
       <Menu.Button as="div" disabled={isSwap}>
