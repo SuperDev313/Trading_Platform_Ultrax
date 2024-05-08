@@ -1,14 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { Menu } from "@headlessui/react";
 import cx from "classnames";
-// import "./ChartTokenSelector.css";
+import "./ChartTokenSelector.css";
 import { LONG, SHORT, SWAP } from "lib/legacy";
 import { getTokens, getWhitelistedTokens } from "config/tokens";
 import { IoSearch, IoStar, IoStarOutline } from "react-icons/io5";
 import { AutoSizer, Column, Table } from "react-virtualized";
 import "react-virtualized/styles.css";
 import useSWR from "swr";
-
 import { getServerUrl } from "config/backend";
 import { getTokenBySymbol, getWrappedToken } from "config/tokens";
 import { formatAmount } from "lib/numbers";
@@ -79,20 +78,7 @@ export default function ChartTokenSelector(props) {
     onSelectToken(token);
   };
 
-  const indexPricesUrl = getServerUrl(chainId, "/prices");
-  const { data: listPrice } = useSWR("api/price/token", async () => {
-    return await fetch(indexPricesUrl).then((res) => res.json());
-  });
-
-  const getPrice = (symbol) => {
-    let symbolInfo = getTokenBySymbol(chainId, symbol);
-    if (symbolInfo.isNative) {
-      symbolInfo = getWrappedToken(chainId);
-    }
-    return listPrice[symbolInfo.address];
-  };
-
-  var value = selectedToken();
+  var value = selectedToken;
 
   const _headerRenderer = ({ columnData, dataKey, disableSort, label, sortBy, sortDirection }) => {
     return (
@@ -108,6 +94,19 @@ export default function ChartTokenSelector(props) {
         {label}
       </div>
     );
+  };
+
+  const indexPricesUrl = getServerUrl(chainId, "/prices");
+  const { data: listPrice } = useSWR("api/price/token", async () => {
+    return await fetch(indexPricesUrl).then((res) => res.json());
+  });
+
+  const getPrice = (symbol) => {
+    let symbolInfo = getTokenBySymbol(chainId, symbol);
+    if (symbolInfo.isNative) {
+      symbolInfo = getWrappedToken(chainId);
+    }
+    return listPrice[symbolInfo.address];
   };
 
   return (
