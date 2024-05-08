@@ -8,6 +8,12 @@ import Modal from "../Modal/Modal";
 import dropDownIcon from "img/DROP_DOWN.svg";
 import searchIcon from "img/search.svg";
 import "./TokenSelector.css";
+import TooltipWithPortal from "../Tooltip/TooltipWithPortal";
+import { bigNumberify, expandDecimals, formatAmount } from "lib/numbers";
+import { getToken } from "config/tokens";
+import { importImage } from "lib/legacy";
+import { t } from "@lingui/macro";
+import { useMedia } from "react-use";
 
 export default function TokenSelector(props) {
   const isSmallerScreen = useMedia("(max-width: 700px)");
@@ -41,9 +47,16 @@ export default function TokenSelector(props) {
     }
   }, [isModalVisible]);
 
+  if (!tokenInfo) {
+    return null;
+  }
+
+  const tokenImage = showSymbolImage && tokenInfo?.imageUrl;
+
   const onSearchKeywordChange = (e) => {
     setSearchKeyword(e.target.value);
   };
+
   const filteredTokens = visibleTokens.filter((item) => {
     return (
       item.name.toLowerCase().indexOf(searchKeyword.toLowerCase()) > -1 ||
