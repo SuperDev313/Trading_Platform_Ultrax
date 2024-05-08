@@ -26,6 +26,10 @@ export default function ChartTokenSelector(props) {
     return response.json();
   });
 
+  useEffect(() => {
+    setListFavoriteLocal(JSON.parse(localStorage.getItem("favorites-tokens")) || []);
+  }, []);
+
   return (
     <Menu>
       <Menu.Button as="div" disabled={isSwap}>
