@@ -60,6 +60,21 @@ export default function ChartTokenSelector(props) {
     }
   };
 
+  const listTokens = useMemo(() => {
+    if (tabIndex === 1) {
+      return options;
+    } else {
+      return options?.filter((e) => listFavoriteLocal.includes(e?.symbol));
+    }
+  }, [listFavoriteLocal, options, tabIndex]);
+
+  const listFilterToken = useMemo(() => {
+    if (inputSearch) {
+      return listTokens.filter((e) => e?.symbol?.toLowerCase()?.includes(inputSearch?.toLowerCase()));
+    }
+    return listTokens;
+  }, [inputSearch, listTokens]);
+
   return (
     <Menu>
       <Menu.Button as="div" disabled={isSwap}>
