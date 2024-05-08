@@ -465,4 +465,170 @@
   .order-error .Tooltip-popup {
     white-space: pre-line;
   }
+
+  
+.Exchange-list .App-card {
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .Exchange-list-item {
+    border-radius: 8px;
+    border-bottom: 1px solid #1f2d40;
+    background: #0e141f;
+    margin-bottom: 8px;
+  }
+  
+  .Exchange-list-item-error {
+    color: #ff5353;
+    margin-top: 0.465rem;
+    font-size: var(--font-sm);
+  }
+  
+  .Exchange-list.small {
+    display: none;
+  }
+  
+  button.Exchange-list-action {
+    display: flex;
+    color: #5486ff;
+    font-size: var(--font-base);
+    padding: 0;
+    border-radius: 3px;
+    background: none;
+    border: none;
+    margin: 0 0.3rem;
+  }
+  .Exchange-list-action.positions {
+    display: flex;
+    justify-content: flex-end;
+    width: -webkit-fill-available;
+  }
+  button.Exchange-list-action:hover {
+    color: rgb(54, 69, 117);
+  }
+  
+  table.Exchange-list {
+    border-collapse: separate;
+    border-spacing: 0px 8px;
+  }
+  .Exchange-list.trading-history {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .Exchange-list-container {
+    padding-right: 4px;
+    max-height: 192px;
+    overflow: hidden;
+    overflow-y: scroll;
+    width: 100%;
+  }
+  .Exchange-list-container::-webkit-scrollbar {
+    border-radius: 0 !important;
+    width: 8px !important;
+  }
+  .Exchange-list-container::-webkit-scrollbar-thumb {
+    border-radius: 4px !important;
+    background-color: var(--bg-tertiary) !important;
+  }
+  .Exchange-list-container::-webkit-scrollbar-track {
+    border-radius: 0 !important;
+    background-color: rgba(0, 0, 0, 0) !important;
+  }
+  table.Exchange-list th,
+  table.Exchange-list td {
+    border: none;
+    /* border-bottom: 2px solid red; */
+    font-weight: normal;
+    text-align: left;
+    padding: 1.05rem;
+    padding-left: 1.5rem;
+  }
+  table.Exchange-list .Exchange-list-item {
+    border-radius: 16px;
+    background: #0e141f;
+  }
+  table.Exchange-list .Exchange-list-item td {
+    border-bottom: 1px solid #1f2d40;
+  }
+  table.Exchange-list.Orders th,
+  table.Exchange-list.Orders td {
+    padding-top: 1.4rem;
+    padding-bottom: 1.4rem;
+  }
+  
+  table.Exchange-list tr {
+    border-bottom: 1px solid #1f2d40;
+  }
+  table.Exchange-list tr.Exchange-list-header.order-list {
+    border-bottom: none;
+  }
+  
+  table.Exchange-list td:first-child,
+  th:first-child {
+    border-radius: 8px 0 0 8px;
+  }
+  
+  table.Exchange-list td:last-child,
+  th:last-child {
+    border-radius: 0 8px 8px 0;
+  }
+  table.Exchange-list tr:last-child {
+    border-bottom: none;
+  }
+  
+  .Exchange-list-no-connect {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  .Exchange-list-no-connect-title {
+    color: var(--text-primary);
+    text-align: center;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 28px;
+    margin-top: 64px;
+  }
+  .Exchange-list-no-connect-text {
+    color: var(--text-secondary);
+    text-align: center;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 20px;
+    margin-top: 12px;
+    margin-bottom: 64px;
+  }
+  table.Exchange-list tr.Exchange-list-header {
+    background: none !important;
+    font-size: var(--font-sm);
+    font-weight: 400;
+    color: var(--text-secondary);
+  }
+  .Exchange-list-header.trading-history {
+    position: relative !important;
+    width: 100%;
+  }
+  table.Exchange-list tr.Exchange-list-header th {
+    padding-top: 1.4rem;
+    padding-bottom: 1.4rem;
+  }
+  table.Exchange-list tr.Exchange-list-header th:last-child {
+    display: flex;
+    justify-content: flex-end;
+  }
+  table.Exchange-list tr.Exchange-list-header.trading-history th:last-child {
+    display: inline-block;
+    justify-content: flex-end;
+  }
+  
+  table.Exchange-list th {
+    opacity: 0.7;
+  }
   
