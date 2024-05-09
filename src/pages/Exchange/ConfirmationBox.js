@@ -67,6 +67,28 @@ export default function ConfirmationBox(props) {
     borrowFeeText,
   } = props;
 
+
+  const existingTriggerOrders = useMemo(() => {
+    const wrappedToken = getWrappedToken(chainId);
+    return orders.filter((order) => {
+      if (order.type !== DECREASE) return false;
+      const sameToken =
+        order.indexToken === wrappedToken.address ? toToken.isNative : order.indexToken === toToken.address;
+      return order.isLong === isLong && sameToken;
+    });
+  }, [orders, chainId, isLong, toToken.address, toToken.isNative]);
+
+  const decreaseOrdersThatWillBeExecuted = useMemo(() => {
+    if (isSwap) return [];
+    return existingTriggerOrders.filter((order) => {
+      if (order.triggerAboveThreshold) {
+        return existingPosition?.markPrice.gte(order.triggerPrice);
+      } else {
+        return existingPosition?.markPrice.lte(order.triggerPrice);
+      }
+    });
+  }, [existingPosition, existingTriggerOrders, isSwap]);
+
   const getPrimaryText = () => {
     if (decreaseOrdersThatWillBeExecuted.length > 0 && !isTriggerWarningAccepted) {
       return t`Accept confirmation of trigger orders`;
