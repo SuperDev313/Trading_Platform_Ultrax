@@ -108,6 +108,16 @@ export default function ConfirmationBox(props) {
     return t`Shorting...`;
   };
 
+  const isPrimaryEnabled = () => {
+    if (getError()) {
+      return false;
+    }
+    if (decreaseOrdersThatWillBeExecuted.length > 0 && !isTriggerWarningAccepted) {
+      return false;
+    }
+    return !isPendingConfirmation && !isSubmitting;
+  };
+
   return (
     <div className="Confirmation-box">
       <Modal isVisible={true} setIsVisible={() => setIsConfirming(false)} label={title}>
