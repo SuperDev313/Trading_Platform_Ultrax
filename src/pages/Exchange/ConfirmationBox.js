@@ -67,7 +67,6 @@ export default function ConfirmationBox(props) {
     borrowFeeText,
   } = props;
 
-
   const existingTriggerOrders = useMemo(() => {
     const wrappedToken = getWrappedToken(chainId);
     return orders.filter((order) => {
@@ -138,6 +137,19 @@ export default function ConfirmationBox(props) {
       return false;
     }
     return !isPendingConfirmation && !isSubmitting;
+  };
+
+  const getError = () => {
+    if (!isSwap && hasExistingPosition && !isMarketOrder) {
+      const { delta, hasProfit } = calculatePositionDelta(triggerPriceUsd, existingPosition);
+      if (hasProfit && delta.eq(0)) {
+        return t`Invalid price, see warning`;
+      }
+    }
+    if (isMarketOrder && hasPendingProfit && !isProfitWarningAccepted) {
+      return t`Forfeit profit not checked`;
+    }
+    return false;
   };
 
   return (
