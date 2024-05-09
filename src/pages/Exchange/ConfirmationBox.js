@@ -152,6 +152,26 @@ export default function ConfirmationBox(props) {
     return false;
   };
 
+  const nativeTokenAddress = getContract(chainId, "NATIVE_TOKEN");
+  const spreadInfo = getSwapSpreadInfo(fromTokenInfo, toTokenInfo, isLong, nativeTokenAddress);
+
+  // it's meaningless for limit/stop orders to show spread based on current prices
+  const showSwapSpread = isSwap && isMarketOrder && !!spreadInfo;
+
+  const renderSwapSpreadWarning = useCallback(() => {
+    if (!isMarketOrder) {
+      return null;
+    }
+
+    if (spreadInfo && spreadInfo.isHigh) {
+      return (
+        <div className="Confirmation-box-warning">
+          <Trans>The spread is {`>`} 1%, please ensure the trade details are acceptable before confirming</Trans>
+        </div>
+      );
+    }
+  }, [isMarketOrder, spreadInfo]);
+
   return (
     <div className="Confirmation-box">
       <Modal isVisible={true} setIsVisible={() => setIsConfirming(false)} label={title}>
