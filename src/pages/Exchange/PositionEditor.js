@@ -153,6 +153,28 @@ export default function PositionEditor(props) {
                       )}
                     </div>
                   </div>
+                  <div className="Exchange-info-row liq-price">
+                    <div className="Exchange-info-label">
+                      <Trans>Liq. Price</Trans>
+                    </div>
+                    <div className="align-right">
+                      {!nextLiquidationPrice && (
+                        <div>
+                          {!fromAmount && `$${formatAmount(liquidationPrice, USD_DECIMALS, 2, true)}`}
+                          {fromAmount && "-"}
+                        </div>
+                      )}
+                      {nextLiquidationPrice && (
+                        <div>
+                          <div className="inline-block muted edit-collateral">
+                            ${formatAmount(liquidationPrice, USD_DECIMALS, 2, true)}
+                            <BsArrowRight className="transition-arrow" />
+                          </div>
+                          ${formatAmount(nextLiquidationPrice, USD_DECIMALS, 2, true)}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
