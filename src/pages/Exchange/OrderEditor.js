@@ -33,6 +33,34 @@ export default function OrderEditor(props) {
     savedShouldDisableValidationForTesting,
   } = props;
 
+  const { chainId } = useChainId();
+
+  const position = order.type !== SWAP ? getPositionForOrder(account, order, positionsMap) : null;
+  const liquidationPrice = order.type === DECREASE && position ? getLiquidationPrice(position) : null;
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const nativeTokenAddress = getContract(chainId, "NATIVE_TOKEN");
+  const fromTokenInfo =
+    order.type === SWAP ? getTokenInfo(infoTokens, order.path[0], true, nativeTokenAddress.toLowerCase()) : null;
+  const toTokenInfo =
+    order.type === SWAP
+      ? getTokenInfo(
+          infoTokens,
+          order.path[order.path.length - 1],
+          order.shouldUnwrap,
+          nativeTokenAddress.toLowerCase()
+        )
+      : null;
+
+  const triggerRatioInverted = useMemo(() => {
+    if (order.type !== SWAP) {
+      return null;
+    }
+
+    return isTriggerRatioInverted(fromTokenInfo, toTokenInfo);
+  }, [toTokenInfo, fromTokenInfo, order.type]);
+
   return (
     <Modal
       isVisible={true}
