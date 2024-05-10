@@ -249,6 +249,89 @@ export default function PositionEditor(props) {
     return true;
   };
 
+  useEffect(() => {
+    if (prevIsVisible !== isVisible) {
+      resetForm();
+    }
+  }, [prevIsVisible, isVisible]);
+
+  const depositCollateral = async () => {
+    setIsSwapping(true);
+    const tokenAddress0 = collateralTokenAddress === AddressZero ? nativeTokenAddress : collateralTokenAddress;
+    const path = [tokenAddress0];
+    const indexTokenAddress =
+      position.indexToken.address === AddressZero ? nativeTokenAddress : position.indexToken.address;
+
+    const priceBasisPoints = position.isLong ? 11000 : 9000;
+    const priceLimit = position.indexToken.maxPrice.mul(priceBasisPoints).div(10000);
+
+    const referralCode = ethers.constants.HashZero;
+    let params = [
+      path, // _path
+      indexTokenAddress, // _indexToken
+      fromAmount, // _amountIn
+      0, // _minOut
+      0, // _sizeDelta
+      position.isLong, // _isLong
+      priceLimit, // _acceptablePrice
+      minExecutionFee, // _executionFee
+      referralCode, // _referralCode
+      AddressZero, // _callbackTarget
+    ];
+
+    let method = "createIncreasePosition";
+    let value = minExecutionFee;
+    if (collateralTokenAddress === AddressZero) {
+      method = "createIncreasePositionETH";
+      value = fromAmount.add(minExecutionFee);
+      params = [
+        path, // _path
+        indexTokenAddress, // _indexToken
+        0, // _minOut
+        0, // _sizeDelta
+        position.isLong, // _isLong
+        priceLimit, // _acceptablePrice
+        minExecutionFee, // _executionFee
+        referralCode, // _referralCode
+        AddressZero, // _callbackTarget
+      ];
+    }
+
+    if (shouldRaiseGasError(getTokenInfo(infoTokens, collateralTokenAddress), fromAmount)) {
+      setIsSwapping(false);
+      helperToast.error(t`Leave at least ${formatAmount(DUST_BNB, 18, 3)} ETH for gas`);
+      return;
+    }
+
+    const contract = new ethers.Contract(positionRouterAddress, PositionRouter.abi, library.getSigner());
+    callContract(chainId, contract, method, params, {
+      value,
+      sentMsg: t`Deposit submitted.`,
+      successMsg: t`Requested deposit of ${formatAmount(fromAmount, position.collateralToken.decimals, 4)} ${
+        position.collateralToken.symbol
+      } into ${position.indexToken.symbol} ${longOrShortText}.`,
+      failMsg: t`Deposit failed.`,
+      setPendingTxns,
+    })
+      .then(async (res) => {
+        setFromValue("");
+        setIsVisible(false);
+
+        pendingPositions[position.key] = {
+          updatedAt: Date.now(),
+          pendingChanges: {
+            collateralSnapshot: position.collateral,
+            expectingCollateralChange: true,
+          },
+        };
+
+        setPendingPositions({ ...pendingPositions });
+      })
+      .finally(() => {
+        setIsSwapping(false);
+      });
+  };
+
   const getPrimaryText = () => {
     const [error] = getError();
     if (error) {
