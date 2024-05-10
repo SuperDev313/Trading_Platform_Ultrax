@@ -458,6 +458,14 @@ export default function PositionEditor(props) {
     withdrawCollateral();
   };
 
+  const EDIT_OPTIONS_LABELS = {
+    [DEPOSIT]: t`Deposit`,
+    [WITHDRAW]: t`Withdraw`,
+  };
+  const ERROR_TOOLTIP_MSG = {
+    [ErrorCode.InvalidLiqPrice]: t`Liquidation price would cross mark price.`,
+  };
+
   return (
     <div className="PositionEditor">
       {position && (
