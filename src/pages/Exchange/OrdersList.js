@@ -14,6 +14,18 @@ import {
 import { handleCancelOrder } from "domain/legacy";
 import { getContract } from "config/contracts";
 
+import "./OrdersList.css";
+import StatsTooltipRow from "../StatsTooltip/StatsTooltipRow";
+import { TRIGGER_PREFIX_ABOVE, TRIGGER_PREFIX_BELOW } from "config/ui";
+import { getTokenInfo, getUsd } from "domain/tokens/utils";
+import { formatAmount } from "lib/numbers";
+// import ExternalLink from "components/ExternalLink/ExternalLink";
+
+function getOrderTitle(order, indexTokenSymbol) {
+  const orderTypeText = order.type === INCREASE ? t`Increase` : t`Decrease`;
+  return `${orderTypeText} ${indexTokenSymbol}`;
+}
+
 export default function OrdersList(props) {
   const {
     account,
