@@ -33,7 +33,7 @@ export default function OrdersToa(props) {
     }
     return isChecked;
   };
-  
+
   return (
     <Modal
       setIsVisible={setIsVisible}
