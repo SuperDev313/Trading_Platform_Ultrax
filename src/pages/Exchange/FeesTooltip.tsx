@@ -12,6 +12,18 @@ type Fee = { label: string; value: string };
 type ExecutionFees = { fee?: BigNumber; feeUsd?: BigNumber };
 type FeeType = "open" | "close" | "swap" | "borrow" | "deposit" | "execution";
 
+function getFeeLabel(type: FeeType) {
+  const labels = {
+    close: t`Close Fee`,
+    open: t`Open Fee`,
+    swap: t`Swap Fee`,
+    borrow: t`Borrow Fee`,
+    deposit: t`Deposit Fee`,
+    execution: t`Execution Fee`,
+  };
+  return labels[type];
+}
+
 function FeesTooltip({
   fundingFee,
   positionFee,
