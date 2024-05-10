@@ -305,6 +305,27 @@ export default function ConfirmationBox(props) {
     );
   }, [existingOrder, isSwap, chainId, existingOrders, isLong, isLimitOrdersVisible, onCancelOrderClick]);
 
+  const renderExistingTriggerWarning = useCallback(() => {
+    if (
+      isSwap ||
+      existingTriggerOrders.length < 1 ||
+      decreaseOrdersThatWillBeExecuted.length > 0 ||
+      renderExistingOrderWarning()
+    ) {
+      return;
+    }
+    const existingTriggerOrderLength = existingTriggerOrders.length;
+    return (
+      <div className="Confirmation-box-info">
+        <Plural
+          value={existingTriggerOrderLength}
+          one="You have an active trigger order that could impact this position."
+          other="You have # active trigger orders that could impact this position."
+        />
+      </div>
+    );
+  }, [existingTriggerOrders, isSwap, decreaseOrdersThatWillBeExecuted, renderExistingOrderWarning]);
+  
   const renderExistingTriggerErrors = useCallback(() => {
     if (isSwap || decreaseOrdersThatWillBeExecuted?.length < 1) {
       return;
