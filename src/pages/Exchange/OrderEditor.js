@@ -39,6 +39,98 @@ export default function OrderEditor(props) {
       className="Exchange-list-modal"
       setIsVisible={() => setEditingOrder(null)}
       label={t`Edit order`}
-    ></Modal>
+    >
+      <div className="Exchange-swap-section">
+        <div className="Exchange-swap-section-top">
+          <div className="muted">
+            <Trans>Price</Trans>
+          </div>
+          {fromTokenInfo && toTokenInfo && (
+            <div
+              className="muted align-right clickable"
+              onClick={() => {
+                setTriggerRatioValue(
+                  formatAmountFree(getExchangeRate(fromTokenInfo, toTokenInfo, triggerRatioInverted), USD_DECIMALS, 10)
+                );
+              }}
+            >
+              <Trans>Mark Price: </Trans>
+              {formatAmount(getExchangeRate(fromTokenInfo, toTokenInfo, triggerRatioInverted), USD_DECIMALS, 2)}
+            </div>
+          )}
+        </div>
+        <div className="Exchange-swap-section-bottom">
+          <div className="Exchange-swap-input-container">
+            <input
+              type="number"
+              min="0"
+              placeholder="0.0"
+              className="Exchange-swap-input"
+              value={triggerRatioValue}
+              onChange={onTriggerRatioChange}
+            />
+          </div>
+          {(() => {
+            if (!toTokenInfo) return;
+            if (!fromTokenInfo) return;
+            const [tokenA, tokenB] = triggerRatioInverted ? [toTokenInfo, fromTokenInfo] : [fromTokenInfo, toTokenInfo];
+            return (
+              <div className="PositionEditor-token-symbol">
+                {tokenA.symbol}&nbsp;/&nbsp;{tokenB.symbol}
+              </div>
+            );
+          })()}
+        </div>
+      </div>
+      <ExchangeInfoRow label={t`Minimum received`}>
+        {triggerRatio && !triggerRatio.eq(order.triggerRatio) ? (
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <span className="muted">{formatAmount(order.minOut, toTokenInfo.decimals, 4, true)}</span>
+            &nbsp;
+            <BsArrowRight />
+            &nbsp;
+            {formatAmount(toAmount, toTokenInfo.decimals, 4, true)}
+          </div>
+        ) : (
+          formatAmount(order.minOut, toTokenInfo.decimals, 4, true)
+        )}
+        &nbsp;{toTokenInfo.symbol}
+      </ExchangeInfoRow>
+      <ExchangeInfoRow label={t`Price`}>
+        {triggerRatio && !triggerRatio.eq(0) && !triggerRatio.eq(order.triggerRatio) ? (
+          <>
+            <span className="muted">
+              {getExchangeRateDisplay(order.triggerRatio, fromTokenInfo, toTokenInfo, {
+                omitSymbols: !triggerRatio || !triggerRatio.eq(order.triggerRatio),
+              })}
+            </span>
+            &nbsp;
+            <BsArrowRight />
+            &nbsp;
+            {getExchangeRateDisplay(triggerRatio, fromTokenInfo, toTokenInfo)}
+          </>
+        ) : (
+          getExchangeRateDisplay(order.triggerRatio, fromTokenInfo, toTokenInfo, {
+            omitSymbols: !triggerRatio || !triggerRatio.eq(order.triggerRatio),
+          })
+        )}
+      </ExchangeInfoRow>
+      {fromTokenInfo && (
+        <div className="Exchange-info-row">
+          <div className="Exchange-info-label">
+            <Trans>{fromTokenInfo.symbol} price</Trans>
+          </div>
+          <div className="align-right">{formatAmount(fromTokenInfo.minPrice, USD_DECIMALS, 2, true)} USD</div>
+        </div>
+      )}
+      {toTokenInfo && (
+        <div className="Exchange-info-row">
+          <div className="Exchange-info-label">
+            <Trans>{toTokenInfo.symbol} price</Trans>
+          </div>
+          <div className="align-right">{formatAmount(toTokenInfo.maxPrice, USD_DECIMALS, 2, true)} USD</div>
+        </div>
+      )}
+    </Modal>
   );
 }
