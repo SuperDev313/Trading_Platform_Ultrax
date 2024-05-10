@@ -90,6 +90,53 @@ export default function OrdersList(props) {
     [setEditingOrder]
   );
 
+  const renderEmptyRow = useCallback(() => {
+    if (orders && orders.length) {
+      return null;
+    }
+
+    return (
+      <tr>
+        <td colSpan="6">
+          {!account ? (
+            <div className="Exchange-list-no-connect">
+              <span className="Exchange-list-no-connect-title">Wallet Required</span>
+              <span className="Exchange-list-no-connect-text">Connect wallet to view your opening orders</span>
+            </div>
+          ) : (
+            orders.length === 0 && (
+              <div
+                style={{
+                  width: "100%",
+                }}
+              >
+                <div
+                  className="fz-lg fw-600 text-primary"
+                  style={{
+                    textAlign: "center",
+                    marginTop: "4rem",
+                  }}
+                >
+                  No Order Found
+                </div>
+                <div
+                  className="fz-sm fw-500 text-secondary"
+                  style={{
+                    textAlign: "center",
+                    marginTop: "0.5rem",
+                    marginBottom: "4rem",
+                  }}
+                >
+                  You have no opening order
+                </div>
+              </div>
+            )
+          )}
+        </td>
+      </tr>
+    );
+  }, [account, orders]);
+
   return (
     <React.Fragment>
       <table className="Exchange-list Orders large App-box">
