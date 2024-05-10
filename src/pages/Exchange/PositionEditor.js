@@ -175,7 +175,22 @@ export default function PositionEditor(props) {
                       )}
                     </div>
                   </div>
+                  <div className="Exchange-info-row execution-fee">
+                    <div className="Exchange-info-label">
+                      <Trans>Execution Fee</Trans>
+                    </div>
+                    <div className="align-right">
+                      <FeesTooltip
+                        executionFees={{
+                          fee: minExecutionFee,
+                          feeUsd: minExecutionFeeUSD,
+                        }}
+                        depositFee={depositFeeUSD}
+                      />
+                    </div>
+                  </div>
                 </div>
+                <div className="Exchange-swap-button-container">{renderPrimaryButton()}</div>
               </div>
             )}
           </div>
