@@ -157,6 +157,144 @@ export default function OrdersList(props) {
     [onEditClick, onCancelClick]
   );
 
+  const renderLargeList = useCallback(() => {
+    if (!orders || !orders.length) {
+      return null;
+    }
+    return orders.reverse().map((order) => {
+      if (order.type === SWAP) {
+        const nativeTokenAddress = getContract(chainId, "NATIVE_TOKEN");
+        const fromTokenInfo = getTokenInfo(infoTokens, order.path[0], true, nativeTokenAddress.toLowerCase());
+        const toTokenInfo = getTokenInfo(
+          infoTokens,
+          order.path[order.path.length - 1],
+          order.shouldUnwrap,
+          nativeTokenAddress.toLowerCase()
+        );
+        const collateralUSD = getUsd(order.amountIn, fromTokenInfo.address, true, infoTokens);
+        const markExchangeRate = getExchangeRate(fromTokenInfo, toTokenInfo);
+        const orderId = `${order.type}-${order.index}`;
+        const titleText = (
+          <>
+            <Trans>Swap</Trans>{" "}
+            {formatAmount(
+              order.amountIn,
+              fromTokenInfo.decimals,
+              fromTokenInfo.isStable || fromTokenInfo.isUsdg ? 2 : 4,
+              true
+            )}{" "}
+            {fromTokenInfo?.symbol} for{" "}
+            {formatAmount(order.minOut, toTokenInfo.decimals, toTokenInfo.isStable || toTokenInfo.isUsdg ? 2 : 4, true)}{" "}
+            {toTokenInfo?.symbol}
+          </>
+        );
+
+        return (
+          <tr className="Exchange-list-item" key={orderId}>
+            <td className="Exchange-list-item-type">
+              <Trans>Limit</Trans>
+            </td>
+            <td>
+              <Tooltip
+                handle={titleText}
+                position="right-bottom"
+                renderContent={() => {
+                  return (
+                    <StatsTooltipRow
+                      label={t`Collateral`}
+                      value={`${formatAmount(collateralUSD, USD_DECIMALS, 2, true)} (${formatAmount(
+                        order.amountIn,
+                        fromTokenInfo.decimals,
+                        4,
+                        true
+                      )}
+                      ${fromTokenInfo.baseSymbol || fromTokenInfo?.symbol})`}
+                    />
+                  );
+                }}
+              />
+            </td>
+            <td>
+              {!hideActions ? (
+                <Tooltip
+                  handle={getExchangeRateDisplay(order.triggerRatio, fromTokenInfo, toTokenInfo)}
+                  renderContent={() => t`
+                  You will receive at least ${formatAmount(
+                    order.minOut,
+                    toTokenInfo.decimals,
+                    toTokenInfo.isStable || toTokenInfo.isUsdg ? 2 : 4,
+                    true
+                  )} ${
+                    toTokenInfo?.symbol
+                  } if this order is executed. The execution price may vary depending on swap fees at the time the order is executed.
+                `}
+                />
+              ) : (
+                getExchangeRateDisplay(order.triggerRatio, fromTokenInfo, toTokenInfo)
+              )}
+            </td>
+            <td>{getExchangeRateDisplay(markExchangeRate, fromTokenInfo, toTokenInfo, true)}</td>
+            {!hideActions && renderActions(order)}
+          </tr>
+        );
+      }
+
+      const indexToken = getTokenInfo(infoTokens, order.indexToken.toLowerCase());
+      const indexTokenSymbol = indexToken?.isWrapped ? indexToken?.baseSymbol : indexToken?.symbol;
+      const error = getOrderError(account, order, positionsMap);
+      const orderTitle = getOrderTitle(order, indexTokenSymbol);
+
+      const orderText = (
+        <>
+          {error ? (
+            <Tooltip
+              className="order-error"
+              handle={orderTitle}
+              position="right-bottom"
+              handleClassName="plain"
+              renderContent={() => <span className="negative">{error}</span>}
+            />
+          ) : (
+            orderTitle
+          )}
+        </>
+      );
+      const longShortText = order.isLong ? t`Long` : t`Short`;
+      const sizeDeltaText = formatAmount(order.sizeDelta, USD_DECIMALS, 2, true);
+      return (
+        <tr className="Exchange-list-item order-list row" key={`${order.isLong}-${order.type}-${order.index}`}>
+          <td className="Symbol">
+            <div className="Exchange-symbol-label-long-short">
+              <div className="Exchange-symbol-mark" style={{ background: order.isLong ? "#3FB68B" : "#FF5353" }}></div>
+              {indexTokenSymbol}
+            </div>
+          </td>
+          <td className="Order">{order.type === DECREASE ? orderText : orderText}</td>
+          <td className="Exchange-list-item-type Type">{order.type === INCREASE ? t`Limit` : t`Trigger`}</td>
+          <td className="Side">
+            <div style={{ color: order.isLong ? "#3FB68B" : "#FF5353" }}>{longShortText}</div>
+          </td>
+          <td className="OrderPrice">${formatAmount(order.triggerPrice, USD_DECIMALS, 2, true)}</td>
+          <td className="Amount">${sizeDeltaText}</td>
+          {!hideActions && (
+            <>
+              <td className="Edit">
+                <button className="Exchange-list-action" onClick={() => onEditClick(order)}>
+                  <Trans>Edit</Trans>
+                </button>
+              </td>
+              <td className="Close">
+                <button className="Exchange-list-action" onClick={() => onCancelClick(order)}>
+                  <img src={cancelX} alt="cancelX" />
+                </button>
+              </td>
+            </>
+          )}
+        </tr>
+      );
+    });
+  }, [orders, renderActions, infoTokens, positionsMap, hideActions, chainId, account, onCancelClick, onEditClick]);
+
     return (
     <React.Fragment>
       <table className="Exchange-list Orders large App-box">
