@@ -243,8 +243,8 @@ export default function ConfirmationBox(props) {
 
   const hasPendingProfit =
     MIN_PROFIT_TIME > 0 && existingPosition && existingPosition.delta.eq(0) && existingPosition.pendingDelta.gt(0);
-  
-    const renderExistingOrderWarning = useCallback(() => {
+
+  const renderExistingOrderWarning = useCallback(() => {
     if (isSwap || !existingOrder) {
       return;
     }
@@ -304,6 +304,53 @@ export default function ConfirmationBox(props) {
       </div>
     );
   }, [existingOrder, isSwap, chainId, existingOrders, isLong, isLimitOrdersVisible, onCancelOrderClick]);
+
+  const renderExistingTriggerErrors = useCallback(() => {
+    if (isSwap || decreaseOrdersThatWillBeExecuted?.length < 1) {
+      return;
+    }
+    const existingTriggerOrderLength = decreaseOrdersThatWillBeExecuted.length;
+    return (
+      <>
+        <div className="Confirmation-box-warning">
+          <Plural
+            value={existingTriggerOrderLength}
+            one="You have an active trigger order that might execute immediately after you open this position. Please cancel the order or accept the confirmation to continue."
+            other="You have # active trigger orders that might execute immediately after you open this position. Please cancel the orders or accept the confirmation to continue."
+          />
+        </div>
+        <ul className="order-list">
+          {decreaseOrdersThatWillBeExecuted.map((order) => {
+            const { account, index, type, triggerAboveThreshold, triggerPrice } = order;
+            const id = `${account}-${index}`;
+            const triggerPricePrefix = triggerAboveThreshold ? TRIGGER_PREFIX_ABOVE : TRIGGER_PREFIX_BELOW;
+            const indexToken = getToken(chainId, order.indexToken);
+            return (
+              <li key={id} className="font-sm">
+                <p>
+                  {type === INCREASE ? t`Increase` : t`Decrease`} {indexToken.symbol} {isLong ? t`Long` : t`Short`}
+                  &nbsp;{triggerPricePrefix} ${formatAmount(triggerPrice, USD_DECIMALS, 2, true)}
+                </p>
+                <button
+                  onClick={() =>
+                    cancelDecreaseOrder(chainId, library, index, {
+                      successMsg: t`Order cancelled`,
+                      failMsg: t`Cancel failed`,
+                      sentMsg: t`Cancel submitted`,
+                      pendingTxns,
+                      setPendingTxns,
+                    })
+                  }
+                >
+                  <Trans>Cancel</Trans>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </>
+    );
+  }, [decreaseOrdersThatWillBeExecuted, isSwap, chainId, library, pendingTxns, setPendingTxns, isLong]);
 
   return (
     <div className="Confirmation-box">
