@@ -130,6 +130,12 @@ export default function PositionEditor(props) {
                       )}
                     </div>
                   </div>
+                  <div className="Exchange-info-row market-price">
+                    <div className="Exchange-info-label">
+                      <Trans>Market Price</Trans>
+                    </div>
+                    <div className="align-right">${formatAmount(position.markPrice, USD_DECIMALS, 2, true)}</div>
+                  </div>
                   <div className="Exchange-info-row leverage">
                     <div className="Exchange-info-label">
                       <Trans>Leverage</Trans>
