@@ -43,6 +43,29 @@ function getFeesStr(fees: BigNumber | undefined): string {
   return `$${formatAmount(fees, USD_DECIMALS, 2, true)}`;
 }
 
+function getFeesRows(isOpening: boolean, formattedFees: Record<string, string | undefined>) {
+  const rows: Fee[] = [];
+
+  function addFeeRow(label: FeeType, value: string | undefined) {
+    rows.push({ label: getFeeLabel(label), value: value ?? "" });
+  }
+
+  if (isOpening) {
+    addFeeRow("swap", formattedFees?.swap);
+    addFeeRow("open", formattedFees?.position);
+    addFeeRow("borrow", formattedFees?.fundingRate || formattedFees?.funding);
+  } else {
+    addFeeRow("borrow", formattedFees?.fundingRate || formattedFees?.funding);
+    addFeeRow("close", formattedFees?.position);
+    addFeeRow("swap", formattedFees?.swap);
+  }
+
+  addFeeRow("deposit", formattedFees?.deposit);
+  addFeeRow("execution", formattedFees?.execution);
+
+  return rows.filter((row) => row.value);
+}
+
 function FeesTooltip({
   fundingFee,
   positionFee,
