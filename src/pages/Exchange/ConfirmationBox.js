@@ -421,7 +421,65 @@ export default function ConfirmationBox(props) {
     );
   }, [isSwap, fromAmount, fromToken, toToken, fromUsdMin, toUsdMax, isLong, toAmount]);
 
+  const SWAP_ORDER_EXECUTION_GAS_FEE = getConstant(chainId, "SWAP_ORDER_EXECUTION_GAS_FEE");
+  const INCREASE_ORDER_EXECUTION_GAS_FEE = getConstant(chainId, "INCREASE_ORDER_EXECUTION_GAS_FEE");
+  const executionFee = isSwap ? SWAP_ORDER_EXECUTION_GAS_FEE : INCREASE_ORDER_EXECUTION_GAS_FEE;
+  const executionFeeUsd = getUsd(executionFee, nativeTokenAddress, false, infoTokens);
+  const currentExecutionFee = isMarketOrder ? minExecutionFee : executionFee;
+  const currentExecutionFeeUsd = isMarketOrder ? minExecutionFeeUSD : executionFeeUsd;
+
+  const renderAvailableLiquidity = useCallback(() => {
+    let availableLiquidity;
+    const riskThresholdBps = 5000;
+    let isLiquidityRisk;
+    const token = isSwap || isLong ? toTokenInfo : shortCollateralToken;
+
+    if (!token || !token.poolAmount || !token.availableAmount) {
+      return null;
+    }
+
+    if (isSwap) {
+      const poolWithoutBuffer = token.poolAmount.sub(token.bufferAmount);
+      availableLiquidity = token.availableAmount.gt(poolWithoutBuffer) ? poolWithoutBuffer : token.availableAmount;
+      isLiquidityRisk = availableLiquidity.mul(riskThresholdBps).div(BASIS_POINTS_DIVISOR).lt(toAmount);
+    } else {
+      if (isShort) {
+        availableLiquidity = token.availableAmount;
+
+        let adjustedMaxGlobalShortSize;
+
+        if (toTokenInfo.maxAvailableShort && toTokenInfo.maxAvailableShort.gt(0)) {
+          adjustedMaxGlobalShortSize = toTokenInfo.maxAvailableShort
+            .mul(expandDecimals(1, token.decimals))
+            .div(expandDecimals(1, USD_DECIMALS));
+        }
+
+        if (adjustedMaxGlobalShortSize && adjustedMaxGlobalShortSize.lt(token.availableAmount)) {
+          availableLiquidity = adjustedMaxGlobalShortSize;
+        }
+
+        const sizeTokens = toUsdMax.mul(expandDecimals(1, token.decimals)).div(token.minPrice);
+        isLiquidityRisk = availableLiquidity.mul(riskThresholdBps).div(BASIS_POINTS_DIVISOR).lt(sizeTokens);
+      } else {
+        availableLiquidity = token.availableAmount;
+        isLiquidityRisk = availableLiquidity.mul(riskThresholdBps).div(BASIS_POINTS_DIVISOR).lt(toAmount);
+      }
+    }
+
+    if (!availableLiquidity) {
+      return null;
+    }
+
     return (
+      <ExchangeInfoRow label={t`Available Liquidity`}>
+        <div className="text-primary">
+          {formatAmount(availableLiquidity, token.decimals, token.isStable ? 0 : 2, true)} {token.symbol}
+        </div>
+      </ExchangeInfoRow>
+    );
+  }, [toTokenInfo, shortCollateralToken, isShort, isLong, isSwap, toAmount, toUsdMax]);
+
+      return (
     <div className="Confirmation-box">
       <Modal isVisible={true} setIsVisible={() => setIsConfirming(false)} label={title}>
         <div className="Confirmation-box-row" ref={submitButtonRef}>
