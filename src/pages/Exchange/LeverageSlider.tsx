@@ -12,6 +12,27 @@ const leverageMarks = {
   50: "50x",
 };
 
+const leverageSliderHandle = (props) => {
+  const { value, dragging, index, ...restProps } = props;
+  return (
+    <SliderTooltip
+      prefixCls="rc-slider-tooltip"
+      overlay={`${parseFloat(value).toFixed(2)}x`}
+      visible={dragging}
+      placement="top"
+      key={index}
+    >
+      <Slider.Handle value={value} {...restProps} />
+    </SliderTooltip>
+  );
+};
+
+type Props = {
+  isLong: boolean;
+  setLeverageOption: (value: number) => void;
+  leverageOption: number;
+};
+
 export default function LeverageSlider({ isLong, setLeverageOption, leverageOption }: Props) {
   return (
     <div
