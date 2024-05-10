@@ -137,7 +137,27 @@ export default function OrdersList(props) {
     );
   }, [account, orders]);
 
-  return (
+  const renderActions = useCallback(
+    (order) => {
+      return (
+        <>
+          <td>
+            <button className="Exchange-list-action Edit" onClick={() => onEditClick(order)}>
+              <Trans>Edit</Trans>
+            </button>
+          </td>
+          <td>
+            <button className="Exchange-list-action Close" onClick={() => onCancelClick(order)}>
+              <img src={cancelX} alt="cancelX" />
+            </button>
+          </td>
+        </>
+      );
+    },
+    [onEditClick, onCancelClick]
+  );
+
+    return (
     <React.Fragment>
       <table className="Exchange-list Orders large App-box">
         <tbody>
