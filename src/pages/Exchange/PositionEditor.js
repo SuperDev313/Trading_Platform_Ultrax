@@ -231,6 +231,24 @@ export default function PositionEditor(props) {
     return [false];
   };
 
+  const isPrimaryEnabled = () => {
+    const [error] = getError();
+    if (error) {
+      return false;
+    }
+    if (isSwapping) {
+      return false;
+    }
+    if (needPositionRouterApproval && isWaitingForPositionRouterApproval) {
+      return false;
+    }
+    if (isPositionRouterApproving) {
+      return false;
+    }
+
+    return true;
+  };
+
   return (
     <div className="PositionEditor">
       {position && (
