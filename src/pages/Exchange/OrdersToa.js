@@ -17,6 +17,23 @@ export default function OrdersToa(props) {
     });
   };
 
+  const getPrimaryText = () => {
+    if (isPluginApproving) {
+      return t`Enabling Orders...`;
+    }
+    if (!isChecked) {
+      return t`Accept terms to enable orders`;
+    }
+    return t`Enable Orders`;
+  };
+
+  const isPrimaryEnabled = () => {
+    if (isPluginApproving) {
+      return false;
+    }
+    return isChecked;
+  };
+  
   return (
     <Modal
       setIsVisible={setIsVisible}
