@@ -249,6 +249,44 @@ export default function PositionEditor(props) {
     return true;
   };
 
+  const getPrimaryText = () => {
+    const [error] = getError();
+    if (error) {
+      return error;
+    }
+    if (isSwapping) {
+      if (isDeposit) {
+        return t`Depositing...`;
+      }
+      return t`Withdrawing...`;
+    }
+
+    if (isApproving) {
+      return t`Approving ${position.collateralToken.symbol}...`;
+    }
+    if (needApproval) {
+      return t`Approve ${position.collateralToken.symbol}`;
+    }
+
+    if (needPositionRouterApproval && isWaitingForPositionRouterApproval) {
+      return t`Enabling Leverage`;
+    }
+
+    if (isPositionRouterApproving) {
+      return t`Enabling Leverage...`;
+    }
+
+    if (needPositionRouterApproval) {
+      return t`Enable Leverage`;
+    }
+
+    if (isDeposit) {
+      return t`Deposit`;
+    }
+
+    return t`Withdraw`;
+  };
+
   return (
     <div className="PositionEditor">
       {position && (
