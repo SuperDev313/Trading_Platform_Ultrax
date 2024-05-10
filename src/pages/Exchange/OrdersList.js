@@ -32,6 +32,14 @@ export default function OrdersList(props) {
     setCancelOrderIdList,
   } = props;
 
+  const [editingOrder, setEditingOrder] = useState(null);
+
+  const onCancelClick = useCallback(
+    (order) => {
+      handleCancelOrder(chainId, library, order, { pendingTxns, setPendingTxns });
+    },
+    [library, pendingTxns, setPendingTxns, chainId]
+  );
   return (
     <React.Fragment>
       <table className="Exchange-list Orders large App-box">
