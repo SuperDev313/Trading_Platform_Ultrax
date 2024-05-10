@@ -325,7 +325,7 @@ export default function ConfirmationBox(props) {
       </div>
     );
   }, [existingTriggerOrders, isSwap, decreaseOrdersThatWillBeExecuted, renderExistingOrderWarning]);
-  
+
   const renderExistingTriggerErrors = useCallback(() => {
     if (isSwap || decreaseOrdersThatWillBeExecuted?.length < 1) {
       return;
@@ -717,7 +717,14 @@ export default function ConfirmationBox(props) {
   ]);
   const submitButtonRef = useRef(null);
 
-      return (
+  useKey("Enter", () => {
+    submitButtonRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+    onConfirmationClick();
+  });
+
+  const textButton = getPrimaryText();
+
+  return (
     <div className="Confirmation-box">
       <Modal isVisible={true} setIsVisible={() => setIsConfirming(false)} label={title}>
         <div className="Confirmation-box-row" ref={submitButtonRef}>
