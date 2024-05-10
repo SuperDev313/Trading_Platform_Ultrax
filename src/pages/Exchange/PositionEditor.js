@@ -130,6 +130,23 @@ export default function PositionEditor(props) {
                       )}
                     </div>
                   </div>
+                  <div className="Exchange-info-row leverage">
+                    <div className="Exchange-info-label">
+                      <Trans>Leverage</Trans>
+                    </div>
+                    <div className="align-right">
+                      {!nextLeverage && <div>{formatAmount(position.leverage, 4, 2, true)}x</div>}
+                      {nextLeverage && (
+                        <div>
+                          <div className="inline-block muted edit-collateral">
+                            {formatAmount(position.leverage, 4, 2, true)}x
+                            <BsArrowRight className="transition-arrow" />
+                          </div>
+                          {formatAmount(nextLeverage, 4, 2, true)}x
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
