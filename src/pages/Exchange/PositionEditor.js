@@ -101,6 +101,11 @@ export default function PositionEditor(props) {
                     </div>
                   </div>
                 </div>
+                <div className="PositionEditor-info-box">
+                  {minExecutionFeeErrorMessage && (
+                    <div className="Conformation-box-warning">{minExecutionFeeErrorMessage}</div>
+                  )}
+                </div>
               </div>
             )}
           </div>
