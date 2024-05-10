@@ -241,6 +241,70 @@ export default function ConfirmationBox(props) {
     );
   }, [feeBps, isSwap, collateralTokenAddress, chainId, fromToken.symbol, toToken.symbol, orderOption]);
 
+  const hasPendingProfit =
+    MIN_PROFIT_TIME > 0 && existingPosition && existingPosition.delta.eq(0) && existingPosition.pendingDelta.gt(0);
+  
+    const renderExistingOrderWarning = useCallback(() => {
+    if (isSwap || !existingOrder) {
+      return;
+    }
+    const indexToken = getToken(chainId, existingOrder.indexToken);
+    const sizeInToken = formatAmount(
+      existingOrder.sizeDelta.mul(PRECISION).div(existingOrder.triggerPrice),
+      USD_DECIMALS,
+      4,
+      true
+    );
+    const longOrShortText = existingOrder.isLong ? t`Long` : t`Short`;
+    if (existingOrders?.length > 1) {
+      return (
+        <div>
+          <div className="Confirmation-box-info">
+            <span>
+              <Trans>
+                You have multiple existing Increase {longOrShortText} {indexToken.symbol} limit orders{" "}
+              </Trans>
+            </span>
+            <span onClick={() => setIsLimitOrdersVisible((p) => !p)} className="view-orders">
+              ({isLimitOrdersVisible ? t`hide` : t`view`})
+            </span>
+          </div>
+          {isLimitOrdersVisible && (
+            <ul className="order-list">
+              {existingOrders.map((order) => {
+                const { account, index, type, triggerAboveThreshold, triggerPrice } = order;
+                const id = `${account}-${index}`;
+                const triggerPricePrefix = triggerAboveThreshold ? TRIGGER_PREFIX_ABOVE : TRIGGER_PREFIX_BELOW;
+                const indexToken = getToken(chainId, order.indexToken);
+
+                return (
+                  <li key={id} className="font-sm">
+                    <p>
+                      {type === INCREASE ? t`Increase` : t`Decrease`} {indexToken.symbol} {isLong ? t`Long` : t`Short`}{" "}
+                      &nbsp;{triggerPricePrefix} ${formatAmount(triggerPrice, USD_DECIMALS, 2, true)}
+                    </p>
+                    <button onClick={() => onCancelOrderClick(order)}>
+                      <Trans>Cancel</Trans>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      );
+    }
+    return (
+      <div className="Confirmation-box-info">
+        <Trans>
+          You have an active Limit Order to Increase {longOrShortText} {sizeInToken} {indexToken.symbol} ($
+          {formatAmount(existingOrder.sizeDelta, USD_DECIMALS, 2, true)}) at price $
+          {formatAmount(existingOrder.triggerPrice, USD_DECIMALS, 2, true)}
+        </Trans>
+      </div>
+    );
+  }, [existingOrder, isSwap, chainId, existingOrders, isLong, isLimitOrdersVisible, onCancelOrderClick]);
+
   return (
     <div className="Confirmation-box">
       <Modal isVisible={true} setIsVisible={() => setIsConfirming(false)} label={title}>
