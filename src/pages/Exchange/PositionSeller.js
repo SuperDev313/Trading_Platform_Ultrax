@@ -36,6 +36,18 @@ import Checkbox from "../Checkbox/Checkbox";
 import Tab from "../Tab/Tab";
 import Modal from "../Modal/Modal";
 
+const { AddressZero } = ethers.constants;
+const ORDER_SIZE_DUST_USD = expandDecimals(1, USD_DECIMALS - 1); // $0.10
+
+const HIGH_SPREAD_THRESHOLD = expandDecimals(1, USD_DECIMALS).div(100); // 1%;
+
+function applySpread(amount, spread) {
+  if (!amount || !spread) {
+    return amount;
+  }
+  return amount.sub(amount.mul(spread).div(PRECISION));
+}
+
 export default function PositionSeller(props) {
   const {
     pendingPositions,
