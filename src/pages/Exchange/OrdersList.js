@@ -52,6 +52,14 @@ export default function OrdersList(props) {
     },
     [library, pendingTxns, setPendingTxns, chainId]
   );
+
+  const onEditClick = useCallback(
+    (order) => {
+      setEditignOrder(order);
+    },
+    [setEditingOrder]
+  );
+
   return (
     <React.Fragment>
       <table className="Exchange-list Orders large App-box">
