@@ -466,6 +466,37 @@ export default function PositionEditor(props) {
     [ErrorCode.InvalidLiqPrice]: t`Liquidation price would cross mark price.`,
   };
 
+  function renderPrimaryButton() {
+    const [errorMessage, errorType, errorCode] = getError();
+    const primaryTextMessage = getPrimaryText();
+    if (errorType === ErrorDisplayType.Tooltip && errorMessage === primaryTextMessage && ERROR_TOOLTIP_MSG[errorCode]) {
+      return (
+        <Tooltip
+          isHandlerDisabled
+          handle={
+            <Button variant="primary-action" className="w-full" onClick={onClickPrimary} disabled={!isPrimaryEnabled()}>
+              {primaryTextMessage}
+            </Button>
+          }
+          className="Tooltip-flex"
+          position="center-top"
+          renderContent={() => ERROR_TOOLTIP_MSG[errorCode]}
+        />
+      );
+    }
+    return (
+      <Button
+        style={{ fontSize: "16px", fontStyle: "normal", fontWeight: 500 }}
+        variant="primary-action"
+        className="w-full"
+        onClick={onClickPrimary}
+        disabled={!isPrimaryEnabled()}
+      >
+        {primaryTextMessage}
+      </Button>
+    );
+  }
+  
   return (
     <div className="PositionEditor">
       {position && (
