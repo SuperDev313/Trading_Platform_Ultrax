@@ -131,6 +131,11 @@ export default function OrderEditor(props) {
           <div className="align-right">{formatAmount(toTokenInfo.maxPrice, USD_DECIMALS, 2, true)} USD</div>
         </div>
       )}
+      <div className="Exchange-swap-button-container">
+        <Button variant="primary-action" className="w-full" onClick={onClickPrimary} disabled={!isPrimaryEnabled()}>
+          {getPrimaryText()}
+        </Button>
+      </div>
     </Modal>
   );
 }
