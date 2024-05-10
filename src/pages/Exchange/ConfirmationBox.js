@@ -15,9 +15,57 @@ import {
   calculatePositionDelta,
   DECREASE,
 } from "lib/legacy";
+import { getConstant } from "config/chains";
+import { getContract } from "config/contracts";
+import Vault from "abis/Vault.json";
 
+import { BsArrowRight } from "react-icons/bs";
 import Modal from "../Modal/Modal";
+import Tooltip from "../Tooltip/Tooltip";
+import Checkbox from "../Checkbox/Checkbox";
+import ExchangeInfoRow from "./ExchangeInfoRow";
+import { cancelDecreaseOrder, handleCancelOrder } from "domain/legacy";
+import StatsTooltipRow from "../StatsTooltip/StatsTooltipRow";
+import { TRIGGER_PREFIX_ABOVE, TRIGGER_PREFIX_BELOW } from "config/ui";
+import { useLocalStorageSerializeKey } from "lib/localStorage";
+import { SLIPPAGE_BPS_KEY } from "config/localStorage";
+import { expandDecimals, formatAmount } from "lib/numbers";
+import { getToken, getWrappedToken } from "config/tokens";
+import { Plural, t, Trans } from "@lingui/macro";
 import Button from "components/Button/Button";
+import FeesTooltip from "./FeesTooltip";
+import { getTokenInfo, getUsd } from "domain/tokens";
+import SlippageInput from "components/SlippageInput/SlippageInput";
+import { contractFetcher } from "lib/contracts";
+import useSWR from "swr";
+
+const HIGH_SPREAD_THRESHOLD = expandDecimals(1, USD_DECIMALS).div(100); // 1%;
+
+function getSwapSpreadInfo(fromTokenInfo, toTokenInfo, isLong, nativeTokenAddress) {
+  if (fromTokenInfo?.spread && toTokenInfo?.spread) {
+    let value = fromTokenInfo.spread.add(toTokenInfo.spread);
+
+    const fromTokenAddress = fromTokenInfo.isNative ? nativeTokenAddress : fromTokenInfo.address;
+    const toTokenAddress = toTokenInfo.isNative ? nativeTokenAddress : toTokenInfo.address;
+
+    if (isLong && fromTokenAddress === toTokenAddress) {
+      value = fromTokenInfo.spread;
+    }
+
+    return {
+      value,
+      isHigh: value.gt(HIGH_SPREAD_THRESHOLD),
+    };
+  }
+}
+
+function renderAllowedSlippage(setAllowedSlippage, defaultSlippage) {
+  return (
+    <ExchangeInfoRow label={"Allowed Slippage"}>
+      <div className="text-primary">{defaultSlippage / 100}%</div>
+    </ExchangeInfoRow>
+  );
+}
 
 export default function ConfirmationBox(props) {
   const {
@@ -67,6 +115,86 @@ export default function ConfirmationBox(props) {
     borrowFeeText,
   } = props;
 
+  const [savedSlippageAmount] = useLocalStorageSerializeKey([chainId, SLIPPAGE_BPS_KEY], DEFAULT_SLIPPAGE_AMOUNT);
+  const [isProfitWarningAccepted, setIsProfitWarningAccepted] = useState(false);
+  const [isTriggerWarningAccepted, setIsTriggerWarningAccepted] = useState(false);
+  const [isLimitOrdersVisible, setIsLimitOrdersVisible] = useState(false);
+
+  const [allowedSlippage, setAllowedSlippage] = useState(savedSlippageAmount);
+  const vaultAddress = getContract(chainId, "Vault");
+
+  const { data: spreadFeeBasisPoints } = useSWR(
+    [`spreadFeeBasisPoints`, chainId, vaultAddress, "spreadFeeBasisPoints"],
+    {
+      fetcher: contractFetcher(library, Vault, []),
+    }
+  );
+
+  const spreadFeePercent = spreadFeeBasisPoints ? spreadFeeBasisPoints?.toNumber() / 100 : 0;
+
+  useEffect(() => {
+    setAllowedSlippage(savedSlippageAmount);
+    if (isHigherSlippageAllowed) {
+      setAllowedSlippage(DEFAULT_HIGHER_SLIPPAGE_AMOUNT);
+    }
+  }, [savedSlippageAmount, isHigherSlippageAllowed]);
+
+  const onCancelOrderClick = useCallback(
+    (order) => {
+      handleCancelOrder(chainId, library, order, { pendingTxns, setPendingTxns });
+    },
+    [library, pendingTxns, setPendingTxns, chainId]
+  );
+
+  let minOut;
+  let fromTokenUsd;
+  let toTokenUsd;
+
+  let collateralAfterFees = fromUsdMin;
+  if (feesUsd) {
+    collateralAfterFees = fromUsdMin.sub(feesUsd);
+  }
+  if (isSwap) {
+    minOut = toAmount.mul(BASIS_POINTS_DIVISOR - allowedSlippage).div(BASIS_POINTS_DIVISOR);
+
+    fromTokenUsd = fromTokenInfo ? formatAmount(fromTokenInfo.minPrice, USD_DECIMALS, 2, true) : 0;
+    toTokenUsd = toTokenInfo ? formatAmount(toTokenInfo.maxPrice, USD_DECIMALS, 2, true) : 0;
+  }
+
+  const getTitle = () => {
+    if (!isMarketOrder) {
+      return t`Confirm Limit Order`;
+    }
+    if (isSwap) {
+      return t`Confirm Swap`;
+    }
+    return isLong ? t`Confirm Long` : t`Confirm Short`;
+  };
+
+  const title = getTitle();
+
+  const existingOrder = useMemo(() => {
+    const wrappedToken = getWrappedToken(chainId);
+    for (const order of orders) {
+      if (order.type !== INCREASE) continue;
+      const sameToken =
+        order.indexToken === wrappedToken.address ? toToken.isNative : order.indexToken === toToken.address;
+      if (order.isLong === isLong && sameToken) {
+        return order;
+      }
+    }
+  }, [orders, chainId, isLong, toToken.address, toToken.isNative]);
+
+  const existingOrders = useMemo(() => {
+    const wrappedToken = getWrappedToken(chainId);
+    return orders.filter((order) => {
+      if (order.type !== INCREASE) return false;
+      const sameToken =
+        order.indexToken === wrappedToken.address ? toToken.isNative : order.indexToken === toToken.address;
+      return order.isLong === isLong && sameToken;
+    });
+  }, [orders, chainId, isLong, toToken.address, toToken.isNative]);
+
   const existingTriggerOrders = useMemo(() => {
     const wrappedToken = getWrappedToken(chainId);
     return orders.filter((order) => {
@@ -87,6 +215,19 @@ export default function ConfirmationBox(props) {
       }
     });
   }, [existingPosition, existingTriggerOrders, isSwap]);
+
+  const getError = () => {
+    if (!isSwap && hasExistingPosition && !isMarketOrder) {
+      const { delta, hasProfit } = calculatePositionDelta(triggerPriceUsd, existingPosition);
+      if (hasProfit && delta.eq(0)) {
+        return t`Invalid price, see warning`;
+      }
+    }
+    if (isMarketOrder && hasPendingProfit && !isProfitWarningAccepted) {
+      return t`Forfeit profit not checked`;
+    }
+    return false;
+  };
 
   const getPrimaryText = () => {
     if (decreaseOrdersThatWillBeExecuted.length > 0 && !isTriggerWarningAccepted) {
@@ -137,19 +278,6 @@ export default function ConfirmationBox(props) {
       return false;
     }
     return !isPendingConfirmation && !isSubmitting;
-  };
-
-  const getError = () => {
-    if (!isSwap && hasExistingPosition && !isMarketOrder) {
-      const { delta, hasProfit } = calculatePositionDelta(triggerPriceUsd, existingPosition);
-      if (hasProfit && delta.eq(0)) {
-        return t`Invalid price, see warning`;
-      }
-    }
-    if (isMarketOrder && hasPendingProfit && !isProfitWarningAccepted) {
-      return t`Forfeit profit not checked`;
-    }
-    return false;
   };
 
   const nativeTokenAddress = getContract(chainId, "NATIVE_TOKEN");
@@ -305,27 +433,6 @@ export default function ConfirmationBox(props) {
     );
   }, [existingOrder, isSwap, chainId, existingOrders, isLong, isLimitOrdersVisible, onCancelOrderClick]);
 
-  const renderExistingTriggerWarning = useCallback(() => {
-    if (
-      isSwap ||
-      existingTriggerOrders.length < 1 ||
-      decreaseOrdersThatWillBeExecuted.length > 0 ||
-      renderExistingOrderWarning()
-    ) {
-      return;
-    }
-    const existingTriggerOrderLength = existingTriggerOrders.length;
-    return (
-      <div className="Confirmation-box-info">
-        <Plural
-          value={existingTriggerOrderLength}
-          one="You have an active trigger order that could impact this position."
-          other="You have # active trigger orders that could impact this position."
-        />
-      </div>
-    );
-  }, [existingTriggerOrders, isSwap, decreaseOrdersThatWillBeExecuted, renderExistingOrderWarning]);
-
   const renderExistingTriggerErrors = useCallback(() => {
     if (isSwap || decreaseOrdersThatWillBeExecuted?.length < 1) {
       return;
@@ -373,6 +480,28 @@ export default function ConfirmationBox(props) {
     );
   }, [decreaseOrdersThatWillBeExecuted, isSwap, chainId, library, pendingTxns, setPendingTxns, isLong]);
 
+  const renderExistingTriggerWarning = useCallback(() => {
+    if (
+      isSwap ||
+      existingTriggerOrders.length < 1 ||
+      decreaseOrdersThatWillBeExecuted.length > 0 ||
+      renderExistingOrderWarning()
+    ) {
+      return;
+    }
+    const existingTriggerOrderLength = existingTriggerOrders.length;
+    return (
+      <div className="Confirmation-box-info">
+        <Plural
+          value={existingTriggerOrderLength}
+          one="You have an active trigger order that could impact this position."
+          other="You have # active trigger orders that could impact this position."
+        />
+      </div>
+    );
+  }, [existingTriggerOrders, isSwap, decreaseOrdersThatWillBeExecuted, renderExistingOrderWarning]);
+
+  // TODO handle unaprproved order plugin (very unlikely case)
   const renderMain = useCallback(() => {
     if (isSwap) {
       return (
@@ -485,6 +614,11 @@ export default function ConfirmationBox(props) {
       <>
         <div>
           {renderMain()}
+          {/* {renderCollateralSpreadWarning()} */}
+          {/* {renderFeeWarning()} */}
+          {/* {renderExistingOrderWarning()} */}
+          {/* {renderExistingTriggerErrors()} */}
+          {/* {renderExistingTriggerWarning()} */}
           {minExecutionFeeErrorMessage && <div className="Confirmation-box-warning">{minExecutionFeeErrorMessage}</div>}
           {hasPendingProfit && isMarketOrder && (
             <div className="PositionEditor-accept-profit-warning">
@@ -727,6 +861,8 @@ export default function ConfirmationBox(props) {
   return (
     <div className="Confirmation-box">
       <Modal isVisible={true} setIsVisible={() => setIsConfirming(false)} label={title}>
+        {isSwap && renderSwapSection()}
+        {!isSwap && renderMarginSection()}
         <div className="Confirmation-box-row" ref={submitButtonRef}>
           <Button
             variant={
