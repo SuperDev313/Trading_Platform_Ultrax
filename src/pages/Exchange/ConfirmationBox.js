@@ -196,7 +196,20 @@ export default function ConfirmationBox(props) {
     };
   }, [toTokenInfo, collateralTokenAddress, infoTokens]);
 
-  
+  const renderCollateralSpreadWarning = useCallback(() => {
+    if (collateralSpreadInfo && collateralSpreadInfo.isHigh) {
+      return (
+        <div className="Confirmation-box-warning">
+          <Trans>
+            Transacting with a depegged stable coin is subject to spreads reflecting the worse of current market price
+            or $1.00, with transactions involving multiple stablecoins may have multiple spreads.
+          </Trans>
+        </div>
+      );
+    }
+  }, [collateralSpreadInfo]);
+
+
   return (
     <div className="Confirmation-box">
       <Modal isVisible={true} setIsVisible={() => setIsConfirming(false)} label={title}>
