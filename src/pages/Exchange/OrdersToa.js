@@ -7,6 +7,16 @@ import "./OrdersToa.css";
 import Button from "components/Button/Button";
 
 export default function OrdersToa(props) {
+  const { setIsVisible, isPluginApproving, approveOrderBook } = props;
+
+  const [isChecked, setIsChecked] = useState(false);
+
+  const onConfirmationClick = () => {
+    approveOrderBook().then(() => {
+      setIsVisible(false);
+    });
+  };
+
   return (
     <Modal
       setIsVisible={setIsVisible}
