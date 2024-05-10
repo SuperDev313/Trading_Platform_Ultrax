@@ -91,6 +91,72 @@ export default function OrderEditor(props) {
     return order.isLong ? toTokenInfo?.maxPrice : toTokenInfo?.minPrice;
   }, [infoTokens, order]);
 
+  let toAmount;
+  if (order.type === SWAP) {
+    const { amount } = getNextToAmount(
+      chainId,
+      order.amountIn,
+      order.path[0],
+      order.path[order.path.length - 1],
+      infoTokens,
+      undefined,
+      triggerRatio,
+      usdgSupply,
+      totalTokenWeights
+    );
+    toAmount = amount;
+  }
+
+  const onClickPrimary = () => {
+    setIsSubmitting(true);
+
+    let func;
+    let params;
+
+    if (order.type === SWAP) {
+      func = updateSwapOrder;
+      params = [chainId, library, order.index, toAmount, triggerRatio, order.triggerAboveThreshold];
+    } else if (order.type === DECREASE) {
+      func = updateDecreaseOrder;
+      params = [
+        chainId,
+        library,
+        order.index,
+        order.collateralDelta,
+        order.sizeDelta,
+        triggerPrice,
+        order.triggerAboveThreshold,
+      ];
+    } else if (order.type === INCREASE) {
+      func = updateIncreaseOrder;
+      params = [chainId, library, order.index, order.sizeDelta, triggerPrice, order.triggerAboveThreshold];
+    }
+
+    params.push({
+      successMsg: t`Order updated!`,
+      failMsg: t`Order update failed.`,
+      sentMsg: t`Order update submitted!`,
+      pendingTxns,
+      setPendingTxns,
+    });
+
+    return func(...params)
+      .then(() => {
+        setEditingOrder(null);
+      })
+      .finally(() => {
+        setIsSubmitting(false);
+      });
+  };
+
+  const onTriggerRatioChange = (evt) => {
+    setTriggerRatioValue(evt.target.value || "");
+  };
+
+  const onTriggerPriceChange = (evt) => {
+    setTriggerPriceValue(evt.target.value || "");
+  };
+
   return (
     <Modal
       isVisible={true}
