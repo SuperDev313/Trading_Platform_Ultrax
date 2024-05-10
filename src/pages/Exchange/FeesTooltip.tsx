@@ -66,6 +66,27 @@ function getFeesRows(isOpening: boolean, formattedFees: Record<string, string | 
   return rows.filter((row) => row.value);
 }
 
+function getTotalFees(fees: (BigNumber | undefined)[]) {
+  return fees.reduce((acc: BigNumber, fee) => {
+    if (!fee) {
+      return acc;
+    }
+    return acc.add(fee);
+  }, BigNumber.from(0));
+}
+
+type Props = {
+  executionFees: ExecutionFees;
+  positionFee?: BigNumber;
+  depositFee?: BigNumber;
+  swapFee?: BigNumber;
+  fundingFee?: BigNumber;
+  fundingRate?: string;
+  isOpening?: boolean;
+  titleText?: string;
+  isNoTooltip?: boolean;
+};
+
 function FeesTooltip({
   fundingFee,
   positionFee,
