@@ -479,6 +479,165 @@ export default function ConfirmationBox(props) {
     );
   }, [toTokenInfo, shortCollateralToken, isShort, isLong, isSwap, toAmount, toUsdMax]);
 
+  const renderMarginSection = useCallback(() => {
+    const collateralToken = getToken(chainId, collateralTokenAddress);
+    return (
+      <>
+        <div>
+          {renderMain()}
+          {minExecutionFeeErrorMessage && <div className="Confirmation-box-warning">{minExecutionFeeErrorMessage}</div>}
+          {hasPendingProfit && isMarketOrder && (
+            <div className="PositionEditor-accept-profit-warning">
+              <Checkbox isChecked={isProfitWarningAccepted} setIsChecked={setIsProfitWarningAccepted}>
+                <span className="muted">
+                  <Trans>Forfeit profit</Trans>
+                </span>
+              </Checkbox>
+            </div>
+          )}
+          <ExchangeInfoRow label={t`Pay`}>
+            <div>
+              {formatAmount(fromAmount, fromToken.decimals, 4, true)} {fromToken.symbol} ($
+              {formatAmount(fromUsdMin, USD_DECIMALS, 2, true)})
+            </div>
+          </ExchangeInfoRow>
+          {renderAvailableLiquidity()}
+          <ExchangeInfoRow label={t`Collateral in`}>
+            <div className="text.primary">{isMarketOrder ? "USD" : collateralToken.symbol}</div>
+          </ExchangeInfoRow>
+
+          <ExchangeInfoRow label={t`Leverage`}>
+            {hasExistingPosition && toAmount && toAmount.gt(0) && (
+              <div className="inline-block muted">
+                {formatAmount(existingPosition.leverage, 4, 2)}x
+                <BsArrowRight className="transition-arrow" />
+              </div>
+            )}
+            {toAmount && leverage && leverage.gt(0) && `${formatAmount(leverage, 4, 2)}x`}
+            {!toAmount && leverage && leverage.gt(0) && `-`}
+            {leverage && leverage.eq(0) && `-`}
+          </ExchangeInfoRow>
+
+          <ExchangeInfoRow label={t`Fees`}>
+            <FeesTooltip
+              isNoTooltip={true}
+              fundingRate={fundingRate}
+              executionFees={{
+                fee: currentExecutionFee,
+                feeUsd: currentExecutionFeeUsd,
+              }}
+              positionFee={positionFee}
+              swapFee={swapFees}
+            />
+          </ExchangeInfoRow>
+
+          <ExchangeInfoRow label={t`Collateral`}>
+            <div className="text-primary">${formatAmount(collateralAfterFees, USD_DECIMALS, 2, true)}</div>
+          </ExchangeInfoRow>
+
+          {/* {showCollateralSpread && (
+            <ExchangeInfoRow label={t`Collateral Spread`} isWarning={collateralSpreadInfo.isHigh} isTop>
+              {formatAmount(collateralSpreadInfo.value.mul(100), USD_DECIMALS, 2, true)}%
+            </ExchangeInfoRow>
+          )} */}
+          {isMarketOrder && (
+            <ExchangeInfoRow label={t`Entry Price`} isTop>
+              {hasExistingPosition && toAmount && toAmount.gt(0) && (
+                <div className="inline-block muted">
+                  ${formatAmount(existingPosition.averagePrice, USD_DECIMALS, 2, true)}
+                  <BsArrowRight className="transition-arrow" />
+                </div>
+              )}
+              {nextAveragePrice && `$${formatAmount(nextAveragePrice, USD_DECIMALS, 2, true)}`}
+              {!nextAveragePrice && `-`}
+            </ExchangeInfoRow>
+          )}
+          {!isMarketOrder && (
+            <ExchangeInfoRow label={t`Mark Price`} isTop={true}>
+              ${formatAmount(entryMarkPrice, USD_DECIMALS, 2, true)}
+            </ExchangeInfoRow>
+          )}
+          {!isMarketOrder && (
+            <ExchangeInfoRow label={t`Limit Price`}>
+              ${formatAmount(triggerPriceUsd, USD_DECIMALS, 2, true)}
+            </ExchangeInfoRow>
+          )}
+          <ExchangeInfoRow label={t`Liq. Price`}>
+            {hasExistingPosition && toAmount && toAmount.gt(0) && (
+              <div className="inline-block muted">
+                ${formatAmount(existingLiquidationPrice, USD_DECIMALS, 2, true)}
+                <BsArrowRight className="transition-arrow" />
+              </div>
+            )}
+            {toAmount && displayLiquidationPrice && `$${formatAmount(displayLiquidationPrice, USD_DECIMALS, 2, true)}`}
+            {!toAmount && displayLiquidationPrice && `-`}
+            {!displayLiquidationPrice && `-`}
+          </ExchangeInfoRow>
+          {!isSwap ? (
+            <ExchangeInfoRow label={t`Spread Fee`} isTop>
+              <div className="text-primary">{spreadFeePercent}%</div>
+            </ExchangeInfoRow>
+          ) : null}
+
+          <ExchangeInfoRow label={t`Borrow Fee`} isTop={isSwap}>
+            <div className="text-primary">{borrowFeeText}</div>
+          </ExchangeInfoRow>
+          <ExchangeInfoRow label={t`Execution Fee`}>
+            <div className="text-primary">{formatAmount(currentExecutionFee, USD_DECIMALS, 2, true)}</div>
+          </ExchangeInfoRow>
+          {isMarketOrder && renderAllowedSlippage(setAllowedSlippage, savedSlippageAmount)}
+
+          {/* {decreaseOrdersThatWillBeExecuted.length > 0 && (
+            <div className="PositionEditor-allow-higher-slippage">
+              <Checkbox isChecked={isTriggerWarningAccepted} setIsChecked={setIsTriggerWarningAccepted}>
+                <span className="muted font-sm">
+                  <Trans>I am aware of the trigger orders</Trans>
+                </span>
+              </Checkbox>
+            </div>
+          )} */}
+        </div>
+      </>
+    );
+  }, [
+    renderMain,
+    nextAveragePrice,
+    toAmount,
+    hasExistingPosition,
+    existingPosition,
+    isMarketOrder,
+    triggerPriceUsd,
+    displayLiquidationPrice,
+    existingLiquidationPrice,
+    feesUsd,
+    leverage,
+    chainId,
+    renderFeeWarning,
+    hasPendingProfit,
+    isProfitWarningAccepted,
+    renderAvailableLiquidity,
+    orderOption,
+    fromUsdMin,
+    collateralAfterFees,
+    renderExistingOrderWarning,
+    renderExistingTriggerWarning,
+    renderExistingTriggerErrors,
+    isTriggerWarningAccepted,
+    decreaseOrdersThatWillBeExecuted,
+    minExecutionFeeErrorMessage,
+    collateralTokenAddress,
+    entryMarkPrice,
+    positionFee,
+    swapFees,
+    currentExecutionFee,
+    currentExecutionFeeUsd,
+    renderCollateralSpreadWarning,
+    collateralSpreadInfo,
+    showCollateralSpread,
+    savedSlippageAmount,
+    fundingRate,
+  ]);
+
   const renderSwapSection = useCallback(() => {
     return (
       <div>
@@ -557,7 +716,7 @@ export default function ConfirmationBox(props) {
     savedSlippageAmount,
   ]);
   const submitButtonRef = useRef(null);
-  
+
       return (
     <div className="Confirmation-box">
       <Modal isVisible={true} setIsVisible={() => setIsConfirming(false)} label={title}>
