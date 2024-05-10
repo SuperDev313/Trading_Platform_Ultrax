@@ -479,6 +479,85 @@ export default function ConfirmationBox(props) {
     );
   }, [toTokenInfo, shortCollateralToken, isShort, isLong, isSwap, toAmount, toUsdMax]);
 
+  const renderSwapSection = useCallback(() => {
+    return (
+      <div>
+        {renderMain()}
+        {renderFeeWarning()}
+        {renderSwapSpreadWarning()}
+        {orderOption === LIMIT && renderAvailableLiquidity()}
+        <ExchangeInfoRow label={t`Min. Receive`}>
+          {formatAmount(minOut, toTokenInfo.decimals, 4, true)} {toTokenInfo.symbol}
+        </ExchangeInfoRow>
+        <ExchangeInfoRow label={t`Rate`}>
+          {getExchangeRateDisplay(getExchangeRate(fromTokenInfo, toTokenInfo), fromTokenInfo, toTokenInfo)}
+        </ExchangeInfoRow>
+        {showSwapSpread && (
+          <ExchangeInfoRow label={t`Spread`} isWarning={spreadInfo.isHigh}>
+            {formatAmount(spreadInfo.value.mul(100), USD_DECIMALS, 2, true)}%
+          </ExchangeInfoRow>
+        )}
+
+        <ExchangeInfoRow label={t`Fees`}>
+          <FeesTooltip
+            executionFees={
+              !isMarketOrder && {
+                fee: currentExecutionFee,
+                feeUsd: currentExecutionFeeUsd,
+              }
+            }
+            isNoTooltip
+            swapFee={feesUsd}
+          />
+        </ExchangeInfoRow>
+        {/* {isMarketOrder && renderAllowedSlippage(setAllowedSlippage, savedSlippageAmount)} */}
+        {!isMarketOrder && (
+          <div className="Exchange-info-row">
+            <div className="Exchange-info-label">
+              <Trans>Limit Price</Trans>
+            </div>
+            <div className="align-right">{getExchangeRateDisplay(triggerRatio, fromTokenInfo, toTokenInfo)}</div>
+          </div>
+        )}
+
+        {fromTokenUsd && (
+          <ExchangeInfoRow label={`${fromTokenInfo.symbol} Price`} isTop>
+            <div className="align-right">{fromTokenUsd} USD</div>
+          </ExchangeInfoRow>
+        )}
+
+        {toTokenUsd && (
+          <div className="Exchange-info-row">
+            <div className="Exchange-info-label">
+              <Trans>{toTokenInfo.symbol} Price</Trans>
+            </div>
+            <div className="align-right">{toTokenUsd} USD</div>
+          </div>
+        )}
+      </div>
+    );
+  }, [
+    renderMain,
+    renderSwapSpreadWarning,
+    fromTokenInfo,
+    toTokenInfo,
+    orderOption,
+    showSwapSpread,
+    spreadInfo,
+    feesUsd,
+    fromTokenUsd,
+    toTokenUsd,
+    triggerRatio,
+    isMarketOrder,
+    minOut,
+    renderFeeWarning,
+    renderAvailableLiquidity,
+    currentExecutionFee,
+    currentExecutionFeeUsd,
+    savedSlippageAmount,
+  ]);
+  const submitButtonRef = useRef(null);
+  
       return (
     <div className="Confirmation-box">
       <Modal isVisible={true} setIsVisible={() => setIsConfirming(false)} label={title}>
