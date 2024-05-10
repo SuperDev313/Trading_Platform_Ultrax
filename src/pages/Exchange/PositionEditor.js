@@ -426,6 +426,38 @@ export default function PositionEditor(props) {
       });
   };
 
+  const onClickPrimary = () => {
+    if (needApproval) {
+      approveTokens({
+        setIsApproving,
+        library,
+        tokenAddress: collateralTokenAddress,
+        spender: routerAddress,
+        chainId: chainId,
+        infoTokens,
+        getTokenInfo,
+        pendingTxns,
+        setPendingTxns,
+      });
+      return;
+    }
+
+    if (needPositionRouterApproval) {
+      approvePositionRouter({
+        sentMsg: isDeposit ? t`Enable deposit sent.` : t`Enable withdraw sent.`,
+        failMsg: isDeposit ? t`Enable deposit failed.` : t`Enable withdraw failed.`,
+      });
+      return;
+    }
+
+    if (isDeposit) {
+      depositCollateral();
+      return;
+    }
+
+    withdrawCollateral();
+  };
+
   return (
     <div className="PositionEditor">
       {position && (
