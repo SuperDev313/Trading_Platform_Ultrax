@@ -12,6 +12,18 @@ type Fee = { label: string; value: string };
 type ExecutionFees = { fee?: BigNumber; feeUsd?: BigNumber };
 type FeeType = "open" | "close" | "swap" | "borrow" | "deposit" | "execution";
 
+function getExecutionFeeStr(chainId, executionFee, executionFeeUsd) {
+  const nativeTokenSymbol = getConstant(chainId, "nativeTokenSymbol");
+
+  if (!nativeTokenSymbol || !executionFee || !executionFeeUsd) {
+    return "";
+  }
+
+  const formattedExecutionFee = formatAmountFree(executionFee, 18, 5);
+  const formattedExecutionFeeUsd = formatAmount(executionFeeUsd, USD_DECIMALS, 2);
+  return `${formattedExecutionFee} ${nativeTokenSymbol} ($${formattedExecutionFeeUsd})`;
+}
+
 function getFeeLabel(type: FeeType) {
   const labels = {
     close: t`Close Fee`,
