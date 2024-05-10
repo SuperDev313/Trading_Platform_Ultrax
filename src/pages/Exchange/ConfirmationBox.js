@@ -373,7 +373,55 @@ export default function ConfirmationBox(props) {
     );
   }, [decreaseOrdersThatWillBeExecuted, isSwap, chainId, library, pendingTxns, setPendingTxns, isLong]);
 
-  return (
+  const renderMain = useCallback(() => {
+    if (isSwap) {
+      return (
+        <div
+          className="Confirmation-box-main"
+          style={{
+            position: "relative",
+            marginBottom: "24px",
+          }}
+        >
+          <div className="content-modal-confirm-swap text-secondary fz-base fw-400">
+            <div className="text-primary fz-md fw-600">
+              <Trans>Pay</Trans>&nbsp;{formatAmount(fromAmount, fromToken.decimals, 4, true)} {fromToken.symbol}
+            </div>
+            ~${formatAmount(fromUsdMin, USD_DECIMALS, 2, true)}
+          </div>
+          <div className="style-switch-swap">
+            <div className="Confirmation-box-main-icon"></div>
+          </div>
+          <div
+            className="content-modal-confirm-swap text-secondary  fz-base fw-400"
+            style={{
+              marginTop: "8px",
+            }}
+          >
+            <div className="text-primary  fz-md fw-600">
+              <Trans>Receive</Trans>&nbsp;{formatAmount(toAmount, toToken.decimals, 4, true)} {toToken.symbol}
+            </div>
+            ~${formatAmount(toUsdMax, USD_DECIMALS, 2, true)}
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="Confirmation-box-main" style={{ marginBottom: "24px" }}>
+        <div className="content-modal-confirm-swap text-primary fz-md fw-600">
+          {isLong ? t`Long` : t`Short`}&nbsp;
+          {formatAmount(toAmount, toToken.decimals, 4, true)} {toToken.symbol}
+          <div className="text-secondary fz-base fw-400">
+            ~$
+            {formatAmount(toUsdMax, USD_DECIMALS, 2, true)}
+          </div>
+        </div>
+      </div>
+    );
+  }, [isSwap, fromAmount, fromToken, toToken, fromUsdMin, toUsdMax, isLong, toAmount]);
+
+    return (
     <div className="Confirmation-box">
       <Modal isVisible={true} setIsVisible={() => setIsConfirming(false)} label={title}>
         <div className="Confirmation-box-row" ref={submitButtonRef}>
