@@ -52,6 +52,36 @@ export default function OrdersList(props) {
     },
     [library, pendingTxns, setPendingTxns, chainId]
   );
+  const renderHead = useCallback(() => {
+    return (
+      <tr className="Exchange-list-header order-list row">
+        <th className="Symbol">
+          <Trans>Symbol</Trans>
+        </th>
+        <th className="Order">
+          <Trans>Order</Trans>
+        </th>
+        <th className="Type">
+          <Trans>Type</Trans>
+        </th>
+        <th className="Side">
+          <Trans>Side</Trans>
+        </th>
+        <th className="OrderPrice">
+          <Trans>Order Price</Trans>
+        </th>
+        <th className="Amount">
+          <Trans>Amount</Trans>
+        </th>
+        <th className="Edit">
+          <div></div>
+        </th>
+        <th className="Close">
+          <div></div>
+        </th>
+      </tr>
+    );
+  }, []);
 
   const onEditClick = useCallback(
     (order) => {
