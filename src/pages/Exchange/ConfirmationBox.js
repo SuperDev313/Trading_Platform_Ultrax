@@ -209,6 +209,37 @@ export default function ConfirmationBox(props) {
     }
   }, [collateralSpreadInfo]);
 
+  const showCollateralSpread = !isSwap && isMarketOrder && !!collateralSpreadInfo;
+
+  const renderFeeWarning = useCallback(() => {
+    if (orderOption === LIMIT || !feeBps || feeBps <= 60) {
+      return null;
+    }
+
+    if (isSwap) {
+      return (
+        <div className="Confirmation-box-warning">
+          <Trans>
+            Fees are high to swap from {fromToken.symbol} to {toToken.symbol}.
+          </Trans>
+        </div>
+      );
+    }
+
+    if (!collateralTokenAddress) {
+      return null;
+    }
+
+    const collateralToken = getToken(chainId, collateralTokenAddress);
+    return (
+      <div className="Confirmation-box-warning">
+        <Trans>
+          Fees are high to swap from {fromToken.symbol} to {collateralToken.symbol}. <br />
+          {collateralToken.symbol} is needed for collateral.
+        </Trans>
+      </div>
+    );
+  }, [feeBps, isSwap, collateralTokenAddress, chainId, fromToken.symbol, toToken.symbol, orderOption]);
 
   return (
     <div className="Confirmation-box">
