@@ -157,6 +157,140 @@ export default function OrderEditor(props) {
     setTriggerPriceValue(evt.target.value || "");
   };
 
+  const getError = () => {
+    if ((!triggerRatio || triggerRatio.eq(0)) && (!triggerPrice || triggerPrice.eq(0))) {
+      return t`Enter Price`;
+    }
+    if (order.type === SWAP && triggerRatio.eq(order.triggerRatio)) {
+      return t`Enter new Price`;
+    }
+    if (order.type !== SWAP && triggerPrice.eq(order.triggerPrice)) {
+      return t`Enter new Price`;
+    }
+    if (position) {
+      if (order.type === DECREASE) {
+        if (position.isLong && triggerPrice.lte(liquidationPrice)) {
+          return t`Price below Liq. Price`;
+        }
+        if (!position.isLong && triggerPrice.gte(liquidationPrice)) {
+          return t`Price above Liq. Price`;
+        }
+      }
+
+      const { delta, hasProfit } = calculatePositionDelta(triggerPrice, position);
+      if (hasProfit && delta.eq(0)) {
+        return t`Invalid price, see warning`;
+      }
+    }
+
+    if (order.type !== SWAP && indexTokenMarkPrice && !savedShouldDisableValidationForTesting) {
+      if (order.triggerAboveThreshold && indexTokenMarkPrice.gt(triggerPrice)) {
+        return t`Price below Mark Price`;
+      }
+      if (!order.triggerAboveThreshold && indexTokenMarkPrice.lt(triggerPrice)) {
+        return t`Price above Mark Price`;
+      }
+    }
+
+    if (order.type === SWAP) {
+      const currentRate = getExchangeRate(fromTokenInfo, toTokenInfo);
+      if (currentRate && !currentRate.gte(triggerRatio)) {
+        return triggerRatioInverted ? t`Price is below Mark Price` : t`Price is above Mark Price`;
+      }
+    }
+  };
+
+  const isPrimaryEnabled = () => {
+    if (isSubmitting) {
+      return false;
+    }
+    const error = getError();
+    if (error) {
+      return false;
+    }
+
+    return true;
+  };
+
+  const getPrimaryText = () => {
+    const error = getError();
+    if (error) {
+      return error;
+    }
+
+    if (isSubmitting) {
+      return t`Updating Order...`;
+    }
+    return t`Update Order`;
+  };
+
+  if (order.type !== SWAP) {
+    // const triggerPricePrefix = order.triggerAboveThreshold ? TRIGGER_PREFIX_ABOVE : TRIGGER_PREFIX_BELOW;
+    return (
+      <Modal
+        isVisible={true}
+        className="Exchange-list-modal"
+        setIsVisible={() => setEditingOrder(null)}
+        label={t`Edit order`}
+      >
+        <div className="Exchange-swap-section">
+          <div className="Exchange-swap-section-top">
+            <div className="muted">
+              <Trans>Price</Trans>
+            </div>
+            <div
+              className="muted align-right clickable"
+              onClick={() => {
+                setTriggerPriceValue(formatAmountFree(indexTokenMarkPrice, USD_DECIMALS, 2));
+              }}
+            >
+              <Trans>Mark: {formatAmount(indexTokenMarkPrice, USD_DECIMALS, 2)}</Trans>
+            </div>
+          </div>
+          <div className="Exchange-swap-section-bottom">
+            <div className="Exchange-swap-input-container">
+              <input
+                type="number"
+                min="0"
+                placeholder="0.0"
+                className="Exchange-swap-input"
+                value={triggerPriceValue}
+                onChange={onTriggerPriceChange}
+              />
+            </div>
+            <div className="PositionEditor-token-symbol">USD</div>
+          </div>
+        </div>
+        <ExchangeInfoRow label={t`Price`}>
+          {triggerPrice && !triggerPrice.eq(order.triggerPrice) ? (
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <span className="muted">{formatAmount(order.triggerPrice, USD_DECIMALS, 2, true)}</span>
+              &nbsp;
+              <BsArrowRight />
+              &nbsp;
+              {formatAmount(triggerPrice, USD_DECIMALS, 2, true)}
+            </div>
+          ) : (
+            <span>{formatAmount(order.triggerPrice, USD_DECIMALS, 2, true)}</span>
+          )}
+        </ExchangeInfoRow>
+        {liquidationPrice && (
+          <div className="Exchange-info-row">
+            <div className="Exchange-info-label">
+              <Trans>Liq. Price</Trans>
+            </div>
+            <div className="align-right">{`$${formatAmount(liquidationPrice, USD_DECIMALS, 2, true)}`}</div>
+          </div>
+        )}
+        <div className="Exchange-swap-button-container">
+          <Button variant="primary-action" className="w-full" onClick={onClickPrimary} disabled={!isPrimaryEnabled()}>
+            {getPrimaryText()}
+          </Button>
+        </div>
+      </Modal>
+    );
+  }
+
   return (
     <Modal
       isVisible={true}
