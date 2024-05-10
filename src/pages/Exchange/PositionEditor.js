@@ -370,6 +370,62 @@ export default function PositionEditor(props) {
     return t`Withdraw`;
   };
 
+  const withdrawCollateral = async () => {
+    setIsSwapping(true);
+    const tokenAddress0 = collateralTokenAddress === AddressZero ? nativeTokenAddress : collateralTokenAddress;
+    const indexTokenAddress =
+      position.indexToken.address === AddressZero ? nativeTokenAddress : position.indexToken.address;
+    const priceBasisPoints = position.isLong ? 9000 : 11000;
+    const priceLimit = position.indexToken.maxPrice.mul(priceBasisPoints).div(10000);
+
+    const withdrawAmount = fromAmount.add(fundingFee || bigNumberify(0));
+
+    const withdrawETH =
+      !isContractAccount && (collateralTokenAddress === AddressZero || collateralTokenAddress === nativeTokenAddress);
+
+    const params = [
+      [tokenAddress0], // _path
+      indexTokenAddress, // _indexToken
+      withdrawAmount, // _collateralDelta
+      0, // _sizeDelta
+      position.isLong, // _isLong
+      account, // _receiver
+      priceLimit, // _acceptablePrice
+      0, // _minOut
+      minExecutionFee, // _executionFee
+      withdrawETH, // _withdrawETH
+      AddressZero, // _callbackTarget
+    ];
+
+    const method = "createDecreasePosition";
+
+    const contract = new ethers.Contract(positionRouterAddress, PositionRouter.abi, library.getSigner());
+    callContract(chainId, contract, method, params, {
+      value: minExecutionFee,
+      sentMsg: t`Withdrawal submitted.`,
+      successMsg: t`Requested withdrawal of ${formatAmount(fromAmount, USD_DECIMALS, 2)} USD from ${
+        position.indexToken.symbol
+      } ${longOrShortText}.`,
+      failMsg: t`Withdrawal failed.`,
+      setPendingTxns,
+    })
+      .then(async (res) => {
+        setFromValue("");
+        setIsVisible(false);
+
+        pendingPositions[position.key] = {
+          updatedAt: Date.now(),
+          pendingChanges: {
+            collateralSnapshot: position.collateral,
+            expectingCollateralChange: true,
+          },
+        };
+      })
+      .finally(() => {
+        setIsSwapping(false);
+      });
+  };
+
   return (
     <div className="PositionEditor">
       {position && (
