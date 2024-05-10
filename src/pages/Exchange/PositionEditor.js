@@ -111,6 +111,25 @@ export default function PositionEditor(props) {
                     </div>
                     <div className="align-right">{formatAmount(position.size, USD_DECIMALS, 2, true)} USD</div>
                   </div>
+                  <div className="Exchange-info-row collateral">
+                    <div className="Exchange-info-label">
+                      <Trans>Collateral ({collateralToken.symbol})</Trans>
+                    </div>
+                    <div className="align-right">
+                      {!nextCollateral && (
+                        <div>${formatAmount(position.collateralAfterFee, USD_DECIMALS, 2, true)}</div>
+                      )}
+                      {nextCollateral && (
+                        <div>
+                          <div className="inline-block muted edit-collateral">
+                            ${formatAmount(position.collateralAfterFee, USD_DECIMALS, 2, true)}
+                            <BsArrowRight className="transition-arrow" />
+                          </div>
+                          ${formatAmount(nextCollateral, USD_DECIMALS, 2, true)}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
