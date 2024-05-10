@@ -172,6 +172,31 @@ export default function ConfirmationBox(props) {
     }
   }, [isMarketOrder, spreadInfo]);
 
+  const collateralSpreadInfo = useMemo(() => {
+    if (!toTokenInfo?.spread || !collateralTokenAddress) {
+      return null;
+    }
+
+    let totalSpread = toTokenInfo.spread;
+    if (toTokenInfo.address === collateralTokenAddress) {
+      return {
+        value: totalSpread,
+        isHigh: toTokenInfo.spread.gt(HIGH_SPREAD_THRESHOLD),
+      };
+    }
+
+    const collateralTokenInfo = getTokenInfo(infoTokens, collateralTokenAddress);
+    if (collateralTokenInfo?.spread) {
+      totalSpread = totalSpread.add(collateralTokenInfo.spread);
+    }
+
+    return {
+      value: totalSpread,
+      isHigh: totalSpread.gt(HIGH_SPREAD_THRESHOLD),
+    };
+  }, [toTokenInfo, collateralTokenAddress, infoTokens]);
+
+  
   return (
     <div className="Confirmation-box">
       <Modal isVisible={true} setIsVisible={() => setIsConfirming(false)} label={title}>
