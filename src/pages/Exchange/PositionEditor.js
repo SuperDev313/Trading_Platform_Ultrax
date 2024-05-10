@@ -66,7 +66,6 @@ export default function PositionEditor(props) {
     minExecutionFeeErrorMessage,
     isContractAccount,
   } = props;
-
   const nativeTokenAddress = getContract(chainId, "NATIVE_TOKEN");
   const position = positionsMap && positionKey ? positionsMap[positionKey] : undefined;
   const [option, setOption] = useState(DEPOSIT);
@@ -249,6 +248,48 @@ export default function PositionEditor(props) {
     return true;
   };
 
+  const getPrimaryText = () => {
+    const [error] = getError();
+    if (error) {
+      return error;
+    }
+    if (isSwapping) {
+      if (isDeposit) {
+        return t`Depositing...`;
+      }
+      return t`Withdrawing...`;
+    }
+
+    if (isApproving) {
+      return t`Approving ${position.collateralToken.symbol}...`;
+    }
+    if (needApproval) {
+      return t`Approve ${position.collateralToken.symbol}`;
+    }
+
+    if (needPositionRouterApproval && isWaitingForPositionRouterApproval) {
+      return t`Enabling Leverage`;
+    }
+
+    if (isPositionRouterApproving) {
+      return t`Enabling Leverage...`;
+    }
+
+    if (needPositionRouterApproval) {
+      return t`Enable Leverage`;
+    }
+
+    if (isDeposit) {
+      return t`Deposit`;
+    }
+
+    return t`Withdraw`;
+  };
+
+  const resetForm = () => {
+    setFromValue("");
+  };
+
   useEffect(() => {
     if (prevIsVisible !== isVisible) {
       resetForm();
@@ -330,44 +371,6 @@ export default function PositionEditor(props) {
       .finally(() => {
         setIsSwapping(false);
       });
-  };
-
-  const getPrimaryText = () => {
-    const [error] = getError();
-    if (error) {
-      return error;
-    }
-    if (isSwapping) {
-      if (isDeposit) {
-        return t`Depositing...`;
-      }
-      return t`Withdrawing...`;
-    }
-
-    if (isApproving) {
-      return t`Approving ${position.collateralToken.symbol}...`;
-    }
-    if (needApproval) {
-      return t`Approve ${position.collateralToken.symbol}`;
-    }
-
-    if (needPositionRouterApproval && isWaitingForPositionRouterApproval) {
-      return t`Enabling Leverage`;
-    }
-
-    if (isPositionRouterApproving) {
-      return t`Enabling Leverage...`;
-    }
-
-    if (needPositionRouterApproval) {
-      return t`Enable Leverage`;
-    }
-
-    if (isDeposit) {
-      return t`Deposit`;
-    }
-
-    return t`Withdraw`;
   };
 
   const withdrawCollateral = async () => {
@@ -496,7 +499,7 @@ export default function PositionEditor(props) {
       </Button>
     );
   }
-  
+
   return (
     <div className="PositionEditor">
       {position && (
@@ -554,7 +557,7 @@ export default function PositionEditor(props) {
                 </div>
                 <div className="PositionEditor-info-box">
                   {minExecutionFeeErrorMessage && (
-                    <div className="Conformation-box-warning">{minExecutionFeeErrorMessage}</div>
+                    <div className="Confirmation-box-warning">{minExecutionFeeErrorMessage}</div>
                   )}
                   <div className="Exchange-info-row size">
                     <div className="Exchange-info-label">
@@ -581,12 +584,6 @@ export default function PositionEditor(props) {
                       )}
                     </div>
                   </div>
-                  <div className="Exchange-info-row market-price">
-                    <div className="Exchange-info-label">
-                      <Trans>Market Price</Trans>
-                    </div>
-                    <div className="align-right">${formatAmount(position.markPrice, USD_DECIMALS, 2, true)}</div>
-                  </div>
                   <div className="Exchange-info-row leverage">
                     <div className="Exchange-info-label">
                       <Trans>Leverage</Trans>
@@ -603,6 +600,18 @@ export default function PositionEditor(props) {
                         </div>
                       )}
                     </div>
+                  </div>
+                  <div className="Exchange-info-row market-price">
+                    <div className="Exchange-info-label">
+                      <Trans>Market Price</Trans>
+                    </div>
+                    <div className="align-right">${formatAmount(position.markPrice, USD_DECIMALS, 2, true)}</div>
+                  </div>
+                  <div className="Exchange-info-row entry-price">
+                    <div className="Exchange-info-label">
+                      <Trans>Entry Price</Trans>
+                    </div>
+                    <div className="align-right">${formatAmount(position.averagePrice, USD_DECIMALS, 2, true)}</div>
                   </div>
                   <div className="Exchange-info-row liq-price">
                     <div className="Exchange-info-label">
@@ -626,6 +635,7 @@ export default function PositionEditor(props) {
                       )}
                     </div>
                   </div>
+
                   <div className="Exchange-info-row execution-fee">
                     <div className="Exchange-info-label">
                       <Trans>Execution Fee</Trans>
@@ -641,6 +651,7 @@ export default function PositionEditor(props) {
                     </div>
                   </div>
                 </div>
+
                 <div className="Exchange-swap-button-container">{renderPrimaryButton()}</div>
               </div>
             )}
