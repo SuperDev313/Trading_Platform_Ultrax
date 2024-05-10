@@ -105,6 +105,12 @@ export default function PositionEditor(props) {
                   {minExecutionFeeErrorMessage && (
                     <div className="Conformation-box-warning">{minExecutionFeeErrorMessage}</div>
                   )}
+                  <div className="Exchange-info-row size">
+                    <div className="Exchange-info-label">
+                      <Trans>Size</Trans>
+                    </div>
+                    <div className="align-right">{formatAmount(position.size, USD_DECIMALS, 2, true)} USD</div>
+                  </div>
                 </div>
               </div>
             )}
