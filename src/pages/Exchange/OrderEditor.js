@@ -61,6 +61,36 @@ export default function OrderEditor(props) {
     return isTriggerRatioInverted(fromTokenInfo, toTokenInfo);
   }, [toTokenInfo, fromTokenInfo, order.type]);
 
+  let initialRatio = 0;
+  if (order.triggerRatio) {
+    initialRatio = triggerRatioInverted ? PRECISION.mul(PRECISION).div(order.triggerRatio) : order.triggerRatio;
+  }
+  const [triggerRatioValue, setTriggerRatioValue] = useState(formatAmountFree(initialRatio, USD_DECIMALS, 6));
+
+  const [triggerPriceValue, setTriggerPriceValue] = useState(formatAmountFree(order.triggerPrice, USD_DECIMALS, 4));
+  const triggerPrice = useMemo(() => {
+    return triggerPriceValue ? parseValue(triggerPriceValue, USD_DECIMALS) : 0;
+  }, [triggerPriceValue]);
+
+  const triggerRatio = useMemo(() => {
+    if (!triggerRatioValue) {
+      return bigNumberify(0);
+    }
+    let ratio = parseValue(triggerRatioValue, USD_DECIMALS);
+    if (triggerRatioInverted) {
+      ratio = PRECISION.mul(PRECISION).div(ratio);
+    }
+    return ratio;
+  }, [triggerRatioValue, triggerRatioInverted]);
+
+  const indexTokenMarkPrice = useMemo(() => {
+    if (order.type === SWAP) {
+      return;
+    }
+    const toTokenInfo = getTokenInfo(infoTokens, order?.indexToken?.toLowerCase());
+    return order.isLong ? toTokenInfo?.maxPrice : toTokenInfo?.minPrice;
+  }, [infoTokens, order]);
+
   return (
     <Modal
       isVisible={true}
