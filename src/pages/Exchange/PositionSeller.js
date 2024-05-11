@@ -192,6 +192,60 @@ export default function PositionSeller(props) {
     setOrderOption(option);
   };
 
+  const onTriggerPriceChange = (evt) => {
+    setTriggerPriceValue(evt.target.value || "");
+  };
+
+  const [triggerPriceValue, setTriggerPriceValue] = useState("");
+  const triggerPriceUsd = orderOption === MARKET ? 0 : parseValue(triggerPriceValue, USD_DECIMALS);
+
+  const [nextDelta, nextHasProfit = bigNumberify(0)] = useMemo(() => {
+    if (!position) {
+      return [bigNumberify(0), false];
+    }
+
+    if (orderOption !== STOP) {
+      return [position.delta, position.hasProfit, position.deltaPercentage];
+    }
+
+    if (!triggerPriceUsd) {
+      return [bigNumberify(0), false];
+    }
+
+    const { delta, hasProfit, deltaPercentage } = calculatePositionDelta(triggerPriceUsd, position);
+    return [delta, hasProfit, deltaPercentage];
+  }, [position, orderOption, triggerPriceUsd]);
+
+  const existingOrders = useMemo(() => {
+    if (orderOption === STOP && (!triggerPriceUsd || triggerPriceUsd.eq(0))) {
+      return [];
+    }
+    if (!orders || !position) {
+      return [];
+    }
+
+    const ret = [];
+    for (const order of orders) {
+      // only Stop orders can't be executed without corresponding opened position
+      if (order.type !== DECREASE) continue;
+
+      // if user creates Stop-Loss we need only Stop-Loss orders and vice versa
+      if (orderOption === STOP) {
+        const triggerAboveThreshold = triggerPriceUsd.gt(position.markPrice);
+        if (triggerAboveThreshold !== order.triggerAboveThreshold) continue;
+      }
+
+      const sameToken =
+        order.indexToken === nativeTokenAddress
+          ? position.indexToken.isNative
+          : order.indexToken === position.indexToken.address;
+      if (order.isLong === position.isLong && sameToken) {
+        ret.push(order);
+      }
+    }
+    return ret;
+  }, [position, orders, triggerPriceUsd, orderOption, nativeTokenAddress]);
+
   return (
     <div className="PositionEditor">
       {position && (
