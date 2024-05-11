@@ -143,6 +143,54 @@ export default function PositionSeller(props) {
     totalTokenWeights,
     isContractAccount,
   } = props;
+  const [savedSlippageAmount] = useLocalStorageSerializeKey([chainId, SLIPPAGE_BPS_KEY], DEFAULT_SLIPPAGE_AMOUNT);
+  const [keepLeverage, setKeepLeverage] = useLocalStorageSerializeKey([chainId, "Exchange-keep-leverage"], true);
+  const position = positionsMap && positionKey ? positionsMap[positionKey] : undefined;
+  const [fromValue, setFromValue] = useState("");
+  const [isProfitWarningAccepted, setIsProfitWarningAccepted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const prevIsVisible = usePrevious(isVisible);
+  const [allowedSlippage, setAllowedSlippage] = useState(savedSlippageAmount);
+
+  useEffect(() => {
+    setAllowedSlippage(savedSlippageAmount);
+    if (isHigherSlippageAllowed) {
+      setAllowedSlippage(DEFAULT_HIGHER_SLIPPAGE_AMOUNT);
+    }
+  }, [savedSlippageAmount, isHigherSlippageAllowed]);
+
+  const positionRouterAddress = getContract(chainId, "PositionRouter");
+  const nativeTokenSymbol = getConstant(chainId, "nativeTokenSymbol");
+  const longOrShortText = position?.isLong ? t`Long` : t`Short`;
+
+  const toTokens = isContractAccount ? getTokens(chainId).filter((t) => !t.isNative) : getTokens(chainId);
+  const wrappedToken = getWrappedToken(chainId);
+
+  const [savedRecieveTokenAddress, setSavedRecieveTokenAddress] = useLocalStorageByChainId(
+    chainId,
+    `${CLOSE_POSITION_RECEIVE_TOKEN_KEY}-${position.indexToken.symbol}-${position?.isLong ? "long" : "short"}`
+  );
+
+  const [swapToToken, setSwapToToken] = useState(() =>
+    savedRecieveTokenAddress ? toTokens.find((token) => token.address === savedRecieveTokenAddress) : undefined
+  );
+
+  const ORDER_OPTIONS = [STOP, MARKET];
+  const ORDER_OPTION_LABELS = {
+    [STOP]: t`Trigger`,
+    [MARKET]: t`Market`,
+  };
+  let [orderOption, setOrderOption] = useState(STOP);
+
+  if (!flagOrdersEnabled) {
+    orderOption = MARKET;
+  }
+
+  const needPositionRouterApproval = !positionRouterApproved && orderOption === MARKET;
+
+  const onOrderOptionChange = (option) => {
+    setOrderOption(option);
+  };
 
   return (
     <div className="PositionEditor">
