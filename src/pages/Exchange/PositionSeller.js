@@ -246,6 +246,66 @@ export default function PositionSeller(props) {
     return ret;
   }, [position, orders, triggerPriceUsd, orderOption, nativeTokenAddress]);
 
+  const resetForm = () => {
+    setFromValue("");
+    setIsProfitWarningAccepted(false);
+  };
+
+  const profitPrice = getProfitPrice(orderOption === MARKET ? position.markPrice : triggerPriceUsd, position);
+
+  let triggerPricePrefix;
+  if (triggerPriceUsd) {
+    triggerPricePrefix = triggerPriceUsd.gt(position.markPrice) ? TRIGGER_PREFIX_ABOVE : TRIGGER_PREFIX_BELOW;
+  }
+
+  const shouldShowExistingOrderWarning = false;
+
+  if (orderOption === STOP && !triggerPriceUsd) {
+    receiveUsd = bigNumberify(0);
+    receiveAmount = bigNumberify(0);
+  }
+
+  const ERROR_TOOLTIP_MSG = {
+    [ErrorCode.InsufficientReceiveToken]: (
+      <Trans>
+        Swap amount from {position.collateralToken.symbol} to {receiveToken.symbol} exceeds {receiveToken.symbol}{" "}
+        available liquidity. Choose a different "Receive" token.
+      </Trans>
+    ),
+    [ErrorCode.ReceiveCollateralTokenOnly]: (
+      <Trans>
+        Swap amount from {position.collateralToken.symbol} to {receiveToken.symbol} exceeds{" "}
+        {position.collateralToken.symbol} acceptable amount. Can only receive {position.collateralToken.symbol}.
+      </Trans>
+    ),
+  };
+
+  function renderPrimaryButton() {
+    const [errorMessage, errorType, errorCode] = getError();
+    const primaryTextMessage = getPrimaryText();
+    if (errorType === ErrorDisplayType.Tooltip && errorMessage === primaryTextMessage && ERROR_TOOLTIP_MSG[errorCode]) {
+      return (
+        <Tooltip
+          isHandlerDisabled
+          handle={
+            <Button variant="primary-action w-full" onClick={onClickPrimary} disabled={!isPrimaryEnabled()}>
+              {primaryTextMessage}
+            </Button>
+          }
+          position="center-top"
+          className="Tooltip-flex"
+          renderContent={() => ERROR_TOOLTIP_MSG[errorCode]}
+        />
+      );
+    }
+
+    return (
+      <Button variant="primary-action w-full" onClick={onClickPrimary} disabled={!isPrimaryEnabled()}>
+        {primaryTextMessage}
+      </Button>
+    );
+  }
+
   return (
     <div className="PositionEditor">
       {position && (
