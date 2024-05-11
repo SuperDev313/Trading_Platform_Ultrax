@@ -48,6 +48,17 @@ function applySpread(amount, spread) {
   return amount.sub(amount.mul(spread).div(PRECISION));
 }
 
+function shouldSwap(amount, receiveToken) {
+  const isCollateralWrapped = collateralToken.isNative;
+
+  const isSameToken =
+    collateralToken.address === receiveToken.address || (isCollateralWrapped && receiveToken.isWrapped);
+
+  const isUnwrap = isCollateralWrapped && receiveToken.isNative;
+
+  return !isSameToken && !isUnwrap;
+}
+
 export default function PositionSeller(props) {
   const {
     pendingPositions,
@@ -80,6 +91,7 @@ export default function PositionSeller(props) {
     totalTokenWeights,
     isContractAccount,
   } = props;
+
   return (
     <div className="PositionEditor">
       {position && (
