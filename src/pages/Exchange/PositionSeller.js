@@ -246,6 +246,11 @@ export default function PositionSeller(props) {
     return ret;
   }, [position, orders, triggerPriceUsd, orderOption, nativeTokenAddress]);
 
+  const resetForm = () => {
+    setFromValue("");
+    setIsProfitWarningAccepted(false);
+  };
+  
   return (
     <div className="PositionEditor">
       {position && (
