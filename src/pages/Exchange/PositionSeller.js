@@ -36,6 +36,18 @@ import Checkbox from "../Checkbox/Checkbox";
 import Tab from "../Tab/Tab";
 import Modal from "../Modal/Modal";
 
+import ExchangeInfoRow from "./ExchangeInfoRow";
+import Tooltip from "../Tooltip/Tooltip";
+import TokenSelector from "./TokenSelector";
+import "./PositionSeller.css";
+import StatsTooltipRow from "../StatsTooltip/StatsTooltipRow";
+import { callContract } from "lib/contracts";
+import { getTokenAmountFromUsd } from "domain/tokens";
+import { TRIGGER_PREFIX_ABOVE, TRIGGER_PREFIX_BELOW } from "config/ui";
+import { useLocalStorageByChainId, useLocalStorageSerializeKey } from "lib/localStorage";
+import { CLOSE_POSITION_RECEIVE_TOKEN_KEY, SLIPPAGE_BPS_KEY } from "config/localStorage";
+import { getTokenInfo, getUsd } from "domain/tokens/utils";
+
 const { AddressZero } = ethers.constants;
 const ORDER_SIZE_DUST_USD = expandDecimals(1, USD_DECIMALS - 1); // $0.10
 
@@ -57,6 +69,46 @@ function shouldSwap(amount, receiveToken) {
   const isUnwrap = isCollateralWrapped && receiveToken.isNative;
 
   return !isSameToken && !isUnwrap;
+}
+
+function getSwapLimits(infoTokens, fromTokenAddress, toTokenAddress) {
+  const fromInfo = getTokenInfo(infoTokens, fromTokenAddress);
+  const toInfo = getTokenInfo(infoTokens, toTokenAddress);
+
+  let maxInUsd;
+  let maxIn;
+  let maxOut;
+  let maxOutUsd;
+
+  if (!fromInfo?.maxUsdgAmount) {
+    maxInUsd = bigNumberify(0);
+    maxIn = bigNumberify(0);
+  } else {
+    maxInUsd = fromInfo.maxUsdgAmount
+      .sub(fromInfo.usdgAmount)
+      .mul(expandDecimals(1, USD_DECIMALS))
+      .div(expandDecimals(1, USDG_DECIMALS));
+
+    maxIn = maxInUsd.mul(expandDecimals(1, fromInfo.decimals)).div(fromInfo.maxPrice).toString();
+  }
+
+  if (!toInfo?.poolAmount || !toInfo?.bufferAmount) {
+    maxOut = bigNumberify(0);
+    maxOutUsd = bigNumberify(0);
+  } else {
+    maxOut = toInfo.availableAmount.gt(toInfo.poolAmount.sub(toInfo.bufferAmount))
+      ? toInfo.poolAmount.sub(toInfo.bufferAmount)
+      : toInfo.availableAmount;
+
+    maxOutUsd = getUsd(maxOut, toInfo.address, false, infoTokens);
+  }
+
+  return {
+    maxIn,
+    maxInUsd,
+    maxOut,
+    maxOutUsd,
+  };
 }
 
 export default function PositionSeller(props) {
