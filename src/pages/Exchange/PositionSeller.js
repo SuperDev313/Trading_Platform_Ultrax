@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { ethers } from "ethers";
 import cx from "classnames";
@@ -47,6 +46,15 @@ import { TRIGGER_PREFIX_ABOVE, TRIGGER_PREFIX_BELOW } from "config/ui";
 import { useLocalStorageByChainId, useLocalStorageSerializeKey } from "lib/localStorage";
 import { CLOSE_POSITION_RECEIVE_TOKEN_KEY, SLIPPAGE_BPS_KEY } from "config/localStorage";
 import { getTokenInfo, getUsd } from "domain/tokens/utils";
+import { usePrevious } from "lib/usePrevious";
+import { bigNumberify, expandDecimals, formatAmount, formatAmountFree, parseValue } from "lib/numbers";
+import { getTokens, getWrappedToken } from "config/tokens";
+import { formatDateTime, getTimeRemaining } from "lib/dates";
+import ExternalLink from "components/ExternalLink/ExternalLink";
+import { ErrorCode, ErrorDisplayType } from "./constants";
+import FeesTooltip from "./FeesTooltip";
+import Button from "components/Button/Button";
+import SlippageInput from "components/SlippageInput/SlippageInput";
 
 const { AddressZero } = ethers.constants;
 const ORDER_SIZE_DUST_USD = expandDecimals(1, USD_DECIMALS - 1); // $0.10
@@ -60,8 +68,8 @@ function applySpread(amount, spread) {
   return amount.sub(amount.mul(spread).div(PRECISION));
 }
 
-function shouldSwap(amount, receiveToken) {
-  const isCollateralWrapped = collateralToken.isNative;
+function shouldSwap(collateralToken, receiveToken) {
+ const isCollateralWrapped = collateralToken.isNative;
 
   const isSameToken =
     collateralToken.address === receiveToken.address || (isCollateralWrapped && receiveToken.isWrapped);
@@ -246,10 +254,639 @@ export default function PositionSeller(props) {
     return ret;
   }, [position, orders, triggerPriceUsd, orderOption, nativeTokenAddress]);
 
+  const existingOrder = existingOrders[0];
+
+  const needOrderBookApproval = orderOption === STOP && !orderBookApproved;
+
+  const isSwapAllowed = orderOption === MARKET;
+
+  const { data: hasOutdatedUi } = useHasOutdatedUi();
+
+  let receiveToken;
+  let maxAmount;
+  let maxAmountFormatted;
+  let maxAmountFormattedFree;
+  let fromAmount;
+
+  let convertedAmount;
+  let convertedAmountFormatted;
+
+  let nextLeverage;
+  let liquidationPrice;
+  let nextLiquidationPrice;
+  let isClosing;
+  let sizeDelta;
+
+  let nextCollateral;
+  let collateralDelta = bigNumberify(0);
+  let receiveUsd = bigNumberify(0);
+  let receiveAmount = bigNumberify(0);
+  let adjustedDelta = bigNumberify(0);
+
+  let isNotEnoughReceiveTokenLiquidity;
+  let isCollateralPoolCapacityExceeded;
+
+  let title;
+  let fundingFee;
+  let positionFee;
+  let swapFee;
+  let totalFees = bigNumberify(0);
+
+  useEffect(() => {
+    if (isSwapAllowed && isContractAccount && isAddressZero(receiveToken.address)) {
+      setSwapToToken(wrappedToken);
+      setSavedRecieveTokenAddress(wrappedToken.address);
+    }
+  }, [
+    isContractAccount,
+    isSwapAllowed,
+    nativeTokenSymbol,
+    receiveToken?.address,
+    wrappedToken,
+    setSavedRecieveTokenAddress,
+  ]);
+
+  let executionFee = orderOption === STOP ? getConstant(chainId, "DECREASE_ORDER_EXECUTION_GAS_FEE") : minExecutionFee;
+  let executionFeeUsd = getUsd(executionFee, nativeTokenAddress, false, infoTokens) || bigNumberify(0);
+
+  const collateralToken = position.collateralToken;
+  const collateralTokenInfo = getTokenInfo(infoTokens, collateralToken.address);
+
+  if (position) {
+    fundingFee = position.fundingFee;
+    fromAmount = parseValue(fromValue, USD_DECIMALS);
+    sizeDelta = fromAmount;
+
+    title = t`Close ${longOrShortText} ${position.indexToken.symbol}`;
+    liquidationPrice = getLiquidationPrice(position);
+
+    if (fromAmount) {
+      isClosing = position.size.sub(fromAmount).lt(DUST_USD);
+      positionFee = getMarginFee(fromAmount);
+    }
+
+    if (isClosing) {
+      sizeDelta = position.size;
+      receiveUsd = position.collateral;
+    } else if (orderOption === STOP && sizeDelta && existingOrders.length > 0) {
+      let residualSize = position.size;
+      for (const order of existingOrders) {
+        residualSize = residualSize.sub(order.sizeDelta);
+      }
+      if (residualSize.sub(sizeDelta).abs().lt(ORDER_SIZE_DUST_USD)) {
+        sizeDelta = residualSize;
+      }
+    }
+
+    if (sizeDelta && position.size.gt(0)) {
+      adjustedDelta = nextDelta.mul(sizeDelta).div(position.size);
+    }
+
+    if (nextHasProfit) {
+      receiveUsd = receiveUsd.add(adjustedDelta);
+    } else {
+      if (receiveUsd.gt(adjustedDelta)) {
+        receiveUsd = receiveUsd.sub(adjustedDelta);
+      } else {
+        receiveUsd = bigNumberify(0);
+      }
+    }
+
+    if (keepLeverage && sizeDelta && !isClosing) {
+      collateralDelta = sizeDelta.mul(position.collateral).div(position.size);
+      // if the position will be realising a loss then reduce collateralDelta by the realised loss
+      if (!nextHasProfit) {
+        const deductions = adjustedDelta.add(positionFee).add(fundingFee);
+        if (collateralDelta.gt(deductions)) {
+          collateralDelta = collateralDelta = collateralDelta.sub(deductions);
+        } else {
+          collateralDelta = bigNumberify(0);
+        }
+      }
+    }
+
+    maxAmount = position.size;
+    maxAmountFormatted = formatAmount(maxAmount, USD_DECIMALS, 2, true);
+    maxAmountFormattedFree = formatAmountFree(maxAmount, USD_DECIMALS, 2);
+
+    if (fromAmount && collateralToken.maxPrice) {
+      convertedAmount = fromAmount.mul(expandDecimals(1, collateralToken.decimals)).div(collateralToken.maxPrice);
+      convertedAmountFormatted = formatAmount(convertedAmount, collateralToken.decimals, 4, true);
+    }
+
+    totalFees = totalFees.add(positionFee || bigNumberify(0)).add(fundingFee || bigNumberify(0));
+
+    receiveUsd = receiveUsd.add(collateralDelta);
+
+    if (sizeDelta) {
+      if (receiveUsd.gt(totalFees)) {
+        receiveUsd = receiveUsd.sub(totalFees);
+      } else {
+        receiveUsd = bigNumberify(0);
+      }
+    }
+
+    receiveUsd = applySpread(receiveUsd, collateralTokenInfo?.spread);
+
+    receiveToken = isSwapAllowed && swapToToken ? swapToToken : collateralToken;
+
+    if (isSwapAllowed && isContractAccount && isAddressZero(receiveToken.address)) {
+      receiveToken = wrappedToken;
+    }
+
+    // Calculate swap fees
+    if (isSwapAllowed && swapToToken) {
+      const { feeBasisPoints } = getNextToAmount(
+        chainId,
+        convertedAmount,
+        collateralToken.address,
+        receiveToken.address,
+        infoTokens,
+        undefined,
+        undefined,
+        usdgSupply,
+        totalTokenWeights,
+        true
+      );
+
+      if (feeBasisPoints) {
+        swapFee = receiveUsd.mul(feeBasisPoints).div(BASIS_POINTS_DIVISOR);
+        totalFees = totalFees.add(swapFee || bigNumberify(0));
+        receiveUsd = receiveUsd.sub(swapFee);
+      }
+      const swapToTokenInfo = getTokenInfo(infoTokens, swapToToken.address);
+      receiveUsd = applySpread(receiveUsd, swapToTokenInfo?.spread);
+    }
+
+    // For Shorts trigger orders the collateral is a stable coin, it should not depend on the triggerPrice
+    if (orderOption === STOP && position.isLong) {
+      receiveAmount = getTokenAmountFromUsd(infoTokens, receiveToken.address, receiveUsd, {
+        overridePrice: triggerPriceUsd,
+      });
+    } else {
+      receiveAmount = getTokenAmountFromUsd(infoTokens, receiveToken.address, receiveUsd);
+    }
+
+    // Check swap limits (max in / max out)
+    if (isSwapAllowed && shouldSwap(collateralToken, receiveToken)) {
+      const collateralInfo = getTokenInfo(infoTokens, collateralToken.address);
+      const receiveTokenInfo = getTokenInfo(infoTokens, receiveToken.address);
+
+      isNotEnoughReceiveTokenLiquidity =
+        receiveTokenInfo.availableAmount.lt(receiveAmount) ||
+        receiveTokenInfo.bufferAmount.gt(receiveTokenInfo.poolAmount.sub(receiveAmount));
+
+      if (
+        collateralInfo.maxUsdgAmount &&
+        collateralInfo.maxUsdgAmount.gt(0) &&
+        collateralInfo.usdgAmount &&
+        collateralInfo.maxPrice
+      ) {
+        const usdgFromAmount = adjustForDecimals(receiveUsd, USD_DECIMALS, USDG_DECIMALS);
+        const nextUsdgAmount = collateralInfo.usdgAmount.add(usdgFromAmount);
+
+        if (nextUsdgAmount.gt(collateralInfo.maxUsdgAmount)) {
+          isCollateralPoolCapacityExceeded = true;
+        }
+      }
+    }
+
+    if (isClosing) {
+      nextCollateral = bigNumberify(0);
+    } else {
+      if (position.collateral) {
+        nextCollateral = position.collateral;
+        if (collateralDelta && collateralDelta.gt(0)) {
+          nextCollateral = position.collateral.sub(collateralDelta);
+        } else if (position.delta && position.delta.gt(0) && sizeDelta) {
+          if (!position.hasProfit) {
+            nextCollateral = nextCollateral.sub(adjustedDelta);
+          }
+        }
+      }
+    }
+
+    if (fromAmount) {
+      if (!isClosing && !keepLeverage) {
+        nextLeverage = getLeverage({
+          size: position.size,
+          sizeDelta,
+          collateral: position.collateral,
+          entryFundingRate: position.entryFundingRate,
+          cumulativeFundingRate: position.cumulativeFundingRate,
+          hasProfit: nextHasProfit,
+          delta: nextDelta,
+          includeDelta: savedIsPnlInLeverage,
+        });
+        nextLiquidationPrice = getLiquidationPrice({
+          isLong: position.isLong,
+          size: position.size,
+          sizeDelta,
+          collateral: position.collateral,
+          averagePrice: position.averagePrice,
+          entryFundingRate: position.entryFundingRate,
+          cumulativeFundingRate: position.cumulativeFundingRate,
+          delta: nextDelta,
+          hasProfit: nextHasProfit,
+          includeDelta: true,
+        });
+      }
+    }
+  }
+
+  const [deltaStr, deltaPercentageStr, hasProfit] = useMemo(() => {
+    if (!position || !position.markPrice || position.collateral.eq(0)) {
+      return ["-", "-"];
+    }
+    if (orderOption !== STOP) {
+      const { pendingDelta, pendingDeltaPercentage, hasProfit } = calculatePositionDelta(
+        position.markPrice,
+        position,
+        fromAmount
+      );
+      const { deltaStr, deltaPercentageStr } = getDeltaStr({
+        delta: pendingDelta,
+        deltaPercentage: pendingDeltaPercentage,
+        hasProfit,
+      });
+      return [deltaStr, deltaPercentageStr];
+    }
+    if (!triggerPriceUsd || triggerPriceUsd.eq(0)) {
+      return ["-", "-"];
+    }
+
+    const { pendingDelta, pendingDeltaPercentage, hasProfit } = calculatePositionDelta(
+      triggerPriceUsd,
+      position,
+      fromAmount
+    );
+
+    const { deltaStr, deltaPercentageStr } = getDeltaStr({
+      delta: pendingDelta,
+      deltaPercentage: pendingDeltaPercentage,
+      hasProfit,
+    });
+
+    return [deltaStr, deltaPercentageStr, hasProfit];
+  }, [position, triggerPriceUsd, orderOption, fromAmount]);
+
+  const getError = () => {
+    if (isSwapAllowed && isContractAccount && isAddressZero(receiveToken?.address)) {
+      return [t`${nativeTokenSymbol} can not be sent to smart contract addresses. Select another token.`];
+    }
+    if (IS_NETWORK_DISABLED[chainId]) {
+      if (orderOption === STOP) return [t`Trigger order disabled, pending ${getChainName(chainId)} upgrade`];
+      return [t`Position close disabled, pending ${getChainName(chainId)} upgrade`];
+    }
+    if (!fromAmount) {
+      return [t`Enter an amount`];
+    }
+    if (nextLeverage && nextLeverage.eq(0)) {
+      return [t`Enter an amount`];
+    }
+    if (orderOption === STOP) {
+      if (!triggerPriceUsd || triggerPriceUsd.eq(0)) {
+        return [t`Enter Price`];
+      }
+      if (position.isLong && triggerPriceUsd.lte(liquidationPrice)) {
+        return [t`Price below Liq. Price`];
+      }
+      if (!position.isLong && triggerPriceUsd.gte(liquidationPrice)) {
+        return [t`Price above Liq. Price`];
+      }
+
+      if (profitPrice && nextDelta.eq(0) && nextHasProfit) {
+        return [t`Invalid price, see warning`];
+      }
+    }
+
+    if (isNotEnoughReceiveTokenLiquidity) {
+      return [t`Insufficient Liquidity`, ErrorDisplayType.Tooltip, ErrorCode.InsufficientReceiveToken];
+    }
+
+    if (isCollateralPoolCapacityExceeded) {
+      return [t`Insufficient Liquidity`, ErrorDisplayType.Tooltip, ErrorCode.ReceiveCollateralTokenOnly];
+    }
+
+    if (!isClosing && position && position.size && fromAmount) {
+      if (position.size.sub(fromAmount).lt(expandDecimals(10, USD_DECIMALS))) {
+        return [t`Leftover position below 10 USD`];
+      }
+      if (nextCollateral && nextCollateral.lt(expandDecimals(5, USD_DECIMALS))) {
+        return [t`Leftover collateral below 5 USD`];
+      }
+    }
+
+    if (position && position.size && position.size.lt(fromAmount)) {
+      return [t`Max close amount exceeded`];
+    }
+
+    if (nextLeverage && nextLeverage.lt(1.1 * BASIS_POINTS_DIVISOR)) {
+      return [t`Min leverage: 1.1x`];
+    }
+
+    if (nextLeverage && nextLeverage.gt(MAX_ALLOWED_LEVERAGE)) {
+      return [t`Max leverage: ${(MAX_ALLOWED_LEVERAGE / BASIS_POINTS_DIVISOR).toFixed(1)}x`];
+    }
+
+    if (hasPendingProfit && orderOption !== STOP && !isProfitWarningAccepted) {
+      return [t`Forfeit profit not checked`];
+    }
+    return [false];
+  };
+
+  const isPrimaryEnabled = () => {
+    const [error] = getError();
+    if (error) {
+      return false;
+    }
+    if (isSubmitting) {
+      return false;
+    }
+    if (needOrderBookApproval && isWaitingForPluginApproval) {
+      return false;
+    }
+    if (isPluginApproving) {
+      return false;
+    }
+    if (needPositionRouterApproval && isWaitingForPositionRouterApproval) {
+      return false;
+    }
+    if (isPositionRouterApproving) {
+      return false;
+    }
+
+    return true;
+  };
+
+  const hasPendingProfit = MIN_PROFIT_TIME > 0 && position.delta.eq(0) && position.pendingDelta.gt(0);
+
+  const getPrimaryText = () => {
+    const [error] = getError();
+    if (error) {
+      return error;
+    }
+
+    if (orderOption === STOP) {
+      if (isSubmitting) return t`Creating Order...`;
+
+      if (needOrderBookApproval && isWaitingForPluginApproval) {
+        return t`Enabling Orders...`;
+      }
+      if (isPluginApproving) {
+        return t`Enabling Orders...`;
+      }
+      if (needOrderBookApproval) {
+        return t`Enable Orders`;
+      }
+
+      return t`Create Order`;
+    }
+
+    if (needPositionRouterApproval && isWaitingForPositionRouterApproval) {
+      return t`Enabling Leverage...`;
+    }
+
+    if (isPositionRouterApproving) {
+      return t`Enabling Leverage...`;
+    }
+
+    if (needPositionRouterApproval) {
+      return t`Enable Leverage`;
+    }
+
+    if (hasPendingProfit) {
+      return t`Close without profit`;
+    }
+    return isSubmitting ? t`Closing...` : t`Close`;
+  };
+
   const resetForm = () => {
     setFromValue("");
     setIsProfitWarningAccepted(false);
   };
+
+  useEffect(() => {
+    if (prevIsVisible !== isVisible) {
+      resetForm();
+    }
+  }, [prevIsVisible, isVisible]);
+
+  const receiveSpreadInfo = useMemo(() => {
+    if (!collateralTokenInfo || !infoTokens) {
+      return null;
+    }
+
+    if (!swapToToken || swapToToken.address === collateralTokenInfo.address) {
+      return {
+        value: collateralTokenInfo.spread,
+        isHigh: collateralTokenInfo.spread.gt(HIGH_SPREAD_THRESHOLD),
+      };
+    }
+
+    const swapToTokenInfo = getTokenInfo(infoTokens, swapToToken.address);
+    const spread = collateralTokenInfo.spread.add(swapToTokenInfo.spread);
+    return {
+      value: spread,
+      isHigh: spread.gt(HIGH_SPREAD_THRESHOLD),
+    };
+  }, [swapToToken, infoTokens, collateralTokenInfo]);
+  const showReceiveSpread = receiveSpreadInfo && receiveSpreadInfo.value.gt(0);
+
+  const onClickPrimary = async () => {
+    if (needOrderBookApproval) {
+      setOrdersToaOpen(true);
+      return;
+    }
+
+    if (needPositionRouterApproval) {
+      approvePositionRouter({
+        sentMsg: t`Enable leverage sent.`,
+        failMsg: t`Enable leverage failed.`,
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const collateralTokenAddress = position.collateralToken.isNative
+      ? nativeTokenAddress
+      : position.collateralToken.address;
+    const indexTokenAddress = position.indexToken.isNative ? nativeTokenAddress : position.indexToken.address;
+
+    if (orderOption === STOP) {
+      const triggerAboveThreshold = triggerPriceUsd.gt(position.markPrice);
+
+      createDecreaseOrder(
+        chainId,
+        library,
+        indexTokenAddress,
+        sizeDelta,
+        collateralTokenAddress,
+        collateralDelta,
+        position.isLong,
+        triggerPriceUsd,
+        triggerAboveThreshold,
+        {
+          sentMsg: t`Order submitted!`,
+          successMsg: t`Order created!`,
+          failMsg: t`Order creation failed.`,
+          setPendingTxns,
+        }
+      )
+        .then(() => {
+          setFromValue("");
+          setIsVisible(false);
+        })
+        .finally(() => {
+          setIsSubmitting(false);
+        });
+      return;
+    }
+
+    const priceBasisPoints = position.isLong
+      ? BASIS_POINTS_DIVISOR - allowedSlippage
+      : BASIS_POINTS_DIVISOR + allowedSlippage;
+    const refPrice = position.isLong ? position.indexToken.minPrice : position.indexToken.maxPrice;
+    let priceLimit = refPrice.mul(priceBasisPoints).div(BASIS_POINTS_DIVISOR);
+    const minProfitExpiration = position.lastIncreasedTime + MIN_PROFIT_TIME;
+    const minProfitTimeExpired = parseInt(Date.now() / 1000) > minProfitExpiration;
+
+    if (nextHasProfit && !minProfitTimeExpired && !isProfitWarningAccepted) {
+      if ((position.isLong && priceLimit.lt(profitPrice)) || (!position.isLong && priceLimit.gt(profitPrice))) {
+        priceLimit = profitPrice;
+      }
+    }
+
+    const tokenAddress0 = collateralTokenAddress === AddressZero ? nativeTokenAddress : collateralTokenAddress;
+
+    const path = [tokenAddress0];
+
+    const isUnwrap = receiveToken.address === AddressZero;
+    const isSwap = receiveToken.address !== tokenAddress0;
+
+    if (isSwap) {
+      if (isUnwrap && tokenAddress0 !== nativeTokenAddress) {
+        path.push(nativeTokenAddress);
+      } else if (!isUnwrap) {
+        path.push(receiveToken.address);
+      }
+    }
+
+    const withdrawETH = isUnwrap && !isContractAccount;
+
+    const params = [
+      path, // _path
+      indexTokenAddress, // _indexToken
+      collateralDelta, // _collateralDelta
+      sizeDelta, // _sizeDelta
+      position.isLong, // _isLong
+      account, // _receiver
+      priceLimit, // _acceptablePrice
+      0, // _minOut
+      minExecutionFee, // _executionFee
+      withdrawETH, // _withdrawETH
+      AddressZero, // _callbackTarget
+    ];
+    const sizeDeltaUsd = formatAmount(sizeDelta, USD_DECIMALS, 2);
+    const successMsg = t`Requested decrease of ${position.indexToken.symbol} ${longOrShortText} by ${sizeDeltaUsd} USD.`;
+
+    const contract = new ethers.Contract(positionRouterAddress, PositionRouter.abi, library.getSigner());
+
+    callContract(chainId, contract, "createDecreasePosition", params, {
+      value: minExecutionFee,
+      sentMsg: t`Close submitted!`,
+      successMsg,
+      failMsg: t`Close failed.`,
+      setPendingTxns,
+      // for Arbitrum, sometimes the successMsg shows after the position has already been executed
+      // hide the success message for Arbitrum as a workaround
+      hideSuccessMsg: chainId === ARBITRUM,
+    })
+      .then(async (res) => {
+        setFromValue("");
+        setIsVisible(false);
+
+        let nextSize = position.size.sub(sizeDelta);
+
+        pendingPositions[position.key] = {
+          updatedAt: Date.now(),
+          pendingChanges: {
+            size: nextSize,
+          },
+        };
+
+        setPendingPositions({ ...pendingPositions });
+      })
+      .finally(() => {
+        setIsSubmitting(false);
+      });
+  };
+
+  const renderExistingOrderWarning = useCallback(() => {
+    if (!existingOrder) {
+      return;
+    }
+    const indexToken = getTokenInfo(infoTokens, existingOrder.indexToken);
+    const sizeInToken = formatAmount(
+      existingOrder.sizeDelta.mul(PRECISION).div(existingOrder.triggerPrice),
+      USD_DECIMALS,
+      4,
+      true
+    );
+    const prefix = existingOrder.triggerAboveThreshold ? TRIGGER_PREFIX_ABOVE : TRIGGER_PREFIX_BELOW;
+    return (
+      <div className="Confirmation-box-warning">
+        <Trans>
+          You have an active order to decrease {longOrShortText} {sizeInToken} {indexToken.symbol} ($
+          {formatAmount(existingOrder.sizeDelta, USD_DECIMALS, 2, true)}) at {prefix}{" "}
+          {formatAmount(existingOrder.triggerPrice, USD_DECIMALS, 2, true)}
+        </Trans>
+      </div>
+    );
+  }, [existingOrder, infoTokens, longOrShortText]);
+
+  function renderMinProfitWarning() {
+    if (MIN_PROFIT_TIME === 0) {
+      return null;
+    }
+
+    if (profitPrice && nextDelta.eq(0) && nextHasProfit) {
+      const minProfitExpiration = position.lastIncreasedTime + MIN_PROFIT_TIME;
+
+      if (orderOption === MARKET) {
+        return (
+          <div className="Confirmation-box-warning">
+            <Trans>
+              Reducing the position at the current price will forfeit a&nbsp;
+              <ExternalLink href="https://utxio.gitbook.io/utx/trading#minimum-price-change">
+                pending profit
+              </ExternalLink>{" "}
+              of {deltaStr}. <br />
+            </Trans>
+            <Trans>
+              <br />
+              Profit price: {position.isLong ? ">" : "<"} ${formatAmount(profitPrice, USD_DECIMALS, 2, true)}. This rule
+              applies for the next {getTimeRemaining(minProfitExpiration)}, until {formatDateTime(minProfitExpiration)}.
+            </Trans>
+          </div>
+        );
+      }
+      return (
+        <div className="Confirmation-box-warning">
+          <Trans>
+            This order will forfeit a&nbsp;
+            <ExternalLink href="https://utxio.gitbook.io/utx/trading#minimum-price-change">profit</ExternalLink> of{" "}
+            {deltaStr}. <br />
+          </Trans>
+          <Trans>
+            Profit price: {position.isLong ? ">" : "<"} ${formatAmount(profitPrice, USD_DECIMALS, 2, true)}. This rule
+            applies for the next {getTimeRemaining(minProfitExpiration)}, until {formatDateTime(minProfitExpiration)}.
+          </Trans>
+        </div>
+      );
+    }
+  }
 
   const profitPrice = getProfitPrice(orderOption === MARKET ? position.markPrice : triggerPriceUsd, position);
 
@@ -305,7 +942,7 @@ export default function PositionSeller(props) {
       </Button>
     );
   }
-
+  const hasProfitPnL = deltaPercentageStr.includes("+");
   return (
     <div className="PositionEditor">
       {position && (
