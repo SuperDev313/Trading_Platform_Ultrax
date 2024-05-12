@@ -1,7 +1,64 @@
 import React, { useState } from "react";
 import cx from "classnames";
 import { Trans, t } from "@lingui/macro";
+import Tooltip from "../Tooltip/Tooltip";
+import PositionSeller from "./PositionSeller";
+import PositionEditor from "./PositionEditor";
+import OrdersToa from "./OrdersToa";
+import { ImSpinner2 } from "react-icons/im";
+import edit_icon from "../../img/edit_icon.svg";
+import {
+  getLiquidationPrice,
+  getLeverage,
+  getOrderError,
+  USD_DECIMALS,
+  FUNDING_RATE_PRECISION,
+  SWAP,
+  LONG,
+  SHORT,
+  INCREASE,
+  DECREASE,
+} from "lib/legacy";
+import PositionDropdown from "./PositionDropdown";
+import StatsTooltipRow from "../StatsTooltip/StatsTooltipRow";
+import NetValueTooltip from "./NetValueTooltip";
+import { helperToast } from "lib/helperToast";
+import { getUsd } from "domain/tokens/utils";
+import { bigNumberify, formatAmount } from "lib/numbers";
+import { AiOutlineEdit } from "react-icons/ai";
+import useAccountType, { AccountType } from "lib/wallets/useAccountType";
 
+const getOrdersForPosition = (account, position, orders, nativeTokenAddress) => {
+    if (!orders || orders.length === 0) {
+      return [];
+    }
+    /* eslint-disable array-callback-return */
+    return orders
+      .filter((order) => {
+        if (order.type === SWAP) {
+          return false;
+        }
+        const hasMatchingIndexToken =
+          order.indexToken === nativeTokenAddress
+            ? position.indexToken.isNative
+            : order.indexToken === position.indexToken.address;
+        const hasMatchingCollateralToken =
+          order.collateralToken === nativeTokenAddress
+            ? position.collateralToken.isNative
+            : order.collateralToken === position.collateralToken.address;
+        if (order.isLong === position.isLong && hasMatchingIndexToken && hasMatchingCollateralToken) {
+          return true;
+        }
+      })
+      .map((order) => {
+        order.error = getOrderError(account, order, undefined, position);
+        if (order.type === DECREASE && order.sizeDelta.gt(position.size)) {
+          order.error = t`Order size is bigger than position, will only be executable if position increases`;
+        }
+        return order;
+      });
+  };
+  
 export default function PositionList(props) {
   return (
     <div className="PositionsList">
