@@ -29,37 +29,92 @@ import { AiOutlineEdit } from "react-icons/ai";
 import useAccountType, { AccountType } from "lib/wallets/useAccountType";
 
 const getOrdersForPosition = (account, position, orders, nativeTokenAddress) => {
-    if (!orders || orders.length === 0) {
-      return [];
-    }
-    /* eslint-disable array-callback-return */
-    return orders
-      .filter((order) => {
-        if (order.type === SWAP) {
-          return false;
-        }
-        const hasMatchingIndexToken =
-          order.indexToken === nativeTokenAddress
-            ? position.indexToken.isNative
-            : order.indexToken === position.indexToken.address;
-        const hasMatchingCollateralToken =
-          order.collateralToken === nativeTokenAddress
-            ? position.collateralToken.isNative
-            : order.collateralToken === position.collateralToken.address;
-        if (order.isLong === position.isLong && hasMatchingIndexToken && hasMatchingCollateralToken) {
-          return true;
-        }
-      })
-      .map((order) => {
-        order.error = getOrderError(account, order, undefined, position);
-        if (order.type === DECREASE && order.sizeDelta.gt(position.size)) {
-          order.error = t`Order size is bigger than position, will only be executable if position increases`;
-        }
-        return order;
-      });
-  };
-  
+  if (!orders || orders.length === 0) {
+    return [];
+  }
+  /* eslint-disable array-callback-return */
+  return orders
+    .filter((order) => {
+      if (order.type === SWAP) {
+        return false;
+      }
+      const hasMatchingIndexToken =
+        order.indexToken === nativeTokenAddress
+          ? position.indexToken.isNative
+          : order.indexToken === position.indexToken.address;
+      const hasMatchingCollateralToken =
+        order.collateralToken === nativeTokenAddress
+          ? position.collateralToken.isNative
+          : order.collateralToken === position.collateralToken.address;
+      if (order.isLong === position.isLong && hasMatchingIndexToken && hasMatchingCollateralToken) {
+        return true;
+      }
+    })
+    .map((order) => {
+      order.error = getOrderError(account, order, undefined, position);
+      if (order.type === DECREASE && order.sizeDelta.gt(position.size)) {
+        order.error = t`Order size is bigger than position, will only be executable if position increases`;
+      }
+      return order;
+    });
+};
+
 export default function PositionList(props) {
+  const {
+    pendingPositions,
+    setPendingPositions,
+    positions,
+    positionsDataIsLoading,
+    positionsMap,
+    infoTokens,
+    active,
+    account,
+    library,
+    pendingTxns,
+    setPendingTxns,
+    setListSection,
+    flagOrdersEnabled,
+    savedIsPnlInLeverage,
+    chainId,
+    nativeTokenAddress,
+    orders,
+    setIsWaitingForPluginApproval,
+    approveOrderBook,
+    isPluginApproving,
+    isWaitingForPluginApproval,
+    orderBookApproved,
+    positionRouterApproved,
+    isWaitingForPositionRouterApproval,
+    isPositionRouterApproving,
+    approvePositionRouter,
+    showPnlAfterFees,
+    setMarket,
+    minExecutionFee,
+    minExecutionFeeUSD,
+    minExecutionFeeErrorMessage,
+    usdgSupply,
+    totalTokenWeights,
+    hideActions,
+    openSettings,
+  } = props;
+  const [positionToEditKey, setPositionToEditKey] = useState(undefined);
+  const [positionToSellKey, setPositionToSellKey] = useState(undefined);
+  const [positionToShare, setPositionToShare] = useState(null);
+  const [isPositionEditorVisible, setIsPositionEditorVisible] = useState(undefined);
+  const [isPositionSellerVisible, setIsPositionSellerVisible] = useState(undefined);
+  const [collateralTokenAddress, setCollateralTokenAddress] = useState(undefined);
+  const [isPositionShareModalOpen, setIsPositionShareModalOpen] = useState(false);
+  const [ordersToaOpen, setOrdersToaOpen] = useState(false);
+  const [isHigherSlippageAllowed, setIsHigherSlippageAllowed] = useState(false);
+  const accountType = useAccountType();
+  const isContractAccount = accountType === AccountType.CONTRACT;
+
+  const editPosition = (position) => {
+    setCollateralTokenAddress(position.collateralToken.address);
+    setPositionToEditKey(position.key);
+    setIsPositionEditorVisible(true);
+  };
+
   return (
     <div className="PositionsList">
       <table className="Exchange-list large App-box">
