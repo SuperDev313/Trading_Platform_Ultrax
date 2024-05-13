@@ -971,6 +971,89 @@ export default function SwapBox(props) {
       />
     );
   };
+
+  const getPrimaryText = () => {
+    if (isStopOrder) {
+      return t`Open a position`;
+    }
+    if (!active) {
+      return t`Connect Wallet`;
+    }
+    if (!isSupportedChain(chainId)) {
+      return t`Incorrect Network`;
+    }
+    const [error, errorType] = getError();
+    if (error && errorType !== ErrorDisplayType.Modal) {
+      return error;
+    }
+
+    if (needPositionRouterApproval && isWaitingForPositionRouterApproval) {
+      return t`Enabling Leverage...`;
+    }
+    if (isPositionRouterApproving) {
+      return t`Enabling Leverage...`;
+    }
+    if (needPositionRouterApproval) {
+      return t`Enable Leverage`;
+    }
+
+    if (needApproval && isWaitingForApproval) {
+      return t`Waiting for Approval`;
+    }
+    if (isApproving) {
+      return t`Approving ${fromToken.symbol}...`;
+    }
+    if (needApproval) {
+      return t`Approve ${fromToken.symbol}`;
+    }
+
+    if (needOrderBookApproval && isWaitingForPluginApproval) {
+      return t`Enabling Orders...`;
+    }
+    if (isPluginApproving) {
+      return t`Enabling Orders...`;
+    }
+    if (needOrderBookApproval) {
+      return t`Enable Orders`;
+    }
+
+    if (!isMarketOrder) return t`Create ${orderOption?.charAt(0) + orderOption.substring(1).toLowerCase()} Order`;
+
+    if (isSwap) {
+      if (toUsdMax && toUsdMax.lt(fromUsdMin.mul(95).div(100))) {
+        return t`High Slippage, Swap Anyway`;
+      }
+      return t`Swap`;
+    }
+
+    if (isLong) {
+      const indexTokenInfo = getTokenInfo(infoTokens, toTokenAddress);
+      if (indexTokenInfo && indexTokenInfo.minPrice) {
+        const { amount: nextToAmount } = getNextToAmount(
+          chainId,
+          fromAmount,
+          fromTokenAddress,
+          indexTokenAddress,
+          infoTokens,
+          undefined,
+          undefined,
+          usdgSupply,
+          totalTokenWeights,
+          isSwap
+        );
+        const nextToAmountUsd = nextToAmount
+          .mul(indexTokenInfo.minPrice)
+          .div(expandDecimals(1, indexTokenInfo.decimals));
+        if (fromTokenAddress === USDG_ADDRESS && nextToAmountUsd.lt(fromUsdMin.mul(98).div(100))) {
+          return t`High USDG Slippage, Long Anyway`;
+        }
+      }
+      return t`Open Long ${toToken.symbol}`;
+    }
+
+    return t`Open Short ${toToken.symbol}`;
+  };
+
   return (
     <div className="Exchange-swap-box">
       <div className="Exchange-swap-info-group">
@@ -1179,6 +1262,57 @@ export default function SwapBox(props) {
         modalError={modalError}
         setModalError={setModalError}
       />
+      {renderOrdersToa()}
+      {isConfirming && (
+        <ConfirmationBox
+          borrowFeeText={borrowFeeText}
+          library={library}
+          isHigherSlippageAllowed={isHigherSlippageAllowed}
+          setIsHigherSlippageAllowed={setIsHigherSlippageAllowed}
+          orders={orders}
+          isSwap={isSwap}
+          isLong={isLong}
+          isMarketOrder={isMarketOrder}
+          orderOption={orderOption}
+          isShort={isShort}
+          fromToken={fromToken}
+          fromTokenInfo={fromTokenInfo}
+          toToken={toToken}
+          toTokenInfo={toTokenInfo}
+          toAmount={toAmount}
+          fromAmount={fromAmount}
+          feeBps={feeBps}
+          onConfirmationClick={onConfirmationClick}
+          setIsConfirming={setIsConfirming}
+          hasExistingPosition={hasExistingPosition}
+          shortCollateralAddress={shortCollateralAddress}
+          shortCollateralToken={shortCollateralToken}
+          leverage={leverage}
+          existingPosition={existingPosition}
+          existingLiquidationPrice={existingLiquidationPrice}
+          displayLiquidationPrice={displayLiquidationPrice}
+          nextAveragePrice={nextAveragePrice}
+          triggerPriceUsd={triggerPriceUsd}
+          triggerRatio={triggerRatio}
+          fees={fees}
+          feesUsd={feesUsd}
+          isSubmitting={isSubmitting}
+          isPendingConfirmation={isPendingConfirmation}
+          fromUsdMin={fromUsdMin}
+          toUsdMax={toUsdMax}
+          collateralTokenAddress={collateralTokenAddress}
+          infoTokens={infoTokens}
+          chainId={chainId}
+          setPendingTxns={setPendingTxns}
+          pendingTxns={pendingTxns}
+          minExecutionFee={minExecutionFee}
+          minExecutionFeeUSD={minExecutionFeeUSD}
+          minExecutionFeeErrorMessage={minExecutionFeeErrorMessage}
+          entryMarkPrice={entryMarkPrice}
+          swapFees={swapFees}
+          positionFee={positionFee}
+        />
+      )}
     </div>
   );
 }
