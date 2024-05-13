@@ -619,6 +619,124 @@ export default function SwapBox(props) {
     increaseSize: true,
   });
 
+  const existingLiquidationPrice = existingPosition ? getLiquidationPrice(existingPosition) : undefined;
+  let displayLiquidationPrice = liquidationPrice ? liquidationPrice : existingLiquidationPrice;
+
+  if (hasExistingPosition) {
+    const collateralDelta = fromUsdMin ? fromUsdMin : bigNumberify(0);
+    const sizeDelta = toUsdMax ? toUsdMax : bigNumberify(0);
+    leverage = getLeverage({
+      size: existingPosition.size,
+      sizeDelta,
+      collateral: existingPosition.collateral,
+      collateralDelta,
+      increaseCollateral: true,
+      entryFundingRate: existingPosition.entryFundingRate,
+      cumulativeFundingRate: existingPosition.cumulativeFundingRate,
+      increaseSize: true,
+      hasProfit: existingPosition.hasProfit,
+      delta: existingPosition.delta,
+      includeDelta: savedIsPnlInLeverage,
+    });
+  } else if (hasLeverageOption) {
+    leverage = bigNumberify(parseInt(leverageOption * BASIS_POINTS_DIVISOR));
+  }
+
+  const getSwapError = () => {
+    if (IS_NETWORK_DISABLED[chainId]) {
+      return [t`Swaps disabled, pending ${getChainName(chainId)} upgrade`];
+    }
+
+    if (fromTokenAddress === toTokenAddress) {
+      return [t`Select different tokens`];
+    }
+
+    if (!isMarketOrder) {
+      if ((toToken.isStable || toToken.isUsdg) && (fromToken.isStable || fromToken.isUsdg)) {
+        return [t`Select different tokens`];
+      }
+
+      if (fromToken.isNative && toToken.isWrapped) {
+        return [t`Select different tokens`];
+      }
+
+      if (toToken.isNative && fromToken.isWrapped) {
+        return [t`Select different tokens`];
+      }
+    }
+
+    if (!fromAmount || fromAmount.eq(0)) {
+      return [t`Enter an amount`];
+    }
+    if (!toAmount || toAmount.eq(0)) {
+      return [t`Enter an amount`];
+    }
+
+    const fromTokenInfo = getTokenInfo(infoTokens, fromTokenAddress);
+    if (!fromTokenInfo || !fromTokenInfo.minPrice) {
+      return [t`Incorrect network`];
+    }
+    if (
+      !savedShouldDisableValidationForTesting &&
+      fromTokenInfo &&
+      fromTokenInfo.balance &&
+      fromAmount &&
+      fromAmount.gt(fromTokenInfo.balance)
+    ) {
+      return [t`Insufficient ${fromTokenInfo.symbol} balance`];
+    }
+
+    const toTokenInfo = getTokenInfo(infoTokens, toTokenAddress);
+
+    if (!isMarketOrder) {
+      if (!triggerRatioValue || triggerRatio.eq(0)) {
+        return [t`Enter a price`];
+      }
+
+      const currentRate = getExchangeRate(fromTokenInfo, toTokenInfo);
+      if (currentRate && currentRate.lt(triggerRatio)) {
+        return triggerRatioInverted ? [t`Price below Mark Price`] : [t`Price above Mark Price`];
+      }
+    }
+
+    if (
+      !isWrapOrUnwrap &&
+      toToken &&
+      toTokenAddress !== USDG_ADDRESS &&
+      toTokenInfo &&
+      toTokenInfo.availableAmount &&
+      toAmount.gt(toTokenInfo.availableAmount)
+    ) {
+      return [t`Insufficient Liquidity`];
+    }
+    if (
+      !isWrapOrUnwrap &&
+      toAmount &&
+      toTokenInfo.bufferAmount &&
+      toTokenInfo.poolAmount &&
+      toTokenInfo.bufferAmount.gt(toTokenInfo.poolAmount.sub(toAmount))
+    ) {
+      return [t`Insufficient Liquidity`];
+    }
+
+    if (
+      fromUsdMin &&
+      fromTokenInfo.maxUsdgAmount &&
+      fromTokenInfo.maxUsdgAmount.gt(0) &&
+      fromTokenInfo.usdgAmount &&
+      fromTokenInfo.maxPrice
+    ) {
+      const usdgFromAmount = adjustForDecimals(fromUsdMin, USD_DECIMALS, USDG_DECIMALS);
+      const nextUsdgAmount = fromTokenInfo.usdgAmount.add(usdgFromAmount);
+
+      if (nextUsdgAmount.gt(fromTokenInfo.maxUsdgAmount)) {
+        return [t`Insufficient liquidity`, ErrorDisplayType.Tooltip, ErrorCode.InsufficientLiquiditySwap];
+      }
+    }
+
+    return [false];
+  };
+
   return (
     <div className="Exchange-swap-box">
       <div className="Exchange-swap-info-group">
