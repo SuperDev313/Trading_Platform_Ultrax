@@ -345,6 +345,280 @@ export default function SwapBox(props) {
     return ratio;
   }, [triggerRatioValue, triggerRatioInverted]);
 
+  useEffect(() => {
+    if (
+      fromToken &&
+      fromTokenAddress === prevFromTokenAddress &&
+      !needApproval &&
+      prevNeedApproval &&
+      isWaitingForApproval
+    ) {
+      setIsWaitingForApproval(false);
+      helperToast.success(<div>{fromToken.symbol} approved!</div>);
+    }
+  }, [
+    fromTokenAddress,
+    prevFromTokenAddress,
+    needApproval,
+    prevNeedApproval,
+    setIsWaitingForApproval,
+    fromToken.symbol,
+    isWaitingForApproval,
+    fromToken,
+  ]);
+
+  useEffect(() => {
+    if (swapOption !== SHORT) {
+      return;
+    }
+    if (toTokenAddress === prevToTokenAddress) {
+      return;
+    }
+    for (let i = 0; i < stableTokens.length; i++) {
+      const stableToken = stableTokens[i];
+      const key = getPositionKey(account, stableToken.address, toTokenAddress, false, nativeTokenAddress);
+      const position = positionsMap[key];
+      if (position && position.size && position.size.gt(0)) {
+        setShortCollateralAddress(position.collateralToken.address);
+        return;
+      }
+    }
+  }, [
+    account,
+    toTokenAddress,
+    prevToTokenAddress,
+    swapOption,
+    positionsMap,
+    stableTokens,
+    nativeTokenAddress,
+    shortCollateralAddress,
+    setShortCollateralAddress,
+  ]);
+
+  useEffect(() => {
+    const updateSwapAmounts = () => {
+      if (anchorOnFromAmount) {
+        if (!fromAmount) {
+          setToValue("");
+          return;
+        }
+        if (toToken) {
+          const { amount: nextToAmount } = getNextToAmount(
+            chainId,
+            fromAmount,
+            fromTokenAddress,
+            toTokenAddress,
+            infoTokens,
+            undefined,
+            !isMarketOrder && triggerRatio,
+            usdgSupply,
+            totalTokenWeights,
+            isSwap
+          );
+
+          const nextToValue = formatAmountFree(nextToAmount, toToken.decimals, toToken.decimals);
+          setToValue(nextToValue);
+        }
+        return;
+      }
+
+      if (!toAmount) {
+        setFromValue("");
+        return;
+      }
+      if (fromToken) {
+        const { amount: nextFromAmount } = getNextFromAmount(
+          chainId,
+          toAmount,
+          fromTokenAddress,
+          toTokenAddress,
+          infoTokens,
+          undefined,
+          !isMarketOrder && triggerRatio,
+          usdgSupply,
+          totalTokenWeights,
+          isSwap
+        );
+        const nextFromValue = formatAmountFree(nextFromAmount, fromToken.decimals, fromToken.decimals);
+        setFromValue(nextFromValue);
+      }
+    };
+
+    const updateLeverageAmounts = () => {
+      if (!hasLeverageOption) {
+        return;
+      }
+      if (anchorOnFromAmount) {
+        if (!fromAmount) {
+          setToValue("");
+          return;
+        }
+
+        const toTokenInfo = getTokenInfo(infoTokens, toTokenAddress);
+        if (toTokenInfo && toTokenInfo.maxPrice && fromUsdMin && fromUsdMin.gt(0)) {
+          const leverageMultiplier = parseInt(leverageOption * BASIS_POINTS_DIVISOR);
+          const toTokenPriceUsd =
+            !isMarketOrder && triggerPriceUsd && triggerPriceUsd.gt(0) ? triggerPriceUsd : toTokenInfo.maxPrice;
+
+          const { feeBasisPoints } = getNextToAmount(
+            chainId,
+            fromAmount,
+            fromTokenAddress,
+            collateralTokenAddress,
+            infoTokens,
+            undefined,
+            undefined,
+            usdgSupply,
+            totalTokenWeights,
+            isSwap
+          );
+
+          let fromUsdMinAfterFee = fromUsdMin;
+          if (feeBasisPoints) {
+            fromUsdMinAfterFee = fromUsdMin.mul(BASIS_POINTS_DIVISOR - feeBasisPoints).div(BASIS_POINTS_DIVISOR);
+          }
+
+          const toNumerator = fromUsdMinAfterFee.mul(leverageMultiplier).mul(BASIS_POINTS_DIVISOR);
+          const toDenominator = bigNumberify(MARGIN_FEE_BASIS_POINTS)
+            .mul(leverageMultiplier)
+            .add(bigNumberify(BASIS_POINTS_DIVISOR).mul(BASIS_POINTS_DIVISOR));
+
+          const nextToUsd = toNumerator.div(toDenominator);
+
+          const nextToAmount = nextToUsd.mul(expandDecimals(1, toToken.decimals)).div(toTokenPriceUsd);
+
+          const nextToValue = formatAmountFree(nextToAmount, toToken.decimals, toToken.decimals);
+
+          setToValue(nextToValue);
+        }
+        return;
+      }
+
+      if (!toAmount) {
+        setFromValue("");
+        return;
+      }
+
+      const fromTokenInfo = getTokenInfo(infoTokens, fromTokenAddress);
+      if (fromTokenInfo && fromTokenInfo.minPrice && toUsdMax && toUsdMax.gt(0)) {
+        const leverageMultiplier = parseInt(leverageOption * BASIS_POINTS_DIVISOR);
+
+        const baseFromAmountUsd = toUsdMax.mul(BASIS_POINTS_DIVISOR).div(leverageMultiplier);
+
+        let fees = toUsdMax.mul(MARGIN_FEE_BASIS_POINTS).div(BASIS_POINTS_DIVISOR);
+
+        const { feeBasisPoints } = getNextToAmount(
+          chainId,
+          fromAmount,
+          fromTokenAddress,
+          collateralTokenAddress,
+          infoTokens,
+          undefined,
+          undefined,
+          usdgSupply,
+          totalTokenWeights,
+          isSwap
+        );
+
+        if (feeBasisPoints) {
+          const swapFees = baseFromAmountUsd.mul(feeBasisPoints).div(BASIS_POINTS_DIVISOR);
+          fees = fees.add(swapFees);
+        }
+
+        const nextFromUsd = baseFromAmountUsd.add(fees);
+
+        const nextFromAmount = nextFromUsd.mul(expandDecimals(1, fromToken.decimals)).div(fromTokenInfo.minPrice);
+
+        const nextFromValue = formatAmountFree(nextFromAmount, fromToken.decimals, fromToken.decimals);
+
+        setFromValue(nextFromValue);
+      }
+    };
+
+    if (isSwap) {
+      updateSwapAmounts();
+    }
+
+    if (isLong || isShort) {
+      updateLeverageAmounts();
+    }
+  }, [
+    anchorOnFromAmount,
+    fromAmount,
+    toAmount,
+    fromToken,
+    toToken,
+    fromTokenAddress,
+    toTokenAddress,
+    infoTokens,
+    isSwap,
+    isLong,
+    isShort,
+    leverageOption,
+    fromUsdMin,
+    toUsdMax,
+    isMarketOrder,
+    triggerPriceUsd,
+    triggerRatio,
+    hasLeverageOption,
+    usdgSupply,
+    totalTokenWeights,
+    chainId,
+    collateralTokenAddress,
+    indexTokenAddress,
+  ]);
+
+  let entryMarkPrice;
+  let exitMarkPrice;
+  if (toTokenInfo) {
+    entryMarkPrice = swapOption === LONG ? toTokenInfo.maxPrice : toTokenInfo.minPrice;
+    exitMarkPrice = swapOption === LONG ? toTokenInfo.minPrice : toTokenInfo.maxPrice;
+  }
+
+  let leverage = bigNumberify(0);
+  if (fromUsdMin && toUsdMax && fromUsdMin.gt(0)) {
+    const fees = toUsdMax.mul(MARGIN_FEE_BASIS_POINTS).div(BASIS_POINTS_DIVISOR);
+    if (fromUsdMin.sub(fees).gt(0)) {
+      leverage = toUsdMax.mul(BASIS_POINTS_DIVISOR).div(fromUsdMin.sub(fees));
+    }
+  }
+
+  let nextAveragePrice = isMarketOrder ? entryMarkPrice : triggerPriceUsd;
+  if (hasExistingPosition) {
+    let nextDelta, nextHasProfit;
+
+    if (isMarketOrder) {
+      nextDelta = existingPosition.delta;
+      nextHasProfit = existingPosition.hasProfit;
+    } else {
+      const data = calculatePositionDelta(triggerPriceUsd || bigNumberify(0), existingPosition);
+      nextDelta = data.delta;
+      nextHasProfit = data.hasProfit;
+    }
+
+    nextAveragePrice = getNextAveragePrice({
+      size: existingPosition.size,
+      sizeDelta: toUsdMax,
+      hasProfit: nextHasProfit,
+      delta: nextDelta,
+      nextPrice: isMarketOrder ? entryMarkPrice : triggerPriceUsd,
+      isLong,
+    });
+  }
+
+  const liquidationPrice = getLiquidationPrice({
+    isLong,
+    size: hasExistingPosition ? existingPosition.size : bigNumberify(0),
+    collateral: hasExistingPosition ? existingPosition.collateral : bigNumberify(0),
+    averagePrice: nextAveragePrice,
+    entryFundingRate: hasExistingPosition ? existingPosition.entryFundingRate : bigNumberify(0),
+    cumulativeFundingRate: hasExistingPosition ? existingPosition.cumulativeFundingRate : bigNumberify(0),
+    sizeDelta: toUsdMax,
+    collateralDelta: fromUsdMin,
+    increaseCollateral: true,
+    increaseSize: true,
+  });
+
   return (
     <div className="Exchange-swap-box">
       <div className="Exchange-swap-info-group">
