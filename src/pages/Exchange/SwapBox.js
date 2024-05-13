@@ -305,6 +305,26 @@ export default function SwapBox(props) {
     return value.gt(0) ? value : bigNumberify(0);
   }, [toTokenInfo]);
 
+  const maxFromTokenInUSD = useMemo(() => {
+    const value = fromTokenInfo.maxUsdgAmount
+      ?.sub(fromTokenInfo.usdgAmount)
+      .mul(expandDecimals(1, USD_DECIMALS))
+      .div(expandDecimals(1, USDG_DECIMALS));
+
+    if (!value) {
+      return bigNumberify(0);
+    }
+
+    return value.gt(0) ? value : bigNumberify(0);
+  }, [fromTokenInfo]);
+
+  const maxFromTokenIn = useMemo(() => {
+    if (!fromTokenInfo.maxPrice) {
+      return bigNumberify(0);
+    }
+    return maxFromTokenInUSD?.mul(expandDecimals(1, fromTokenInfo.decimals)).div(fromTokenInfo.maxPrice).toString();
+  }, [maxFromTokenInUSD, fromTokenInfo]);
+
   return (
     <div className="Exchange-swap-box">
       <div className="Exchange-swap-info-group">
