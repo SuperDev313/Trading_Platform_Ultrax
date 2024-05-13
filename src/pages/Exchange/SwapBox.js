@@ -220,6 +220,12 @@ export default function SwapBox(props) {
   const onOrderOptionChange = (option) => {
     setOrderOption(option);
   };
+  const isMarketOrder = orderOption === MARKET;
+  const orderOptions = isSwap ? SWAP_ORDER_OPTIONS : LEVERAGE_ORDER_OPTIONS;
+  const orderOptionLabels = { [STOP]: t`Trigger`, [MARKET]: t`Market`, [LIMIT]: t`Limit` };
+
+  const [triggerPriceValue, setTriggerPriceValue] = useState("");
+  const triggerPriceUsd = isMarketOrder ? 0 : parseValue(triggerPriceValue, USD_DECIMALS);
 
   const onTriggerPriceChange = (evt) => {
     setTriggerPriceValue(evt.target.value || "");
