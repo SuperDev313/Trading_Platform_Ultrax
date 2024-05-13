@@ -958,6 +958,19 @@ export default function SwapBox(props) {
     return getLeverageError();
   };
 
+  const renderOrdersToa = () => {
+    if (!ordersToaOpen) {
+      return null;
+    }
+
+    return (
+      <OrdersToa
+        setIsVisible={setOrdersToaOpen}
+        approveOrderBook={approveOrderBook}
+        isPluginApproving={isPluginApproving}
+      />
+    );
+  };
   return (
     <div className="Exchange-swap-box">
       <div className="Exchange-swap-info-group">
