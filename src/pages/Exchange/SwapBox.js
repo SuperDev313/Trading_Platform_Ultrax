@@ -235,6 +235,40 @@ export default function SwapBox(props) {
     setTriggerRatioValue(evt.target.value || "");
   };
 
+  const renderAvailableLongLiquidity = () => {
+    if (!isLong) {
+      return null;
+    }
+
+    return (
+      <div className="Exchange-info-row">
+        <div className="Exchange-info-label">
+          <Trans>Available Liquidity</Trans>
+        </div>
+        <div className="align-right text-primary">
+          <Tooltip
+            handle={`$${formatAmount(toTokenInfo.maxAvailableLong, USD_DECIMALS, 2, true)}`}
+            position="right-bottom"
+            renderContent={() => {
+              return (
+                <>
+                  <StatsTooltipRow
+                    label={t`Max ${toTokenInfo.symbol} long capacity`}
+                    value={formatAmount(toTokenInfo.maxLongCapacity, USD_DECIMALS, 0, true)}
+                  />
+                  <StatsTooltipRow
+                    label={t`Current ${toTokenInfo.symbol} long`}
+                    value={formatAmount(toTokenInfo.guaranteedUsd, USD_DECIMALS, 0, true)}
+                  />
+                </>
+              );
+            }}
+          ></Tooltip>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="Exchange-swap-box">
       <div className="Exchange-swap-info-group">
