@@ -208,6 +208,19 @@ export default function SwapBox(props) {
     true
   );
 
+  const hasLeverageOption = isLeverageSliderEnabled && !isNaN(parseFloat(leverageOption));
+
+  const [ordersToaOpen, setOrdersToaOpen] = useState(false);
+
+  let [orderOption, setOrderOption] = useLocalStorageSerializeKey([chainId, "Order-option"], MARKET);
+  if (!flagOrdersEnabled) {
+    orderOption = MARKET;
+  }
+
+  const onOrderOptionChange = (option) => {
+    setOrderOption(option);
+  };
+
   return (
     <div className="Exchange-swap-box">
       <div className="Exchange-swap-info-group">
