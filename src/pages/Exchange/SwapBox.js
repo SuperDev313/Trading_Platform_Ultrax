@@ -1,11 +1,103 @@
 import React, { useEffect, useMemo, useState } from "react";
 import NoLiquidityErrorModal from "./NoLiquidityErrorModal";
+import Tooltip from "../Tooltip/Tooltip";
+import { t, Trans } from "@lingui/macro";
 import "./SwapBox.scss";
+
+import useSWR from "swr";
+import { ethers } from "ethers";
+
+import { IoMdSwap } from "react-icons/io";
+import { BsArrowRight } from "react-icons/bs";
+
+import {
+  adjustForDecimals,
+  BASIS_POINTS_DIVISOR,
+  calculatePositionDelta,
+  DEFAULT_HIGHER_SLIPPAGE_AMOUNT,
+  DUST_BNB,
+  getExchangeRate,
+  getExchangeRateDisplay,
+  getLeverage,
+  getLiquidationPrice,
+  getNextFromAmount,
+  getNextToAmount,
+  getPositionKey,
+  isTriggerRatioInverted,
+  LEVERAGE_ORDER_OPTIONS,
+  LIMIT,
+  LONG,
+  MARGIN_FEE_BASIS_POINTS,
+  MARKET,
+  PRECISION,
+  SHORT,
+  STOP,
+  SWAP,
+  SWAP_OPTIONS,
+  SWAP_ORDER_OPTIONS,
+  USD_DECIMALS,
+  USDG_ADDRESS,
+  USDG_DECIMALS,
+  MAX_ALLOWED_LEVERAGE,
+} from "lib/legacy";
+import { ARBITRUM, getChainName, getConstant, IS_NETWORK_DISABLED, isSupportedChain } from "config/chains";
+import * as Api from "domain/legacy";
+import { getContract } from "config/contracts";
+
+import Tab from "../Tab/Tab";
+import TokenSelector from "./TokenSelector";
+import ExchangeInfoRow from "./ExchangeInfoRow";
+import ConfirmationBox from "./ConfirmationBox";
+import OrdersToa from "./OrdersToa";
+
+import PositionRouter from "abis/PositionRouter.json";
+import Router from "abis/Router.json";
+import Token from "abis/Token.json";
+import WETH from "abis/WETH.json";
+
+import longImg from "img/long.svg";
+import longActiveImg from "img/long_active.svg";
+import shortImg from "img/short.svg";
+import shortActiveImg from "img/short_active.svg";
+import swapImg from "img/swap.svg";
+import swapActiveImg from "img/swap_active.svg";
+
+import NoLiquidityErrorModal from "./NoLiquidityErrorModal";
+import StatsTooltipRow from "../StatsTooltip/StatsTooltipRow";
+
+const SWAP_ICONS = {
+  [LONG]: longImg,
+  [SHORT]: shortImg,
+  [SWAP]: swapImg,
+  [LONG + "_active"]: longActiveImg,
+  [SHORT + "_active"]: shortActiveImg,
+  [SWAP + "_active"]: swapActiveImg,
+};
+
+const { AddressZero } = ethers.constants;
+
+function getNextAveragePrice({ size, sizeDelta, hasProfit, delta, nextPrice, isLong }) {
+  if (!size || !sizeDelta || !delta || !nextPrice) {
+    return;
+  }
+  const nextSize = size.add(sizeDelta);
+  let divisor;
+  if (isLong) {
+    divisor = hasProfit ? nextSize.add(delta) : nextSize.sub(delta);
+  } else {
+    divisor = hasProfit ? nextSize.sub(delta) : nextSize.add(delta);
+  }
+  if (!divisor || divisor.eq(0)) {
+    return;
+  }
+  const nextAveragePrice = nextPrice.mul(nextSize).div(divisor);
+  return nextAveragePrice;
+}
 
 export default function SwapBox(props) {
   return (
     <div className="Exchange-swap-box">
-              <div className="Exchange-swap-info-group">
+      <div className="Exchange-swap-info-group">
         {isSwap && (
           <div className="Exchange-swap-market-box App-box App-box-border">
             <div className="Exchange-swap-market-box-title">
