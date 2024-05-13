@@ -272,6 +272,13 @@ export default function SwapBox(props) {
   const fromUsdMin = getUsd(fromAmount, fromTokenAddress, false, infoTokens);
   const toUsdMax = getUsd(toAmount, toTokenAddress, true, infoTokens, orderOption, triggerPriceUsd);
 
+  const fromToken = getToken(chainId, fromTokenAddress);
+  const toToken = getToken(chainId, toTokenAddress);
+  const shortCollateralToken = getTokenInfo(infoTokens, shortCollateralAddress);
+
+  const fromTokenInfo = getTokenInfo(infoTokens, fromTokenAddress);
+  const toTokenInfo = getTokenInfo(infoTokens, toTokenAddress);
+  
   const indexTokenAddress = toTokenAddress === AddressZero ? nativeTokenAddress : toTokenAddress;
   const collateralTokenAddress = isLong ? indexTokenAddress : shortCollateralAddress;
   const collateralToken = getToken(chainId, collateralTokenAddress);
@@ -281,6 +288,18 @@ export default function SwapBox(props) {
   const triggerRatioInverted = useMemo(() => {
     return isTriggerRatioInverted(fromTokenInfo, toTokenInfo);
   }, [toTokenInfo, fromTokenInfo]);
+
+  const maxToTokenOut = useMemo(() => {
+    const value = toTokenInfo.availableAmount?.gt(toTokenInfo.poolAmount?.sub(toTokenInfo.bufferAmount))
+      ? toTokenInfo.poolAmount?.sub(toTokenInfo.bufferAmount)
+      : toTokenInfo.availableAmount;
+
+    if (!value) {
+      return bigNumberify(0);
+    }
+
+    return value.gt(0) ? value : bigNumberify(0);
+  }, [toTokenInfo]);
 
   return (
     <div className="Exchange-swap-box">
