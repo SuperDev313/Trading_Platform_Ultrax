@@ -972,6 +972,42 @@ export default function SwapBox(props) {
     );
   };
 
+  const isPrimaryEnabled = () => {
+    if (IS_NETWORK_DISABLED[chainId]) {
+      return false;
+    }
+    if (isStopOrder) {
+      return true;
+    }
+    if (!active) {
+      return true;
+    }
+    const [error, errorType] = getError();
+    if (error && errorType !== ErrorDisplayType.Modal) {
+      return false;
+    }
+    if (needOrderBookApproval && isWaitingForPluginApproval) {
+      return false;
+    }
+    if ((needApproval && isWaitingForApproval) || isApproving) {
+      return false;
+    }
+    if (needPositionRouterApproval && isWaitingForPositionRouterApproval) {
+      return false;
+    }
+    if (isPositionRouterApproving) {
+      return false;
+    }
+    if (isApproving) {
+      return false;
+    }
+    if (isSubmitting) {
+      return false;
+    }
+
+    return true;
+  };
+
   const getPrimaryText = () => {
     if (isStopOrder) {
       return t`Open a position`;
