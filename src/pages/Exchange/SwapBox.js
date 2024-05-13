@@ -943,6 +943,21 @@ export default function SwapBox(props) {
     }
   }, [isSwap, onOrderOptionChange]);
 
+  const getToLabel = () => {
+    if (isSwap) {
+      return t`Receive`;
+    }
+
+    return t`Size`;
+  };
+
+  const getError = () => {
+    if (isSwap) {
+      return getSwapError();
+    }
+    return getLeverageError();
+  };
+
   return (
     <div className="Exchange-swap-box">
       <div className="Exchange-swap-info-group">
