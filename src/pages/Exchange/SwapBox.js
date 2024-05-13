@@ -737,6 +737,212 @@ export default function SwapBox(props) {
     return [false];
   };
 
+  const getLeverageError = () => {
+    if (IS_NETWORK_DISABLED[chainId]) {
+      return [t`Leverage disabled, pending ${getChainName(chainId)} upgrade`];
+    }
+    // if (hasOutdatedUi) {
+    //   return [t`Page outdated, please refresh`];
+    // }
+
+    if (!toAmount || toAmount.eq(0)) {
+      return [t`Enter an amount`];
+    }
+
+    let toTokenInfo = getTokenInfo(infoTokens, toTokenAddress);
+    if (toTokenInfo && toTokenInfo.isStable) {
+      const SWAP_OPTION_LABEL = {
+        [LONG]: "Longing",
+        [SHORT]: "Shorting",
+      };
+      return [t`${SWAP_OPTION_LABEL[swapOption]} ${toTokenInfo.symbol} not supported`];
+    }
+
+    const fromTokenInfo = getTokenInfo(infoTokens, fromTokenAddress);
+    if (
+      !savedShouldDisableValidationForTesting &&
+      fromTokenInfo &&
+      fromTokenInfo.balance &&
+      fromAmount &&
+      fromAmount.gt(fromTokenInfo.balance)
+    ) {
+      return [t`Insufficient ${fromTokenInfo.symbol} balance`];
+    }
+
+    if (!isMarketOrder && (!triggerPriceValue || triggerPriceUsd.eq(0))) {
+      return [t`Enter a price`];
+    }
+
+    if (!hasExistingPosition && fromUsdMin && fromUsdMin.lt(expandDecimals(10, USD_DECIMALS))) {
+      return [t`Min order: 10 USD`];
+    }
+
+    if (leverage && leverage.lt(1.1 * BASIS_POINTS_DIVISOR)) {
+      return [t`Min leverage: 1.1x`];
+    }
+
+    if (leverage && leverage.gt(MAX_ALLOWED_LEVERAGE)) {
+      return [t`Max leverage: ${(MAX_ALLOWED_LEVERAGE / BASIS_POINTS_DIVISOR).toFixed(1)}x`];
+    }
+
+    if (!isMarketOrder && entryMarkPrice && triggerPriceUsd && !savedShouldDisableValidationForTesting) {
+      if (isLong && entryMarkPrice.lt(triggerPriceUsd)) {
+        return [t`Price above Mark Price`];
+      }
+      if (!isLong && entryMarkPrice.gt(triggerPriceUsd)) {
+        return [t`Price below Mark Price`];
+      }
+    }
+
+    if (isLong) {
+      let requiredAmount = toAmount;
+      if (fromTokenAddress !== toTokenAddress) {
+        const { amount: swapAmount } = getNextToAmount(
+          chainId,
+          fromAmount,
+          fromTokenAddress,
+          toTokenAddress,
+          infoTokens,
+          undefined,
+          undefined,
+          usdgSupply,
+          totalTokenWeights,
+          isSwap
+        );
+        requiredAmount = requiredAmount.add(swapAmount);
+
+        if (toToken && toTokenAddress !== USDG_ADDRESS) {
+          if (!toTokenInfo.availableAmount) {
+            return [t`Liquidity data not loaded`];
+          }
+          if (toTokenInfo.availableAmount && requiredAmount.gt(toTokenInfo.availableAmount)) {
+            return [t`Insufficient Liquidity`, ErrorDisplayType.Tooltip, ErrorCode.InsufficientLiquidityLeverage];
+          }
+        }
+
+        if (
+          toTokenInfo.poolAmount &&
+          toTokenInfo.bufferAmount &&
+          toTokenInfo.bufferAmount.gt(toTokenInfo.poolAmount.sub(swapAmount))
+        ) {
+          return [t`Insufficient Liquidity`, ErrorDisplayType.Tooltip, ErrorCode.InsufficientLiquidityLeverage];
+        }
+
+        if (
+          fromUsdMin &&
+          fromTokenInfo.maxUsdgAmount &&
+          fromTokenInfo.maxUsdgAmount.gt(0) &&
+          fromTokenInfo.minPrice &&
+          fromTokenInfo.usdgAmount
+        ) {
+          const usdgFromAmount = adjustForDecimals(fromUsdMin, USD_DECIMALS, USDG_DECIMALS);
+          const nextUsdgAmount = fromTokenInfo.usdgAmount.add(usdgFromAmount);
+          if (nextUsdgAmount.gt(fromTokenInfo.maxUsdgAmount)) {
+            return [t`Insufficient Liquidity`, ErrorDisplayType.Tooltip, ErrorCode.TokenPoolExceeded];
+          }
+        }
+      }
+
+      if (toTokenInfo && toTokenInfo.maxPrice) {
+        const sizeUsd = toAmount.mul(toTokenInfo.maxPrice).div(expandDecimals(1, toTokenInfo.decimals));
+        if (
+          toTokenInfo.maxGlobalLongSize &&
+          toTokenInfo.maxGlobalLongSize.gt(0) &&
+          toTokenInfo.maxAvailableLong &&
+          sizeUsd.gt(toTokenInfo.maxAvailableLong)
+        ) {
+          return [t`Max ${toTokenInfo.symbol} long exceeded`];
+        }
+      }
+    }
+
+    if (isShort) {
+      let stableTokenAmount = bigNumberify(0);
+      if (fromTokenAddress !== shortCollateralAddress && fromAmount && fromAmount.gt(0)) {
+        const { amount: nextToAmount } = getNextToAmount(
+          chainId,
+          fromAmount,
+          fromTokenAddress,
+          shortCollateralAddress,
+          infoTokens,
+          undefined,
+          undefined,
+          usdgSupply,
+          totalTokenWeights,
+          isSwap
+        );
+        stableTokenAmount = nextToAmount;
+        if (stableTokenAmount.gt(shortCollateralToken.availableAmount)) {
+          return [t`Insufficient Liquidity`, ErrorDisplayType.Tooltip, ErrorCode.InsufficientCollateralIn];
+        }
+
+        if (
+          shortCollateralToken.bufferAmount &&
+          shortCollateralToken.poolAmount &&
+          shortCollateralToken.bufferAmount.gt(shortCollateralToken.poolAmount.sub(stableTokenAmount))
+        ) {
+          // suggest swapping to collateralToken
+          return [t`Insufficient Liquidity`, ErrorDisplayType.Tooltip, ErrorCode.InsufficientCollateralIn];
+        }
+
+        if (
+          fromTokenInfo.maxUsdgAmount &&
+          fromTokenInfo.maxUsdgAmount.gt(0) &&
+          fromTokenInfo.minPrice &&
+          fromTokenInfo.usdgAmount
+        ) {
+          const usdgFromAmount = adjustForDecimals(fromUsdMin, USD_DECIMALS, USDG_DECIMALS);
+          const nextUsdgAmount = fromTokenInfo.usdgAmount.add(usdgFromAmount);
+          if (nextUsdgAmount.gt(fromTokenInfo.maxUsdgAmount)) {
+            return [t`Insufficient Liquidity`, ErrorDisplayType.Tooltip, ErrorCode.TokenPoolExceededShorts];
+          }
+        }
+      }
+      if (
+        !shortCollateralToken ||
+        !fromTokenInfo ||
+        !toTokenInfo ||
+        !toTokenInfo.maxPrice ||
+        !shortCollateralToken.availableAmount
+      ) {
+        return [t`Fetching token info...`];
+      }
+
+      const sizeUsd = toAmount.mul(toTokenInfo.maxPrice).div(expandDecimals(1, toTokenInfo.decimals));
+      const sizeTokens = sizeUsd
+        .mul(expandDecimals(1, shortCollateralToken.decimals))
+        .div(shortCollateralToken.minPrice);
+
+      if (!toTokenInfo.maxAvailableShort) {
+        return [t`Liquidity data not loaded`];
+      }
+
+      if (
+        toTokenInfo.maxGlobalShortSize &&
+        toTokenInfo.maxGlobalShortSize.gt(0) &&
+        toTokenInfo.maxAvailableShort &&
+        sizeUsd.gt(toTokenInfo.maxAvailableShort)
+      ) {
+        return [t`Max ${toTokenInfo.symbol} short exceeded`];
+      }
+
+      stableTokenAmount = stableTokenAmount.add(sizeTokens);
+      if (stableTokenAmount.gt(shortCollateralToken.availableAmount)) {
+        return [t`Insufficient Liquidity`, ErrorDisplayType.Tooltip, ErrorCode.InsufficientProfitLiquidity];
+      }
+    }
+
+    return [false];
+  };
+
+  // Swap
+
+  useEffect(() => {
+    if (isSwap) {
+      onOrderOptionChange(SWAP_ORDER_OPTIONS[0]);
+    }
+  }, [isSwap, onOrderOptionChange]);
+
   return (
     <div className="Exchange-swap-box">
       <div className="Exchange-swap-info-group">
