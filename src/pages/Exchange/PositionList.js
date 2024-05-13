@@ -114,6 +114,18 @@ export default function PositionList(props) {
     setPositionToEditKey(position.key);
     setIsPositionEditorVisible(true);
   };
+  
+  const sellPosition = (position) => {
+    setPositionToSellKey(position.key);
+    setIsPositionSellerVisible(true);
+    setIsHigherSlippageAllowed(false);
+  };
+
+  const sellPosition = (position) => {
+    setPositionToSellKey(position.key);
+    setIsPositionSellerVisible(true);
+    setIsHigherSlippageAllowed(false);
+  };
 
   return (
     <div className="PositionsList">
