@@ -1,5 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useMemo, useState } from "react";
-import NoLiquidityErrorModal from "./NoLiquidityErrorModal";
 import Tooltip from "../Tooltip/Tooltip";
 import { t, Trans } from "@lingui/macro";
 import "./SwapBox.scss";
@@ -64,6 +64,28 @@ import swapActiveImg from "img/swap_active.svg";
 
 import NoLiquidityErrorModal from "./NoLiquidityErrorModal";
 import StatsTooltipRow from "../StatsTooltip/StatsTooltipRow";
+import { callContract, contractFetcher } from "lib/contracts";
+import {
+  approveTokens,
+  getMostAbundantStableToken,
+  replaceNativeTokenAddress,
+  shouldRaiseGasError,
+} from "domain/tokens";
+import { useLocalStorageByChainId, useLocalStorageSerializeKey } from "lib/localStorage";
+import { helperToast } from "lib/helperToast";
+import { getTokenInfo, getUsd } from "domain/tokens/utils";
+import { usePrevious } from "lib/usePrevious";
+import { bigNumberify, expandDecimals, formatAmount, formatAmountFree, parseValue } from "lib/numbers";
+import { getToken, getTokenBySymbol, getTokens, getWhitelistedTokens } from "config/tokens";
+import ExternalLink from "components/ExternalLink/ExternalLink";
+import { ErrorCode, ErrorDisplayType } from "./constants";
+import Button from "components/Button/Button";
+import UsefulLinks from "./UsefulLinks";
+import { get1InchSwapUrl } from "config/links";
+import ToggleSwitch from "components/ToggleSwitch/ToggleSwitch";
+import LeverageSlider from "./LeverageSlider";
+import BuyInputSection from "components/BuyInputSection/BuyInputSection";
+import FeesTooltip from "./FeesTooltip";
 
 const SWAP_ICONS = {
   [LONG]: longImg,
@@ -95,6 +117,88 @@ function getNextAveragePrice({ size, sizeDelta, hasProfit, delta, nextPrice, isL
 }
 
 export default function SwapBox(props) {
+  const {
+    pendingPositions,
+    setPendingPositions,
+    infoTokens,
+    active,
+    library,
+    account,
+    fromTokenAddress,
+    setFromTokenAddress,
+    toTokenAddress,
+    setToTokenAddress,
+    swapOption,
+    setSwapOption,
+    positionsMap,
+    pendingTxns,
+    setPendingTxns,
+    tokenSelection,
+    setTokenSelection,
+    setIsConfirming,
+    isConfirming,
+    isPendingConfirmation,
+    setIsPendingConfirmation,
+    flagOrdersEnabled,
+    chainId,
+    nativeTokenAddress,
+    savedSlippageAmount,
+    totalTokenWeights,
+    usdgSupply,
+    orders,
+    savedIsPnlInLeverage,
+    orderBookApproved,
+    positionRouterApproved,
+    isWaitingForPluginApproval,
+    approveOrderBook,
+    approvePositionRouter,
+    setIsWaitingForPluginApproval,
+    isWaitingForPositionRouterApproval,
+    setIsWaitingForPositionRouterApproval,
+    isPluginApproving,
+    isPositionRouterApproving,
+    savedShouldDisableValidationForTesting,
+    minExecutionFee,
+    minExecutionFeeUSD,
+    minExecutionFeeErrorMessage,
+  } = props;
+  const [fromValue, setFromValue] = useState("");
+  const [toValue, setToValue] = useState("");
+  const [anchorOnFromAmount, setAnchorOnFromAmount] = useState(true);
+  const [isApproving, setIsApproving] = useState(false);
+  const [isWaitingForApproval, setIsWaitingForApproval] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [modalError, setModalError] = useState(false);
+  const [isHigherSlippageAllowed, setIsHigherSlippageAllowed] = useState(false);
+
+  let allowedSlippage = savedSlippageAmount;
+  if (isHigherSlippageAllowed) {
+    allowedSlippage = DEFAULT_HIGHER_SLIPPAGE_AMOUNT;
+  }
+
+  const defaultCollateralSymbol = getConstant(chainId, "defaultCollateralSymbol");
+  const [shortCollateralAddress, setShortCollateralAddress] = useLocalStorageByChainId(
+    chainId,
+    "Short-Collateral-Address",
+    getTokenBySymbol(chainId, defaultCollateralSymbol).address
+  );
+  const isLong = swapOption === LONG;
+  const isShort = swapOption === SHORT;
+  const isSwap = swapOption === SWAP;
+
+  function getTokenLabel() {
+    switch (true) {
+      case isLong:
+        return t`Long`;
+      case isShort:
+        return t`Short`;
+      case isSwap:
+        return t`Receive`;
+      default:
+        return "";
+    }
+  }
+
   return (
     <div className="Exchange-swap-box">
       <div className="Exchange-swap-info-group">
