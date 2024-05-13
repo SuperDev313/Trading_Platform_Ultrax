@@ -269,6 +269,19 @@ export default function SwapBox(props) {
     );
   };
 
+  const fromUsdMin = getUsd(fromAmount, fromTokenAddress, false, infoTokens);
+  const toUsdMax = getUsd(toAmount, toTokenAddress, true, infoTokens, orderOption, triggerPriceUsd);
+
+  const indexTokenAddress = toTokenAddress === AddressZero ? nativeTokenAddress : toTokenAddress;
+  const collateralTokenAddress = isLong ? indexTokenAddress : shortCollateralAddress;
+  const collateralToken = getToken(chainId, collateralTokenAddress);
+
+  const [triggerRatioValue, setTriggerRatioValue] = useState("");
+
+  const triggerRatioInverted = useMemo(() => {
+    return isTriggerRatioInverted(fromTokenInfo, toTokenInfo);
+  }, [toTokenInfo, fromTokenInfo]);
+
   return (
     <div className="Exchange-swap-box">
       <div className="Exchange-swap-info-group">
