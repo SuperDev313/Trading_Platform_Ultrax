@@ -1008,6 +1008,15 @@ export default function SwapBox(props) {
     return true;
   };
 
+  const onSelectFromToken = (token) => {
+    setFromTokenAddress(swapOption, token.address);
+    setIsWaitingForApproval(false);
+
+    if (isShort && token.isStable) {
+      setShortCollateralAddress(token.address);
+    }
+  };
+
   const getPrimaryText = () => {
     if (isStopOrder) {
       return t`Open a position`;
