@@ -199,6 +199,15 @@ export default function SwapBox(props) {
     }
   }
 
+  const [leverageOption, setLeverageOption] = useLocalStorageSerializeKey(
+    [chainId, "Exchange-swap-leverage-option"],
+    "2"
+  );
+  const [isLeverageSliderEnabled, setIsLeverageSliderEnabled] = useLocalStorageSerializeKey(
+    [chainId, "Exchange-swap-leverage-slider-enabled"],
+    true
+  );
+
   return (
     <div className="Exchange-swap-box">
       <div className="Exchange-swap-info-group">
