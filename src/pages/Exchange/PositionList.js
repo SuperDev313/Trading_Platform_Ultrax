@@ -121,12 +121,13 @@ export default function PositionList(props) {
     setIsHigherSlippageAllowed(false);
   };
 
-  const sellPosition = (position) => {
-    setPositionToSellKey(position.key);
-    setIsPositionSellerVisible(true);
-    setIsHigherSlippageAllowed(false);
+  const onPositionClick = (position) => {
+    if (hideActions) return;
+    const longOrShortText = position.isLong ? t`Long` : t`Short`;
+    helperToast.success(t`${longOrShortText} ${position.indexToken.symbol} market selected`);
+    setMarket(position.isLong ? LONG : SHORT, position.indexToken.address);
   };
-
+  
   return (
     <div className="PositionsList">
       <table className="Exchange-list large App-box">
