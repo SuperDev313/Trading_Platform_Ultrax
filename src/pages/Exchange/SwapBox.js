@@ -221,6 +221,14 @@ export default function SwapBox(props) {
     setOrderOption(option);
   };
 
+  const onTriggerPriceChange = (evt) => {
+    setTriggerPriceValue(evt.target.value || "");
+  };
+
+  const onTriggerRatioChange = (evt) => {
+    setTriggerRatioValue(evt.target.value || "");
+  };
+
   return (
     <div className="Exchange-swap-box">
       <div className="Exchange-swap-info-group">
