@@ -1342,6 +1342,11 @@ export default function SwapBox(props) {
   const increasePosition = async () => {
     setIsSubmitting(true);
     const tokenAddress0 = fromTokenAddress === AddressZero ? nativeTokenAddress : fromTokenAddress;
+    const indexTokenAddress = toTokenAddress === AddressZero ? nativeTokenAddress : toTokenAddress;
+    let path = [indexTokenAddress]; // assume long
+    if (toTokenAddress !== fromTokenAddress) {
+      path = [tokenAddress0, indexTokenAddress];
+    }
 
     if (fromTokenAddress === AddressZero && toTokenAddress === nativeTokenAddress) {
       path = [nativeTokenAddress];
@@ -1443,12 +1448,15 @@ export default function SwapBox(props) {
       sentMsg: `${longOrShortText} submitted.`,
       failMsg: `${longOrShortText} failed.`,
       successMsg,
+      // for Arbitrum, sometimes the successMsg shows after the position has already been executed
+      // hide the success message for Arbitrum as a workaround
       hideSuccessMsg: chainId === ARBITRUM,
     })
       .then(async () => {
         setIsConfirming(false);
 
         const key = getPositionKey(account, path[path.length - 1], indexTokenAddress, isLong);
+        let nextSize = toUsdMax;
         if (hasExistingPosition) {
           nextSize = existingPosition.size.add(toUsdMax);
         }
@@ -1456,7 +1464,7 @@ export default function SwapBox(props) {
         pendingPositions[key] = {
           updatedAt: Date.now(),
           pendingChanges: {
-            size: size,
+            size: nextSize,
           },
         };
 
