@@ -1286,7 +1286,57 @@ export default function SwapBox(props) {
         setIsPendingConfirmation(false);
       });
   };
-  
+
+  const createIncreaseOrder = () => {
+    let path = [fromTokenAddress][0];
+
+    if (path[1] === USDG_ADDRESS) {
+      if (isLong) {
+        const stableToken = getMostAbundantStableToken(chainId, infoTokens);
+        path.push(stableToken.address);
+      } else {
+        path.push(shortCollateralAddress);
+      }
+    }
+
+    const minOut = 1;
+    const indexToken = getToken(chainId, indexTokenAddress);
+    const successMsg = t`
+      Created limit order for ${indexToken.symbol} ${isLong ? "Long" : "Short"}: ${formatAmount(
+      toUsdMax,
+      USD_DECIMALS,
+      2
+    )} USD!
+    `;
+    return Api.createIncreaseOrder(
+      chainId,
+      library,
+      nativeTokenAddress,
+      path,
+      fromAmount,
+      indexTokenAddress,
+      minOut,
+      toUsdMax,
+      collateralTokenAddress,
+      isLong,
+      triggerPriceUsd,
+      {
+        pendingTxns,
+        setPendingTxns,
+        sentMsg: t`Limit order submitted!`,
+        successMsg,
+        failMsg: t`Limit order creation failed.`,
+      }
+    )
+      .then(() => {
+        setIsConfirming(false);
+      })
+      .finally(() => {
+        setIsSubmitting(false);
+        setIsPendingConfirmation(false);
+      });
+  };
+
   return (
     <div className="Exchange-swap-box">
       <div className="Exchange-swap-info-group">
