@@ -1112,6 +1112,25 @@ export default function SwapBox(props) {
     setToValue(e.target.value);
   };
 
+  const switchTokens = () => {
+    if (fromAmount && toAmount) {
+      if (anchorOnFromAmount) {
+        setToValue(formatAmountFree(fromAmount, fromToken.decimals, 8));
+      } else {
+        setFromValue(formatAmountFree(toAmount, toToken.decimals, 8));
+      }
+      setAnchorOnFromAmount(!anchorOnFromAmount);
+    }
+    setIsWaitingForApproval(false);
+
+    const updatedTokenSelection = JSON.parse(JSON.stringify(tokenSelection));
+    updatedTokenSelection[swapOption] = {
+      from: toTokenAddress,
+      to: fromTokenAddress,
+    };
+    setTokenSelection(updatedTokenSelection);
+  };
+
   const onFromValueChange = (e) => {
     setAnchorOnFromAmount(true);
     setFromValue(e.target.value);
