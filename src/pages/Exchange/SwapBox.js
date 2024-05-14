@@ -1103,6 +1103,15 @@ export default function SwapBox(props) {
     setShortCollateralAddress(token.address);
   };
 
+  const onSelectToToken = (token) => {
+    setToTokenAddress(swapOption, token.address);
+  };
+
+  const onFromValueChange = (e) => {
+    setAnchorOnFromAmount(true);
+    setFromValue(e.target.value);
+  };
+
   return (
     <div className="Exchange-swap-box">
       <div className="Exchange-swap-info-group">
