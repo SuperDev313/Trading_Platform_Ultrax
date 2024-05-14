@@ -1179,6 +1179,11 @@ export default function SwapBox(props) {
       return;
     }
 
+    if (fromTokenAddress.isWrapped && toToken.isNative) {
+      unwrap();
+      return;
+    }
+
     setIsSubmitting(true);
     let path = [fromTokenAddress, toTokenAddress];
     if (anchorOnFromAmount) {
@@ -1281,7 +1286,7 @@ export default function SwapBox(props) {
         setIsPendingConfirmation(false);
       });
   };
-
+  
   return (
     <div className="Exchange-swap-box">
       <div className="Exchange-swap-info-group">
