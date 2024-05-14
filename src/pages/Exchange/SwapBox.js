@@ -1155,6 +1155,24 @@ export default function SwapBox(props) {
       });
   };
 
+  const unwrap = async () => {
+    setIsSubmitting(true);
+
+    const contract = new ethers.Contract(nativeTokenAddress, WETH.abi, library.getSigner());
+    callContract(chainId, contract, "withdraw", [fromAmount], {
+      sentMsg: t`Swap submitted!`,
+      failMsg: t`Swap failed.`,
+      successMsg: t`Swapped ${formatAmount(fromAmount, fromToken.decimals, 4, true)} ${
+        fromToken.symbol
+      } for ${formatAmount(toAmount, toToken.decimals, 4, true)} ${toToken.symbol}!`,
+      setPendingTxns,
+    })
+      .then(async (res) => {})
+      .finally(() => {
+        setIsSubmitting(false);
+      });
+  };
+
   return (
     <div className="Exchange-swap-box">
       <div className="Exchange-swap-info-group">
