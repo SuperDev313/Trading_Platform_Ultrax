@@ -1288,9 +1288,9 @@ export default function SwapBox(props) {
   };
 
   const createIncreaseOrder = () => {
-    let path = [fromTokenAddress][0];
+    let path = [fromTokenAddress];
 
-    if (path[1] === USDG_ADDRESS) {
+    if (path[0] === USDG_ADDRESS) {
       if (isLong) {
         const stableToken = getMostAbundantStableToken(chainId, infoTokens);
         path.push(stableToken.address);
@@ -1299,7 +1299,7 @@ export default function SwapBox(props) {
       }
     }
 
-    const minOut = 1;
+    const minOut = 0;
     const indexToken = getToken(chainId, indexTokenAddress);
     const successMsg = t`
       Created limit order for ${indexToken.symbol} ${isLong ? "Long" : "Short"}: ${formatAmount(
