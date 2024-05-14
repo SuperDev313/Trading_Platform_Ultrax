@@ -1099,6 +1099,10 @@ export default function SwapBox(props) {
     return t`Open Short ${toToken.symbol}`;
   };
 
+  const onSelectShortCollateralAddress = (token) => {
+    setShortCollateralAddress(token.address);
+  };
+
   return (
     <div className="Exchange-swap-box">
       <div className="Exchange-swap-info-group">
