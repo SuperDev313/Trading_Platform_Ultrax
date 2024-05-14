@@ -1173,6 +1173,115 @@ export default function SwapBox(props) {
       });
   };
 
+  const swap = async () => {
+    if (fromToken.isNative && toToken.isWrapped) {
+      wrap();
+      return;
+    }
+
+    setIsSubmitting(true);
+    let path = [fromTokenAddress, toTokenAddress];
+    if (anchorOnFromAmount) {
+      const { path: multiPath } = getNextToAmount(
+        chainId,
+        fromAmount,
+        fromTokenAddress,
+        toTokenAddress,
+        infoTokens,
+        undefined,
+        undefined,
+        usdgSupply,
+        totalTokenWeights,
+        isSwap
+      );
+      if (multiPath) {
+        path = multiPath;
+      }
+    } else {
+      const { path: multiPath } = getNextFromAmount(
+        chainId,
+        toAmount,
+        fromTokenAddress,
+        toTokenAddress,
+        infoTokens,
+        undefined,
+        undefined,
+        usdgSupply,
+        totalTokenWeights,
+        isSwap
+      );
+      if (multiPath) {
+        path = multiPath;
+      }
+    }
+
+    let method;
+    let contract;
+    let value;
+    let params;
+    let minOut;
+    if (shouldRaiseGasError(getTokenInfo(infoTokens, fromTokenAddress), fromAmount)) {
+      setIsSubmitting(false);
+      setIsPendingConfirmation(true);
+      helperToast.error(
+        t`Leave at least ${formatAmount(DUST_BNB, 18, 3)} ${getConstant(chainId, "nativeTokenSymbol")} for gas`
+      );
+      return;
+    }
+
+    if (!isMarketOrder) {
+      minOut = toAmount;
+      Api.createSwapOrder(chainId, library, path, fromAmount, minOut, triggerRatio, nativeTokenAddress, {
+        sentMsg: t`Swap Order submitted!`,
+        successMsg: t`Swap Order created!`,
+        failMsg: t`Swap Order creation failed.`,
+        pendingTxns,
+        setPendingTxns,
+      })
+        .then(() => {
+          setIsConfirming(false);
+        })
+        .finally(() => {
+          setIsSubmitting(false);
+          setIsPendingConfirmation(false);
+        });
+      return;
+    }
+
+    path = replaceNativeTokenAddress(path, nativeTokenAddress);
+    method = "swap";
+    value = bigNumberify(0);
+    if (toTokenAddress === AddressZero) {
+      method = "swapTokensToETH";
+    }
+
+    minOut = toAmount.mul(BASIS_POINTS_DIVISOR - allowedSlippage).div(BASIS_POINTS_DIVISOR);
+    params = [path, fromAmount, minOut, account];
+    if (fromTokenAddress === AddressZero) {
+      method = "swapETHToTokens";
+      value = fromAmount;
+      params = [path, minOut, account];
+    }
+    contract = new ethers.Contract(routerAddress, Router.abi, library.getSigner());
+
+    callContract(chainId, contract, method, params, {
+      value,
+      sentMsg: t`Swap ${!isMarketOrder ? " order " : ""} submitted!`,
+      successMsg: t`Swapped ${formatAmount(fromAmount, fromToken.decimals, 4, true)} ${
+        fromToken.symbol
+      } for ${formatAmount(toAmount, toToken.decimals, 4, true)} ${toToken.symbol}!`,
+      failMsg: t`Swap failed.`,
+      setPendingTxns,
+    })
+      .then(async () => {
+        setIsConfirming(false);
+      })
+      .finally(() => {
+        setIsSubmitting(false);
+        setIsPendingConfirmation(false);
+      });
+  };
+
   return (
     <div className="Exchange-swap-box">
       <div className="Exchange-swap-info-group">
