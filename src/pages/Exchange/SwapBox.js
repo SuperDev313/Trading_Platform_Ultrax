@@ -1337,6 +1337,137 @@ export default function SwapBox(props) {
       });
   };
 
+  let referralCode = ethers.constants.HashZero;
+
+  const increasePosition = async () => {
+    setIsSubmitting(true);
+    const tokenAddress0 = fromTokenAddress === AddressZero ? nativeTokenAddress : fromTokenAddress;
+
+    if (fromTokenAddress === AddressZero && toTokenAddress === nativeTokenAddress) {
+      path = [nativeTokenAddress];
+    }
+
+    if (fromTokenAddress === nativeTokenAddress && toTokenAddress === AddressZero) {
+      path = [nativeTokenAddress];
+    }
+
+    if (isShort) {
+      path = [shortCollateralAddress];
+      if (tokenAddress0 !== shortCollateralAddress) {
+        path = [tokenAddress0, shortCollateralAddress];
+      }
+    }
+
+    const refPrice = isLong ? toTokenInfo.maxPrice : toTokenInfo.minPrice;
+    const priceBasisPoints = isLong ? BASIS_POINTS_DIVISOR + allowedSlippage : BASIS_POINTS_DIVISOR - allowedSlippage;
+    const priceLimit = refPrice.mul(priceBasisPoints).div(BASIS_POINTS_DIVISOR);
+
+    const boundedFromAmount = fromAmount ? fromAmount : bigNumberify(0);
+
+    if (fromAmount && fromAmount.gt(0) && fromTokenAddress === USDG_ADDRESS && isLong) {
+      const { amount: nextToAmount, path: multiPath } = getNextToAmount(
+        chainId,
+        fromAmount,
+        fromTokenAddress,
+        indexTokenAddress,
+        infoTokens,
+        undefined,
+        undefined,
+        usdgSupply,
+        totalTokenWeights,
+        isSwap
+      );
+      if (nextToAmount.eq(0)) {
+        helperToast.error(t`Insufficient Liquidity`);
+        return;
+      }
+      if (multiPath) {
+        path = replaceNativeTokenAddress(multiPath);
+      }
+    }
+
+    let params = [
+      path, // _path
+      indexTokenAddress, // _indexToken
+      boundedFromAmount, // _amountIn
+      0, // _minOut
+      toUsdMax, // _sizeDelta
+      isLong, // _isLong
+      priceLimit, // _acceptablePrice
+      minExecutionFee, // _executionFee
+      referralCode, // _referralCode
+      AddressZero, // _callbackTarget
+    ];
+
+    let method = "createIncreasePosition";
+    let value = minExecutionFee;
+    if (fromTokenAddress === AddressZero) {
+      method = "createIncreasePositionETH";
+      value = boundedFromAmount.add(minExecutionFee);
+      params = [
+        path, // _path
+        indexTokenAddress, // _indexToken
+        0, // _minOut
+        toUsdMax, // _sizeDelta
+        isLong, // _isLong
+        priceLimit, // _acceptablePrice
+        minExecutionFee, // _executionFee
+        referralCode, // _referralCode
+        AddressZero, // _callbackTarget
+      ];
+    }
+
+    if (shouldRaiseGasError(getTokenInfo(infoTokens, fromTokenAddress), fromAmount)) {
+      setIsSubmitting(false);
+      setIsPendingConfirmation(false);
+      helperToast.error(
+        t`Leave at least ${formatAmount(DUST_BNB, 18, 3)} ${getConstant(chainId, "nativeTokenSymbol")} for gas`
+      );
+      return;
+    }
+
+    const contractAddress = getContract(chainId, "PositionRouter");
+    const contract = new ethers.Contract(contractAddress, PositionRouter.abi, library.getSigner());
+    const indexToken = getTokenInfo(infoTokens, indexTokenAddress);
+    const tokenSymbol = indexToken.isWrapped ? getConstant(chainId, "nativeTokenSymbol") : indexToken.symbol;
+    const longOrShortText = isLong ? t`Long` : t`Short`;
+    const successMsg = t`Requested increase of ${tokenSymbol} ${longOrShortText} by ${formatAmount(
+      toUsdMax,
+      USD_DECIMALS,
+      2
+    )} USD.`;
+
+    callContract(chainId, contract, method, params, {
+      value,
+      setPendingTxns,
+      sentMsg: `${longOrShortText} submitted.`,
+      failMsg: `${longOrShortText} failed.`,
+      successMsg,
+      hideSuccessMsg: chainId === ARBITRUM,
+    })
+      .then(async () => {
+        setIsConfirming(false);
+
+        const key = getPositionKey(account, path[path.length - 1], indexTokenAddress, isLong);
+        if (hasExistingPosition) {
+          nextSize = existingPosition.size.add(toUsdMax);
+        }
+
+        pendingPositions[key] = {
+          updatedAt: Date.now(),
+          pendingChanges: {
+            size: size,
+          },
+        };
+
+        setPendingPositions({ ...pendingPositions });
+      })
+      .finally(() => {
+        setIsSubmitting(false);
+        setIsPendingConfirmation(false);
+      });
+  };
+
   return (
     <div className="Exchange-swap-box">
       <div className="Exchange-swap-info-group">
