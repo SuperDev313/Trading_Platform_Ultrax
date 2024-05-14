@@ -1476,6 +1476,28 @@ export default function SwapBox(props) {
       });
   };
 
+  const onSwapOptionChange = (opt) => {
+    setSwapOption(opt);
+    if (orderOption === STOP) {
+      setOrderOption(MARKET);
+    }
+    setAnchorOnFromAmount(true);
+    setFromValue("");
+    setToValue("");
+    setTriggerPriceValue("");
+    setTriggerRatioValue("");
+
+    if (opt === SHORT && infoTokens) {
+      const fromToken = getToken(chainId, tokenSelection[opt].from);
+      if (fromToken && fromToken.isStable) {
+        setShortCollateralAddress(fromToken.address);
+      } else {
+        const stableToken = getMostAbundantStableToken(chainId, infoTokens);
+        setShortCollateralAddress(stableToken.address);
+      }
+    }
+  };
+  
   return (
     <div className="Exchange-swap-box">
       <div className="Exchange-swap-info-group">
