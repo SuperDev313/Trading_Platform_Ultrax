@@ -1107,6 +1107,11 @@ export default function SwapBox(props) {
     setToTokenAddress(swapOption, token.address);
   };
 
+  const onToValueChange = (e) => {
+    setAnchorOnFromAmount(false);
+    setToValue(e.target.value);
+  };
+
   const onFromValueChange = (e) => {
     setAnchorOnFromAmount(true);
     setFromValue(e.target.value);
