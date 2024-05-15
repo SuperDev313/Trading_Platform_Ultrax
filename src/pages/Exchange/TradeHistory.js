@@ -80,9 +80,6 @@ export default function TradeHistory(props) {
 
   const getTradeParams = (trade) => {
     const tradeParams = JSON.parse(trade?.data?.params);
-
-    // console.log("___tradeParams_id: ", trade?.id, "___indexToken: ", tradeParams?.indexToken);
-    // console.log("___trade: ", trade, " ___tradeParams: ", tradeParams, "___chainId: ", chainId);
     try {
       if (trade?.data?.action === "Swap") {
         const tokenIn = getTokenInfo(infoTokens, tradeParams?.tokenIn, true, nativeTokenAddress);
@@ -116,7 +113,7 @@ export default function TradeHistory(props) {
           decimals: token?.decimals || null,
           order: `${actions[trade.data.action]} ${token?.baseSymbol || token?.symbol}`,
           action: actions[trade.data.action],
-          timestamp: trade.data.timestamp || false,
+          timestamp: trade.data.timestamp || null,
           txhash: trade.data.txhash || null,
           status: tradeParams.status || "--",
           acceptablePrice: triggerCondition,
@@ -132,6 +129,7 @@ export default function TradeHistory(props) {
         decimals: 2,
         order: `${actions[trade.data.action]}`,
         action: actions[trade.data.action],
+        timestamp: trade.data.timestamp || "--",
         txhash: trade.data.txhash || null,
         status: tradeParams.status || "--",
         acceptablePrice: "--",
@@ -140,6 +138,10 @@ export default function TradeHistory(props) {
         msg: trade.msg || null,
       };
     }
+  };
+
+  const getAfterId = () => {
+    return pageIds[pageIndex];
   };
 
   return (
