@@ -199,6 +199,7 @@ export default function TradeHistory(props) {
           true
         )} USDG`;
       }
+      
       if (tradeData.action === "Swap") {
         const tokenIn = getTokenInfo(infoTokens, params.tokenIn, true, nativeTokenAddress);
         const tokenOut = getTokenInfo(infoTokens, params.tokenOut, true, nativeTokenAddress);
@@ -212,6 +213,7 @@ export default function TradeHistory(props) {
           true
         )} ${tokenOut.symbol}`;
       }
+
       if (tradeData.action === "CreateIncreasePosition") {
         const indexToken = getTokenInfo(infoTokens, params.indexToken, true, nativeTokenAddress);
         if (!indexToken) {
@@ -234,6 +236,7 @@ export default function TradeHistory(props) {
           true
         )} USD`;
       }
+
       if (tradeData.action === "CreateDecreasePosition") {
         const indexToken = getTokenInfo(infoTokens, params.indexToken, true, nativeTokenAddress);
         if (!indexToken) {
@@ -256,6 +259,7 @@ export default function TradeHistory(props) {
           true
         )} USD`;
       }
+
       if (tradeData.action === "CancelIncreasePosition") {
         const indexToken = getTokenInfo(infoTokens, params.indexToken, true, nativeTokenAddress);
         if (!indexToken) {
@@ -287,6 +291,7 @@ export default function TradeHistory(props) {
           </>
         );
       }
+
       if (tradeData.action === "CancelDecreasePosition") {
         const indexToken = getTokenInfo(infoTokens, params.indexToken, true, nativeTokenAddress);
         if (!indexToken) {
@@ -299,6 +304,11 @@ export default function TradeHistory(props) {
 
         return (
           <>
+            <Trans>
+              Could not decrease {indexToken.symbol} {longOrShortText},
+              {`+${formatAmount(params.sizeDelta, USD_DECIMALS, 2, true)}`} USD, Acceptable Price:&nbsp;
+              {params.isLong ? ">" : "<"}&nbsp;
+            </Trans>
             <Tooltip
               position="right-top"
               handle={`${formatAmount(params.acceptablePrice, USD_DECIMALS, 2, true)} USD`}
