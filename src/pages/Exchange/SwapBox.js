@@ -1644,7 +1644,7 @@ export default function SwapBox(props) {
     const maxAvailableAmount = fromToken.isNative ? fromBalance.sub(bigNumberify(DUST_BNB).mul(2)) : fromBalance;
     return fromValue !== formatAmountFree(maxAvailableAmount, fromToken.decimals, fromToken.decimals);
   }
-  
+
   function setFromValueToMaximumAvailable() {
     if (!fromToken || !fromBalance) {
       return;
@@ -1653,6 +1653,109 @@ export default function SwapBox(props) {
     const maxAvailableAmount = fromToken.isNative ? fromBalance.sub(bigNumberify(DUST_BNB).mul(2)) : fromBalance;
     setFromValue(formatAmountFree(maxAvailableAmount, fromToken.decimals, fromToken.decimals));
     setAnchorOnFromAmount(true);
+  }
+
+  const ERROR_TOOLTIP_MSG = {
+    [ErrorCode.InsufficientLiquiditySwap]: t`Swap amount exceeds available liquidity.`,
+    [ErrorCode.InsufficientLiquidityLeverage]: (
+      <Trans>
+        <p>{toToken.symbol} is required for collateral.</p>
+        <p>
+          Swap amount from {fromToken.symbol} to {toToken.symbol} exceeds {toToken.symbol} available liquidity. Reduce
+          the "Pay" size, or use {toToken.symbol} as the "Pay" token to use it for collateral.
+        </p>
+        <ExternalLink href={get1InchSwapUrl(chainId, fromToken.symbol, toToken.symbol)}>
+          You can buy {toToken.symbol} on 1inch.
+        </ExternalLink>
+      </Trans>
+    ),
+    [ErrorCode.TokenPoolExceeded]: (
+      <Trans>
+        <p>{toToken.symbol} is required for collateral.</p>
+        <p>
+          Swap amount from {fromToken.symbol} to {toToken.symbol} exceeds {fromToken.symbol} acceptable amount. Reduce
+          the "Pay" size, or use {toToken.symbol} as the "Pay" token to use it for collateral.
+        </p>
+        <ExternalLink href={get1InchSwapUrl(chainId, fromToken.symbol, toToken.symbol)}>
+          You can buy {toToken.symbol} on 1inch.
+        </ExternalLink>
+      </Trans>
+    ),
+    [ErrorCode.TokenPoolExceededShorts]: (
+      <Trans>
+        <p>{shortCollateralToken.symbol} is required for collateral.</p>
+        <p>
+          Swap amount from {fromToken.symbol} to {shortCollateralToken.symbol} exceeds {fromToken.symbol} acceptable
+          amount. Reduce the "Pay" size, or use {shortCollateralToken.symbol} as the "Pay" token to use it for
+          collateral.
+        </p>
+        <ExternalLink href={get1InchSwapUrl(chainId, fromToken.symbol, shortCollateralToken.symbol)}>
+          You can buy {shortCollateralToken.symbol} on 1inch.
+        </ExternalLink>
+      </Trans>
+    ),
+    [ErrorCode.InsufficientCollateralIn]: (
+      <Trans>
+        <p>{shortCollateralToken.symbol} is required for collateral.</p>
+        <p>
+          Swap amount from {fromToken.symbol} to {shortCollateralToken.symbol} exceeds {shortCollateralToken.symbol}{" "}
+          available liquidity. Reduce the "Pay" size, or change the "Collateral In" token.
+        </p>
+      </Trans>
+    ),
+    [ErrorCode.InsufficientProfitLiquidity]: (
+      <Trans>
+        <p>{shortCollateralToken.symbol} is required for collateral.</p>
+        <p>
+          Short amount for {toToken.symbol} with {shortCollateralToken.symbol} exceeds potential profits liquidity.
+          Reduce the "Short Position" size, or change the "Collateral In" token.
+        </p>
+      </Trans>
+    ),
+  };
+
+  const SWAP_LABELS = {
+    [LONG]: t`Long`,
+    [SHORT]: t`Short`,
+    [SWAP]: t`Swap`,
+  };
+
+  const SWAP_ORDER_EXECUTION_GAS_FEE = getConstant(chainId, "SWAP_ORDER_EXECUTION_GAS_FEE");
+  const INCREASE_ORDER_EXECUTION_GAS_FEE = getConstant(chainId, "INCREASE_ORDER_EXECUTION_GAS_FEE");
+  const executionFee = isSwap ? SWAP_ORDER_EXECUTION_GAS_FEE : INCREASE_ORDER_EXECUTION_GAS_FEE;
+  const executionFeeUsd = getUsd(executionFee, nativeTokenAddress, false, infoTokens);
+  const currentExecutionFee = isMarketOrder ? minExecutionFee : executionFee;
+  const currentExecutionFeeUsd = isMarketOrder ? minExecutionFeeUSD : executionFeeUsd;
+
+  function renderPrimaryButton() {
+    const [errorMessage, errorType, errorCode] = getError();
+    const primaryTextMessage = getPrimaryText();
+    if (errorType === ErrorDisplayType.Tooltip && errorMessage === primaryTextMessage && ERROR_TOOLTIP_MSG[errorCode]) {
+      return (
+        <Tooltip
+          isHandlerDisabled
+          handle={
+            <Button variant="brand-action" className="w-full" onClick={onClickPrimary} disabled={!isPrimaryEnabled()}>
+              {primaryTextMessage}
+            </Button>
+          }
+          position="center-bottom"
+          className="Tooltip-flex"
+          renderContent={() => ERROR_TOOLTIP_MSG[errorCode]}
+        />
+      );
+    }
+    return (
+      <Button
+        type="submit"
+        variant={!active ? "brand-action" : isLong ? "long-action" : isSwap ? "brand-action" : "short-action"}
+        className="w-full"
+        onClick={onClickPrimary}
+        disabled={!isPrimaryEnabled()}
+      >
+        {primaryTextMessage}
+      </Button>
+    );
   }
 
   return (
