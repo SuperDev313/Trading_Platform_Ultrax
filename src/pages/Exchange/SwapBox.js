@@ -1637,6 +1637,14 @@ export default function SwapBox(props) {
     setIsHigherSlippageAllowed(false);
   };
 
+  function shouldShowMaxButton() {
+    if (!fromToken || !fromBalance) {
+      return false;
+    }
+    const maxAvailableAmount = fromToken.isNative ? fromBalance.sub(bigNumberify(DUST_BNB).mul(2)) : fromBalance;
+    return fromValue !== formatAmountFree(maxAvailableAmount, fromToken.decimals, fromToken.decimals);
+  }
+  
   function setFromValueToMaximumAvailable() {
     if (!fromToken || !fromBalance) {
       return;
