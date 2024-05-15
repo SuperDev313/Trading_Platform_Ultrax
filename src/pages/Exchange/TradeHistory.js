@@ -37,6 +37,20 @@ function getPositionDisplay(increase, indexToken, isLong, sizeDelta) {
     ${increase ? "+" : "-"}${formatAmount(sizeDelta, USD_DECIMALS, 2, true)} USD`;
 }
 
+function getOrderActionTitle(action) {
+  let actionDisplay;
+
+  if (action.startsWith("Create")) {
+    actionDisplay = t`Create`;
+  } else if (action.startsWith("Cancel")) {
+    actionDisplay = t`Cancel`;
+  } else {
+    actionDisplay = t`Update`;
+  }
+
+  return t`${actionDisplay} Order`;
+}
+
 export default function TradeHistory(props) {
   const { account, infoTokens, getTokenInfo, chainId, nativeTokenAddress, shouldShowPaginationButtons } = props;
   const [pageIds, setPageIds] = useState({});
