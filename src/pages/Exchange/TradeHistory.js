@@ -1,6 +1,10 @@
 import React from "react";
 
 export default function TradeHistory(props) {
+  const { account, infoTokens, getTokenInfo, chainId, nativeTokenAddress, shouldShowPaginationButtons } = props;
+  const [pageIds, setPageIds] = useState({});
+  const [pageIndex, setPageIndex] = useState(0);
+  
   return (
     <div className="TradeHistory container">
       <div className="Exchange-list small trading-history">
@@ -144,6 +148,20 @@ export default function TradeHistory(props) {
           </div>
         </tbody>
       </table>
+      {shouldShowPaginationButtons && (
+        <div className="gap-right">
+          {pageIndex > 0 && (
+            <Button variant="secondary" onClick={loadPrevPage}>
+              <Trans>Prev</Trans>
+            </Button>
+          )}
+          {trades && trades.length >= TRADES_PAGE_SIZE && (
+            <Button variant="secondary" onClick={loadNextPage}>
+              <Trans>Next</Trans>
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
