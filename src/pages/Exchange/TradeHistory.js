@@ -179,9 +179,43 @@ export default function TradeHistory(props) {
   const loadPrevPage = () => {
     setPageIndex(pageIndex - 1);
   };
-  
+
   return (
     <div className="TradeHistory container">
+      {!account ? (
+        <div className="Exchange-list-no-connect">
+          <span className="Exchange-list-no-connect-title">Wallet Required</span>
+          <span className="Exchange-list-no-connect-text">Connect wallet to view your trade history</span>
+        </div>
+      ) : (
+        tradesWithMessages.length === 0 && (
+          <div
+            style={{
+              width: "100%",
+            }}
+          >
+            <div
+              className="fz-lg fw-600 text-primary"
+              style={{
+                textAlign: "center",
+                marginTop: "4rem",
+              }}
+            >
+              No Trade History Found
+            </div>
+            <div
+              className="fz-sm fw-500 text-secondary"
+              style={{
+                textAlign: "center",
+                marginTop: "0.5rem",
+                marginBottom: "4rem",
+              }}
+            >
+              You have no trade history
+            </div>
+          </div>
+        )
+      )}
       <div className="Exchange-list small trading-history">
         {tradesWithMessages.length > 0 &&
           tradesWithMessages.map((trade, index) => {
@@ -323,20 +357,6 @@ export default function TradeHistory(props) {
           </div>
         </tbody>
       </table>
-      {shouldShowPaginationButtons && (
-        <div className="gap-right">
-          {pageIndex > 0 && (
-            <Button variant="secondary" onClick={loadPrevPage}>
-              <Trans>Prev</Trans>
-            </Button>
-          )}
-          {trades && trades.length >= TRADES_PAGE_SIZE && (
-            <Button variant="secondary" onClick={loadNextPage}>
-              <Trans>Next</Trans>
-            </Button>
-          )}
-        </div>
-      )}
     </div>
   );
 }
