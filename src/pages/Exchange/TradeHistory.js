@@ -73,6 +73,77 @@ export default function TradeHistory(props) {
             );
           })}
       </div>
+      <table className="Exchange-list large App-box trading-history">
+        <tbody>
+          {tradesWithMessages.length > 0 && (
+            <tr className="Exchange-list-header trading-history row">
+              <th className="Time">
+                <Trans>Time</Trans>
+              </th>
+              <th className="Symbol">
+                <Trans>Symbol</Trans>
+              </th>
+              <th className="Order">
+                <Trans>Order</Trans>
+              </th>
+              <th className="Status">
+                <Trans>Status</Trans>
+              </th>
+              <th className="Trigger">
+                <Trans>Trigger Conditions</Trans>
+              </th>
+              <th className="Side">
+                <Trans>Side</Trans>
+              </th>
+              <th className="Amount">
+                <Trans>Amount</Trans>
+              </th>
+            </tr>
+          )}
+          <div className="Exchange-list-container">
+            {tradesWithMessages.map((trade, index) => {
+              const { symbol, order, timestamp, status, acceptablePrice, isLong, action, sizeDelta } =
+                getTradeParams(trade);
+
+              return (
+                <tr key={index} className="Exchange-list-item trading-history row">
+                  <td className="Time">
+                    <div className="Exchange-symbol-mark" style={{ background: isLong ? "#3FB68B" : "#FF5353" }}></div>
+                    <div>
+                      {formatDate(timestamp)} {` `}
+                      {formatTime(timestamp)}
+                    </div>
+                  </td>
+                  <td className="Symbol">
+                    <div>{symbol}</div>
+                  </td>
+                  <td className="Order">
+                    <div>{order}</div>
+                  </td>
+                  <td className="Status">
+                    <div>{status}</div>
+                  </td>
+                  <td className="Trigger">
+                    <div>{acceptablePrice}</div>
+                  </td>
+                  <td className="Side">
+                    <div style={{ color: isLong ? "#3FB68B" : "#FF5353" }}>
+                      {isLong === "--" ? isLong : isLong ? "Long" : "Short"}
+                    </div>
+                  </td>
+                  <td className="Amount">
+                    <div>
+                      {action === "Swap"
+                        ? "--"
+                        : `${action === "Increase" ? "+" : "-"}${formatAmount(sizeDelta, USD_DECIMALS, 2, true)} USD`}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </div>
+        </tbody>
+      </table>
     </div>
   );
 }
