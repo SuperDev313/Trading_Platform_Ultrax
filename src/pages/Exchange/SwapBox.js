@@ -1515,6 +1515,58 @@ export default function SwapBox(props) {
     });
   }
 
+  const onClickPrimary = () => {
+    if (isStopOrder) {
+      setOrderOption(MARKET);
+      return;
+    }
+
+    if (!active) {
+      props.connectWallet();
+      return;
+    }
+
+    if (needPositionRouterApproval) {
+      approvePositionRouter({
+        sentMsg: t`Enable leverage sent.`,
+        failMsg: t`Enable leverage failed.`,
+      });
+      return;
+    }
+
+    if (needApproval) {
+      approveFromToken();
+      return;
+    }
+
+    if (needOrderBookApproval) {
+      setOrdersToaOpen(true);
+      return;
+    }
+
+    const [, errorType, errorCode] = getError();
+
+    if (errorType === ErrorDisplayType.Modal) {
+      setModalError(errorCode);
+      return;
+    }
+
+    if (isSwap) {
+      if (fromTokenAddress === AddressZero && toTokenAddress === nativeTokenAddress) {
+        wrap();
+        return;
+      }
+
+      if (fromTokenAddress === nativeTokenAddress && toTokenAddress === AddressZero) {
+        unwrap();
+        return;
+      }
+    }
+
+    setIsConfirming(true);
+    setIsHigherSlippageAllowed(false);
+  };
+
   return (
     <div className="Exchange-swap-box">
       <div className="Exchange-swap-info-group">
