@@ -158,6 +158,14 @@ export default function TradeHistory(props) {
     }, {});
   }, [liquidationsData]);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      updateTrades(undefined, true)
+    }, 10* 500);
+
+    return () => clearInterval(interval)
+  }, [updateTrades])
+  
   return (
     <div className="TradeHistory container">
       <div className="Exchange-list small trading-history">
