@@ -59,7 +59,7 @@ const actions = {
   "IncreasePosition-Long": "Increase",
   "IncreasePosition-Short": "Increase",
   CreateIncreaseOrder: "Increase",
-  CreateIncreasePosition: "Increase",
+  CreateIncreasePosition: "Decrease",
   CreateDecreaseOrder: "Decrease",
   CreateDecreasePosition: "Decrease",
   CancelDecreaseOrder: "Decrease",
@@ -77,6 +77,70 @@ export default function TradeHistory(props) {
   const { account, infoTokens, getTokenInfo, chainId, nativeTokenAddress, shouldShowPaginationButtons } = props;
   const [pageIds, setPageIds] = useState({});
   const [pageIndex, setPageIndex] = useState(0);
+
+  const getTradeParams = (trade) => {
+    const tradeParams = JSON.parse(trade?.data?.params);
+
+    // console.log("___tradeParams_id: ", trade?.id, "___indexToken: ", tradeParams?.indexToken);
+    // console.log("___trade: ", trade, " ___tradeParams: ", tradeParams, "___chainId: ", chainId);
+    try {
+      if (trade?.data?.action === "Swap") {
+        const tokenIn = getTokenInfo(infoTokens, tradeParams?.tokenIn, true, nativeTokenAddress);
+        const tokenOut = getTokenInfo(infoTokens, tradeParams?.tokenOut, true, nativeTokenAddress);
+        const triggerCondition = `${formatAmount(tradeParams?.amountIn, tokenIn.decimals, 4, true)} ${
+          tokenIn.symbol
+        } for ${formatAmount(tradeParams?.amountOut, tokenOut.decimals, 4, true)} ${tokenOut.symbol}`;
+        return {
+          symbol: `${tokenIn?.baseSymbol || tokenIn?.symbol}-${tokenOut?.baseSymbol || tokenOut?.symbol}` || "--",
+          decimals: tokenIn?.decimals || "--",
+          order: `${actions[trade.data.action] || trade.data.action}`,
+          action: actions[trade.data.action],
+          timestamp: trade.data.timestamp || null,
+          txhash: trade.data.txhash || null,
+          status: tradeParams.status || "--",
+          acceptablePrice: triggerCondition,
+          isLong: "--",
+          sizeDelta: tradeParams.sizeDelta,
+          msg: trade.msg || null,
+        };
+      } else {
+        const token = getToken(chainId, tradeParams?.indexToken);
+        const triggerCondition = `Price: ${tradeParams.isLong ? "<" : ">"} ${formatAmount(
+          tradeParams.acceptablePrice,
+          USD_DECIMALS,
+          2,
+          true
+        )}`;
+        return {
+          symbol: token?.baseSymbol || token?.symbol || null,
+          decimals: token?.decimals || null,
+          order: `${actions[trade.data.action]} ${token?.baseSymbol || token?.symbol}`,
+          action: actions[trade.data.action],
+          timestamp: trade.data.timestamp || false,
+          txhash: trade.data.txhash || null,
+          status: tradeParams.status || "--",
+          acceptablePrice: triggerCondition,
+          isLong: tradeParams.isLong,
+          sizeDelta: tradeParams.sizeDelta,
+          msg: trade.msg || null,
+        };
+      }
+    } catch (error) {
+      console.error("getTradeParams error", error);
+      return {
+        symbol: "--",
+        decimals: 2,
+        order: `${actions[trade.data.action]}`,
+        action: actions[trade.data.action],
+        txhash: trade.data.txhash || null,
+        status: tradeParams.status || "--",
+        acceptablePrice: "--",
+        isLong: tradeParams.isLong || "--",
+        sizeDelta: tradeParams.sizeDelta || "--",
+        msg: trade.msg || null,
+      };
+    }
+  };
 
   return (
     <div className="TradeHistory container">
