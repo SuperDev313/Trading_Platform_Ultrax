@@ -1337,6 +1337,61 @@ export default function SwapBox(props) {
       });
   };
 
+  const isStopOrder = orderOption === STOP;
+  const showFromAndToSection = !isStopOrder;
+  const showTriggerPriceSection = !isSwap && !isMarketOrder && !isStopOrder;
+  const showTriggerRatioSection = isSwap && !isMarketOrder && !isStopOrder;
+
+  let fees;
+  let feesUsd;
+  let feeBps;
+  let swapFees;
+  let positionFee;
+  if (isSwap) {
+    if (fromAmount) {
+      const { feeBasisPoints } = getNextToAmount(
+        chainId,
+        fromAmount,
+        fromTokenAddress,
+        toTokenAddress,
+        infoTokens,
+        undefined,
+        undefined,
+        usdgSupply,
+        totalTokenWeights,
+        isSwap
+      );
+      if (feeBasisPoints !== undefined) {
+        fees = fromAmount.mul(feeBasisPoints).div(BASIS_POINTS_DIVISOR);
+        const feeTokenPrice =
+          fromTokenInfo.address === USDG_ADDRESS ? expandDecimals(1, USD_DECIMALS) : fromTokenInfo.maxPrice;
+        feesUsd = fees.mul(feeTokenPrice).div(expandDecimals(1, fromTokenInfo.decimals));
+      }
+      feeBps = feeBasisPoints;
+    }
+  } else if (toUsdMax) {
+    positionFee = toUsdMax.mul(MARGIN_FEE_BASIS_POINTS).div(BASIS_POINTS_DIVISOR);
+    feesUsd = positionFee;
+
+    const { feeBasisPoints } = getNextToAmount(
+      chainId,
+      fromAmount,
+      fromTokenAddress,
+      collateralTokenAddress,
+      infoTokens,
+      undefined,
+      undefined,
+      usdgSupply,
+      totalTokenWeights,
+      isSwap
+    );
+    if (feeBasisPoints) {
+      swapFees = fromUsdMin.mul(feeBasisPoints).div(BASIS_POINTS_DIVISOR);
+      feesUsd = feesUsd.add(swapFees);
+    }
+    feeBps = feeBasisPoints;
+  }
+
   let referralCode = ethers.constants.HashZero;
 
   const increasePosition = async () => {
