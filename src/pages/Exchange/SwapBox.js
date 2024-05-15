@@ -1637,6 +1637,16 @@ export default function SwapBox(props) {
     setIsHigherSlippageAllowed(false);
   };
 
+  function setFromValueToMaximumAvailable() {
+    if (!fromToken || !fromBalance) {
+      return;
+    }
+
+    const maxAvailableAmount = fromToken.isNative ? fromBalance.sub(bigNumberify(DUST_BNB).mul(2)) : fromBalance;
+    setFromValue(formatAmountFree(maxAvailableAmount, fromToken.decimals, fromToken.decimals));
+    setAnchorOnFromAmount(true);
+  }
+
   return (
     <div className="Exchange-swap-box">
       <div className="Exchange-swap-info-group">
