@@ -165,6 +165,17 @@ export default function TradeHistory(props) {
     return () => clearInterval(interval);
   }, [updateTrades]);
 
+  const loadNextPage = () => {
+    if (!trades || trades.length === 0) {
+      return;
+    }
+
+    const lastTrade = trades[trades.length - 1];
+    pageIds[pageIndex + 1] = lastTrade.id;
+    setPageIds(pageIds);
+    setPageIndex(pageIndex + 1);
+  };
+
   return (
     <div className="TradeHistory container">
       <div className="Exchange-list small trading-history">
