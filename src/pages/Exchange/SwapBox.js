@@ -1570,6 +1570,21 @@ export default function SwapBox(props) {
     });
   }
 
+  function getFundingRate() {
+    let fundingRate = "";
+
+    if (isLong && toTokenInfo) {
+      fundingRate = formatAmount(toTokenInfo.fundingRate, 4, 4);
+    } else if (isShort && shortCollateralToken) {
+      fundingRate = formatAmount(shortCollateralToken.fundingRate, 4, 4);
+    }
+
+    if (fundingRate) {
+      fundingRate += "% / 1h";
+    }
+
+    return fundingRate;
+  }
   const onClickPrimary = () => {
     if (isStopOrder) {
       setOrderOption(MARKET);
