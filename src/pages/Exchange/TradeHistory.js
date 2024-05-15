@@ -180,6 +180,29 @@ export default function TradeHistory(props) {
     setPageIndex(pageIndex - 1);
   };
 
+  const getMsg = useCallback(
+    (trade) => {
+      const tradeData = trade.data;
+      const params = JSON.parse(tradeData.params);
+      const longOrShortText = params?.isLong ? t`Long` : t`Short`;
+      const defaultMsg = "";
+
+      if (tradeData.action === "BuyUSDG") {
+        const token = getTokenInfo(infoTokens, params.token, true, nativeTokenAddress);
+        if (!token) {
+          return defaultMsg;
+        }
+        return t`Swap ${formatAmount(params.tokenAmount, token.decimals, 4, true)} ${token.symbol} for ${formatAmount(
+          params.usdgAmount,
+          18,
+          4,
+          true
+        )} USDG`;
+      }
+    },
+    [trades, getMsg]
+  );
+
   return (
     <div className="TradeHistory container">
       {!account ? (
