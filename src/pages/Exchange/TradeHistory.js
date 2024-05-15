@@ -256,6 +256,37 @@ export default function TradeHistory(props) {
           true
         )} USD`;
       }
+      if (tradeData.action === "CancelIncreasePosition") {
+        const indexToken = getTokenInfo(infoTokens, params.indexToken, true, nativeTokenAddress);
+        if (!indexToken) {
+          return defaultMsg;
+        }
+
+        if (bigNumberify(params.sizeDelta).eq(0)) {
+          return (
+            <Trans>
+              Could not execute deposit into {indexToken.symbol} {longOrShortText}
+            </Trans>
+          );
+        }
+
+        return (
+          <>
+            <Trans>
+              Could not increase {indexToken.symbol} {longOrShortText},
+              {`+${formatAmount(params.sizeDelta, USD_DECIMALS, 2, true)}`} USD, Acceptable Price:&nbsp;
+              {params.isLong ? "<" : ">"}&nbsp;
+            </Trans>
+            <Tooltip
+              position="center-top"
+              handle={`${formatAmount(params.acceptablePrice, USD_DECIMALS, 2, true)} USD`}
+              renderContent={() => (
+                <Trans>Try increasing the "Allowed Slippage", under the Settings menu on the top right.</Trans>
+              )}
+            />
+          </>
+        );
+      }
     },
     [trades, getMsg]
   );
