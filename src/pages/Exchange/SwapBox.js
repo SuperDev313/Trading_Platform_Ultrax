@@ -1497,7 +1497,24 @@ export default function SwapBox(props) {
       }
     }
   };
-  
+
+  function approveFromToken() {
+    approveTokens({
+      setIsApproving,
+      library,
+      tokenAddress: fromToken.address,
+      spender: routerAddress,
+      chainId: chainId,
+      onApproveSubmitted: () => {
+        setIsWaitingForApproval(true);
+      },
+      infoTokens,
+      getTokenInfo,
+      pendingTxns,
+      setPendingTxns,
+    });
+  }
+
   return (
     <div className="Exchange-swap-box">
       <div className="Exchange-swap-info-group">
