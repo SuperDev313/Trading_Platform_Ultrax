@@ -51,6 +51,10 @@ function getOrderActionTitle(action) {
   return t`${actionDisplay} Order`;
 }
 
+function getLiquidationData(liquidationsDataMap, key, timestamp) {
+  return liquidationsDataMap && liquidationsDataMap[`${key}:${timestamp}`];
+}
+
 export default function TradeHistory(props) {
   const { account, infoTokens, getTokenInfo, chainId, nativeTokenAddress, shouldShowPaginationButtons } = props;
   const [pageIds, setPageIds] = useState({});
