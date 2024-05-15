@@ -199,6 +199,19 @@ export default function TradeHistory(props) {
           true
         )} USDG`;
       }
+      if (tradeData.action === "Swap") {
+        const tokenIn = getTokenInfo(infoTokens, params.tokenIn, true, nativeTokenAddress);
+        const tokenOut = getTokenInfo(infoTokens, params.tokenOut, true, nativeTokenAddress);
+        if (!tokenIn || !tokenOut) {
+          return defaultMsg;
+        }
+        return t`Swap ${formatAmount(params.amountIn, tokenIn.decimals, 4, true)} ${tokenIn.symbol} for ${formatAmount(
+          params.amountOut,
+          tokenOut.decimals,
+          4,
+          true
+        )} ${tokenOut.symbol}`;
+      }
     },
     [trades, getMsg]
   );
