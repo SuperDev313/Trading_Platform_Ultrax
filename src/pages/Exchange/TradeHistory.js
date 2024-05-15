@@ -1,10 +1,47 @@
-import React from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { ethers } from "ethers";
+import { Link } from "react-router-dom";
+import Tooltip from "components/Tooltip/Tooltip";
+import { getTokenBySymbol, getToken } from "config/tokens";
+import { getChainName } from "config/chains";
+import { useChainId } from "lib/chains";
+
+import {
+  USD_DECIMALS,
+  MAX_LEVERAGE,
+  BASIS_POINTS_DIVISOR,
+  LIQUIDATION_FEE,
+  TRADES_PAGE_SIZE,
+  deserialize,
+  getExchangeRateDisplay,
+  INCREASE,
+} from "lib/legacy";
+import { useTrades, useLiquidationsData } from "domain/legacy";
+import { getContract } from "config/contracts";
+
+import "./TradeHistory.css";
+import { getExplorerUrl } from "config/chains";
+import { bigNumberify, formatAmount } from "lib/numbers";
+import { formatDateTime, formatTime, formatDate } from "lib/dates";
+import StatsTooltipRow from "../StatsTooltip/StatsTooltipRow";
+import { t, Trans } from "@lingui/macro";
+import ExternalLink from "components/ExternalLink/ExternalLink";
+import Button from "components/Button/Button";
+
+const { AddressZero } = ethers.constants;
+
+function getPositionDisplay(increase, indexToken, isLong, sizeDelta) {
+  const symbol = indexToken ? (indexToken.isWrapped ? indexToken.baseSymbol : indexToken.symbol) : "";
+  return `
+    ${increase ? t`Increase` : t`Decrease`} ${symbol} ${isLong ? t`Long` : t`Short`}
+    ${increase ? "+" : "-"}${formatAmount(sizeDelta, USD_DECIMALS, 2, true)} USD`;
+}
 
 export default function TradeHistory(props) {
   const { account, infoTokens, getTokenInfo, chainId, nativeTokenAddress, shouldShowPaginationButtons } = props;
   const [pageIds, setPageIds] = useState({});
   const [pageIndex, setPageIndex] = useState(0);
-  
+
   return (
     <div className="TradeHistory container">
       <div className="Exchange-list small trading-history">
