@@ -234,6 +234,28 @@ export default function TradeHistory(props) {
           true
         )} USD`;
       }
+      if (tradeData.action === "CreateDecreasePosition") {
+        const indexToken = getTokenInfo(infoTokens, params.indexToken, true, nativeTokenAddress);
+        if (!indexToken) {
+          return defaultMsg;
+        }
+
+        if (bigNumberify(params.sizeDelta).eq(0)) {
+          return t`Request withdrawal from ${indexToken.symbol} ${longOrShortText}`;
+        }
+
+        return t`Request decrease ${indexToken.symbol} ${longOrShortText}, -${formatAmount(
+          params.sizeDelta,
+          USD_DECIMALS,
+          2,
+          true
+        )} USD, Acceptable Price: ${params.isLong ? ">" : "<"} ${formatAmount(
+          params.acceptablePrice,
+          USD_DECIMALS,
+          2,
+          true
+        )} USD`;
+      }
     },
     [trades, getMsg]
   );
