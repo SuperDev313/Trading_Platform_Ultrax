@@ -144,6 +144,20 @@ export default function TradeHistory(props) {
     return pageIds[pageIndex];
   };
 
+  const { trades, updateTrades } = useTrades(chainId, account, props.forSingleAccount, getAfterId());
+
+  const liquidationsData = useLiquidationsData(chainId, account);
+  const liquidationsDataMap = useMemo(() => {
+    if (!liquidationsData) {
+      return null;
+    }
+    return liquidationsData.reduce((memo, item) => {
+      const liquidationKey = `${item.key}:${item.timestamp}`;
+      memo[liquidationKey] = item;
+      return memo;
+    }, {});
+  }, [liquidationsData]);
+
   return (
     <div className="TradeHistory container">
       <div className="Exchange-list small trading-history">
