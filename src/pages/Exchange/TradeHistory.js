@@ -55,6 +55,24 @@ function getLiquidationData(liquidationsDataMap, key, timestamp) {
   return liquidationsDataMap && liquidationsDataMap[`${key}:${timestamp}`];
 }
 
+const actions = {
+  "IncreasePosition-Long": "Increase",
+  "IncreasePosition-Short": "Increase",
+  CreateIncreaseOrder: "Increase",
+  CreateIncreasePosition: "Increase",
+  CreateDecreaseOrder: "Decrease",
+  CreateDecreasePosition: "Decrease",
+  CancelDecreaseOrder: "Decrease",
+  CancelIncreaseOrder: "Increase",
+  "DecreasePosition-Short": "Decrease",
+  "DecreasePosition-Long": "Decrease",
+  ExecuteDecreaseOrder: "Decrease",
+  ExecuteIncreaseOrder: "Increase",
+  UpdateDecreaseOrder: "Decrease",
+  UpdateIncreaseOrder: "Increase",
+  Swap: "Swap",
+};
+
 export default function TradeHistory(props) {
   const { account, infoTokens, getTokenInfo, chainId, nativeTokenAddress, shouldShowPaginationButtons } = props;
   const [pageIds, setPageIds] = useState({});
