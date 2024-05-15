@@ -176,6 +176,10 @@ export default function TradeHistory(props) {
     setPageIndex(pageIndex + 1);
   };
 
+  const loadPrevPage = () => {
+    setPageIndex(pageIndex - 1);
+  };
+  
   return (
     <div className="TradeHistory container">
       <div className="Exchange-list small trading-history">
