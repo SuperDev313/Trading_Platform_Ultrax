@@ -287,6 +287,29 @@ export default function TradeHistory(props) {
           </>
         );
       }
+      if (tradeData.action === "CancelDecreasePosition") {
+        const indexToken = getTokenInfo(infoTokens, params.indexToken, true, nativeTokenAddress);
+        if (!indexToken) {
+          return defaultMsg;
+        }
+
+        if (bigNumberify(params.sizeDelta).eq(0)) {
+          return t`Could not execute withdrawal from ${indexToken.symbol} ${longOrShortText}`;
+        }
+
+        return (
+          <>
+            <Tooltip
+              position="right-top"
+              handle={`${formatAmount(params.acceptablePrice, USD_DECIMALS, 2, true)} USD`}
+              renderContent={() => (
+                <Trans>Try increasing the "Allowed Slippage", under the Settings menu on the top right</Trans>
+              )}
+            />
+          </>
+        );
+      }
+
     },
     [trades, getMsg]
   );
